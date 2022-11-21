@@ -1,0 +1,12 @@
+.light .header {
+  background-color: #333;
+  color: #fff;
+  border-color: #f1f1f1;
+  box-shadow: unset;
+  &__left,
+  &__right {
+    svg {
+      stroke: #fff;
+    }
+  }
+}

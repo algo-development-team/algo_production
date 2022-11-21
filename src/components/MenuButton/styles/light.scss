@@ -1,0 +1,12 @@
+.light .menu__trigger {
+  svg {
+    stroke: #808080;
+  }
+
+  &:hover {
+    background-color: #eee;
+    svg {
+      stroke: #333;
+    }
+  }
+}
