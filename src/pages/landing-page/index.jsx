@@ -55,8 +55,8 @@ export const LandingPage = () => {
             schedule all TODOS in life.
           </h1>
           <h2 className='hero-text__sub'>
-            First AI assistant to provide personalized scheduling for all your
-            tasks.
+            The first AI assistant to provide personalized scheduling for all
+            your tasks.
           </h2>
           <Link to='/signin' className='intro__hero--cta'>
             Start for free
