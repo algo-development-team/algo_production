@@ -7,4 +7,4 @@
 
 > GitHub CI/CD Deployment
 
-- Already set-up in root directory (algo_development), need to test
+- Set-up completed, merge the non-main branch with main branch to automatically deploy

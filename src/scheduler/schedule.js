@@ -15,8 +15,10 @@ import { getPreferences } from 'handlePreferences'
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
 const DEADLINE_RANGE = Object.freeze([0, 14])
-const TIME_LENGTH_RANGE = Object.freeze([1, 32])
-const DIFF_TIME_LENGTH_RANGE = Object.freeze([0, 7])
+/***
+ * Range for time length before scaling is 1-32
+ * ***/
+const TIME_LENGTH_RANGE = Object.freeze([0, 5]) // scaled by log2
 
 /***
  * Note: schedules the entire day, no matter what the current time is
@@ -107,25 +109,21 @@ export const scheduleToday = async (userId) => {
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
-    const t1 = new Date()
+    const t1 = new Date() // DEBUGGING
     assignTimeBlocks(
       blocksOfChunksWithRanking.work,
       formattedTasks.work,
       PRIORITY_RANGE,
-      DEADLINE_RANGE,
       TIME_LENGTH_RANGE,
-      DIFF_TIME_LENGTH_RANGE,
     )
     assignTimeBlocks(
       blocksOfChunksWithRanking.personal,
       formattedTasks.personal,
       PRIORITY_RANGE,
-      DEADLINE_RANGE,
       TIME_LENGTH_RANGE,
-      DIFF_TIME_LENGTH_RANGE,
     )
-    const t2 = new Date()
-    console.log(t2 - t1)
+    const t2 = new Date() // DEBUGGING
+    console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
   } catch (error) {
     console.log(error)
@@ -162,40 +160,73 @@ const calculateTaskPreference = (priority, deadline, timeLength) => {
   }
 }
 
+const linearScale = (num, inputRange, outputRange) => {
+  const slope =
+    (outputRange[1] - outputRange[0]) / (inputRange[1] - inputRange[0])
+  return slope * (num - inputRange[0]) + outputRange[0]
+}
+
+/***
+ * deadline range: 0-14 or null
+ * ***/
+const normalizeDeadline = (deadline) => {
+  if (deadline === 0) {
+    return 1
+  } else if (deadline === 1) {
+    return 0.4
+  } else if (deadline === 2) {
+    return 0.25
+  } else if (deadline === 3) {
+    return 0.15
+  } else {
+    // 4: 0.1
+    // ... (scales linearly down)
+    // 14: 0
+    if (deadline === null) return 0
+    return linearScale(deadline, [4, 14], [0.1, 0])
+  }
+}
+
 /***
  * requirements:
  * blocks: { start, end, preference }[][]
  * tasks: { priority, deadline, timeLength }[]
  * ***/
-const assignTimeBlocks = (
-  blocks,
-  tasks,
-  priorityRange,
-  deadlineRange,
-  timeLengthRange,
-  diffTimeLengthRange,
-) => {
+const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
   // iterate over blocks
   for (let i = 0; i < blocks.length; i++) {
+    // for (let i = 0; i < 1; i++) {
+    // DEBUGGING
     // iterate over chunks
     for (let j = 0; j < blocks[i].length; j++) {
+      // for (let j = 0; j < 1; j++) {
+      // DEBUGGING
       // iterate over tasks
       for (let k = 0; k < tasks.length; k++) {
         // calculate the relative priority of the task
-        const diffTimeLength = Math.min(
-          Math.abs(tasks[k].timeLength - (blocks[i].length - j)),
-          7,
+        const diffTimeLength = Math.abs(
+          tasks[k].timeLength - (blocks[i].length - j),
         )
         const isPreference =
           (tasks[k].preference === blocks[i][j].preference) === true ? 1 : 0
+
         const normalizedParams = {
-          priority: normalize(tasks[k].priority, priorityRange, true),
-          deadline: normalize(tasks[k].deadline, deadlineRange, true),
-          timeLength: normalize(tasks[k].timeLength, timeLengthRange, true),
-          diffTimeLength: normalize(diffTimeLength, diffTimeLengthRange, true),
+          priority: normalize(tasks[k].priority, priorityRange, false),
+          deadline: normalizeDeadline(tasks[k].deadline),
+          timeLength: normalize(
+            Math.log2(tasks[k].timeLength),
+            timeLengthRange,
+            true,
+          ), // scaled by log2
+          diffTimeLength: normalize(
+            Math.log2(diffTimeLength + 1),
+            timeLengthRange,
+            true,
+          ), // scaled by log2
           isPreference: isPreference,
         }
 
+        console.log('task data:', tasks[k]) // DEBUGGING
         console.log('normalizedParams:', normalizedParams) // DEBUGGING
       }
     }
