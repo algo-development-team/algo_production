@@ -14,11 +14,22 @@ import { getPreferences } from 'handlePreferences'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
-const DEADLINE_RANGE = Object.freeze([0, 14])
 /***
  * Range for time length before scaling is 1-32
  * ***/
 const TIME_LENGTH_RANGE = Object.freeze([0, 5]) // scaled by log2
+/***
+ * WEIGHTS values should be adjusted in the future using linear regression
+ * ***/
+const WEIGHTS = Object.freeze({
+  priority: 4,
+  deadline: 5,
+  timeLength: 1,
+  diffTimeLength: 2,
+  isPreference: 3,
+})
+const TOTAL_WEIGHTS_SUM = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
+const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
 
 /***
  * Note: schedules the entire day, no matter what the current time is
@@ -110,17 +121,10 @@ export const scheduleToday = async (userId) => {
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
     const t1 = new Date() // DEBUGGING
-    assignTimeBlocks(
-      blocksOfChunksWithRanking.work,
-      formattedTasks.work,
-      PRIORITY_RANGE,
-      TIME_LENGTH_RANGE,
-    )
+    assignTimeBlocks(blocksOfChunksWithRanking.work, formattedTasks.work)
     assignTimeBlocks(
       blocksOfChunksWithRanking.personal,
       formattedTasks.personal,
-      PRIORITY_RANGE,
-      TIME_LENGTH_RANGE,
     )
     const t2 = new Date() // DEBUGGING
     console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
@@ -192,15 +196,26 @@ const normalizeDeadline = (deadline) => {
  * blocks: { start, end, preference }[][]
  * tasks: { priority, deadline, timeLength }[]
  * ***/
-const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
+const calculateRelativePriority = (params, weights) => {
+  let relativePriority = 0
+  for (const key in params) {
+    relativePriority += params[key] * weights[key]
+  }
+  return normalize(relativePriority, RELATIVE_PRIORITY_RANGE, false)
+}
+
+/***
+ * requirements:
+ * blocks: { start, end, preference }[][]
+ * tasks: { priority, deadline, timeLength }[]
+ * ***/
+const assignTimeBlocks = (blocks, tasks) => {
   // iterate over blocks
   for (let i = 0; i < blocks.length; i++) {
-    // for (let i = 0; i < 1; i++) {
-    // DEBUGGING
     // iterate over chunks
     for (let j = 0; j < blocks[i].length; j++) {
-      // for (let j = 0; j < 1; j++) {
-      // DEBUGGING
+      let maxRealtivePriority = -1
+      let maxTaskIdx = null
       // iterate over tasks
       for (let k = 0; k < tasks.length; k++) {
         // calculate the relative priority of the task
@@ -211,24 +226,32 @@ const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
           (tasks[k].preference === blocks[i][j].preference) === true ? 1 : 0
 
         const normalizedParams = {
-          priority: normalize(tasks[k].priority, priorityRange, false),
+          priority: normalize(tasks[k].priority, PRIORITY_RANGE, false),
           deadline: normalizeDeadline(tasks[k].deadline),
           timeLength: normalize(
             Math.log2(tasks[k].timeLength),
-            timeLengthRange,
+            TIME_LENGTH_RANGE,
             true,
           ), // scaled by log2
           diffTimeLength: normalize(
             Math.log2(diffTimeLength + 1),
-            timeLengthRange,
+            TIME_LENGTH_RANGE,
             true,
           ), // scaled by log2
           isPreference: isPreference,
         }
 
-        console.log('task data:', tasks[k]) // DEBUGGING
-        console.log('normalizedParams:', normalizedParams) // DEBUGGING
+        const relativePriority = calculateRelativePriority(
+          normalizedParams,
+          WEIGHTS,
+        )
+        if (relativePriority > maxRealtivePriority) {
+          maxRealtivePriority = relativePriority
+          maxTaskIdx = k
+        }
       }
+      // maxTaskIdx is the index of the task with the highest relative priority
+      // WRITE SOME CODE
     }
   }
 }
