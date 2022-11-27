@@ -78,12 +78,6 @@ const getTimeBlocksForToday = async (userId) => {
       workRange[0].subtract(1, 'day')
       workRange[1].subtract(1, 'day')
     }
-
-    // console.log('dayRange[0]:', dayRange[0].format('MM-DD HH:mm')) // DEBUGGING
-    // console.log('dayRange[1]:', dayRange[1].format('MM-DD HH:mm')) // DEBUGGING
-    // console.log('workRange[0]:', workRange[0].format('MM-DD HH:mm')) // DEBUGGING
-    // console.log('workRange[1]:', workRange[1].format('MM-DD HH:mm')) // DEBUGGING
-
     const eventsByTypeForToday = await getEventsByTypeForToday(now)
     const timeRangesForDay = await getTimeRangesForDay(
       eventsByTypeForToday.timeBlocked,
@@ -112,7 +106,6 @@ const getTimeBlocksForToday = async (userId) => {
         userData.rankingPreferences,
       ),
     }
-
     //*** GETTING AVAILABLE TIME RANGES END ***//
 
     //*** FIND TIME BLOCKS FOR USER'S TASKS START ***/
@@ -124,9 +117,6 @@ const getTimeBlocksForToday = async (userId) => {
     )
     const taskMap = getTaskMap(tasksNotPassedDeadline)
     const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, now)
-
-    // console.log('formattedTasks:', formattedTasks) // DEBUGGING
-
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
@@ -138,11 +128,6 @@ const getTimeBlocksForToday = async (userId) => {
       blocksOfChunksWithRankingAndTaskId.personal,
       formattedTasks.personal,
     )
-
-    // console.log(
-    //   'blocksOfChunksWithRankingAndTaskId:',
-    //   blocksOfChunksWithRankingAndTaskId,
-    // ) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
 
     //*** TIME BLOCK FORMATTING START ***/
@@ -152,20 +137,11 @@ const getTimeBlocksForToday = async (userId) => {
         blocksOfChunksWithRankingAndTaskId.personal,
       ),
     }
-
-    // console.log('timeBlocks:', timeBlocks) // DEBUGGING
-
     const formattedTimeBlocks = [
       ...formatTimeBlocks(timeBlocks.work, true),
       ...formatTimeBlocks(timeBlocks.personal, false),
     ]
-
-    // console.log('formattedTimeBlocks:', formattedTimeBlocks) // DEBUGGING
-
     const sortedTimeBlocks = getTimeBlocksSorted(formattedTimeBlocks)
-
-    // console.log('sortedTimeBlocks:', sortedTimeBlocks) // DEBUGGING
-
     const timeBlocksWithTaskInfo = getTimeBlocksWithTaskInfo(
       sortedTimeBlocks,
       taskMap,
