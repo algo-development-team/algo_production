@@ -94,15 +94,13 @@ export const scheduleToday = async (userId) => {
     printBlocks(blocks.work, 'work') // DEBUGGING
     printBlocks(blocks.personal, 'personal') // DEBUGGING
 
-    const blocksOfChunksWithRanking = {
+    const blocksOfChunksWithRankingAndTaskId = {
       work: rankBlocksOfChunks(blocks.work, userData.rankingPreferences),
       personal: rankBlocksOfChunks(
         blocks.personal,
         userData.rankingPreferences,
       ),
     }
-
-    // console.log('blocksOfChunksWithRanking', blocksOfChunksWithRanking) // DEBUGGING
 
     //*** GETTING AVAILABLE TIME RANGES END ***//
 
@@ -122,20 +120,87 @@ export const scheduleToday = async (userId) => {
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
     const t1 = new Date() // DEBUGGING
-    assignTimeBlocks(blocksOfChunksWithRanking.work, formattedTasks.work)
     assignTimeBlocks(
-      blocksOfChunksWithRanking.personal,
+      blocksOfChunksWithRankingAndTaskId.work,
+      formattedTasks.work,
+    )
+    assignTimeBlocks(
+      blocksOfChunksWithRankingAndTaskId.personal,
       formattedTasks.personal,
     )
     const t2 = new Date() // DEBUGGING
 
-    console.log('blocksOfChunksWithRanking:', blocksOfChunksWithRanking) // DEBUGGING
+    console.log(
+      'blocksOfChunksWithRankingAndTaskId:',
+      blocksOfChunksWithRankingAndTaskId,
+    ) // DEBUGGING
     console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
+
+    //*** CHUNKS FORMATTING START ***/
+    const groupedChunks = {
+      work: groupChunksByTaskId(blocksOfChunksWithRankingAndTaskId.work),
+      personal: groupChunksByTaskId(
+        blocksOfChunksWithRankingAndTaskId.personal,
+      ),
+    }
+
+    console.log('groupedChunks:', groupedChunks) // DEBUGGING
+    //*** CHUNKS FORMATTING END ***/
   } catch (error) {
     console.log(error)
     return { checklist: [], failed: true }
   }
+}
+
+/***
+ * requirements:
+ * blocks: { start, end, preference, taskId }[][] (taskId is firebase item id or null)
+ * ***/
+const groupChunksByTaskId = (blocks) => {
+  const timeBlocksWithTaskId = []
+  let curTaskId = null
+  let startIdxI = null
+  let startIdxJ = null
+  let endIdxI = null
+  let endIdxJ = null
+  for (let i = 0; i < blocks.length; i++) {
+    for (let j = 0; j < blocks[i].length; j++) {
+      if (blocks[i][j].taskId === null) continue
+      if (curTaskId === null) {
+        curTaskId = blocks[i][j].taskId
+        startIdxI = i
+        startIdxJ = j
+        endIdxI = i
+        endIdxJ = j
+      } else if (curTaskId === blocks[i][j].taskId) {
+        endIdxI = i
+        endIdxJ = j
+      } else if (curTaskId !== blocks[i][j].taskId) {
+        timeBlocksWithTaskId.push({
+          taskId: curTaskId,
+          start: blocks[startIdxI][startIdxJ].start,
+          end: blocks[endIdxI][endIdxJ].end,
+          preference: blocks[startIdxI][startIdxJ].preference,
+        })
+        curTaskId = blocks[i][j].taskId
+        startIdxI = i
+        startIdxJ = j
+        endIdxI = i
+        endIdxJ = j
+      }
+    }
+    if (curTaskId !== null) {
+      timeBlocksWithTaskId.push({
+        taskId: curTaskId,
+        start: blocks[startIdxI][startIdxJ].start,
+        end: blocks[endIdxI][endIdxJ].end,
+        preference: blocks[startIdxI][startIdxJ].preference,
+      })
+      curTaskId = null
+    }
+  }
+  return timeBlocksWithTaskId
 }
 
 /***
@@ -208,8 +273,7 @@ const normalizeDeadline = (deadline) => {
 
 /***
  * requirements:
- * blocks: { start, end, preference }[][]
- * tasks: { priority, deadline, timeLength }[]
+ * params and weights have the same property names and all values are numbers
  * ***/
 const calculateRelativePriority = (params, weights) => {
   let relativePriority = 0
@@ -221,7 +285,7 @@ const calculateRelativePriority = (params, weights) => {
 
 /***
  * requirements:
- * blocks: { start, end, preference, taskId }[][]
+ * blocks: { start, end, preference, taskId }[][] (taskId is null)
  * tasks: { priority, deadline, timeLength, preference, taskId }[]
  * Note:
  * mutates the blocks array (sets the taskId property in each chunk)
