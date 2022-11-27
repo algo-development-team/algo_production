@@ -39,14 +39,6 @@ const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
  * - schedules the entire day, no matter what the current time is
  * ***/
 export const scheduleToday = async (userId) => {
-  const timeBlocksWithFailureInfo = getTimeBlocksForToday(userId)
-  if (timeBlocksWithFailureInfo.failed) {
-    return { checklist: [], failed: true }
-  }
-  // WRITE CODE HERE
-}
-
-const getTimeBlocksForToday = async (userId) => {
   try {
     //*** GETTING AVAILABLE TIME RANGES START ***//
     const userInfo = await getUserInfo(userId)
@@ -55,6 +47,7 @@ const getTimeBlocksForToday = async (userId) => {
     }
     const userData = userInfo.userInfoDoc.data()
     const now = moment()
+    const today = now.clone().startOf('day')
     const sleepRange = userData.sleepTimeRange
       .split('-')
       .map((time) => moment(time, 'HH:mm'))
@@ -62,23 +55,79 @@ const getTimeBlocksForToday = async (userId) => {
       .split('-')
       .map((time) => moment(time, 'HH:mm'))
     const dayRange = [sleepRange[1], sleepRange[0]]
-    // the end of the day is in the next day
+    // condition: the end of the day is in the next day
+    // action: adjusts the end of the day to the next day
     if (dayRange[0].isAfter(dayRange[1])) {
       dayRange[1].add(1, 'day')
     }
-    // the end of the work time is in the next day
+    // condition: the end of the work time is in the next day
+    // action: adjusts the end of the work to the next day
     if (workRange[0].isAfter(workRange[1])) {
       workRange[1].add(1, 'day')
     }
-    // now is before the start of sleep range (i.e. before 11pm of night before)
-    // continues to schedule for the current day
-    if (dayRange[1].clone().subtract(1, 'day').isAfter(now)) {
+    // condition: work starts before the day begins
+    // action: adjusts the work range to be within the day range
+    if (workRange[0].isBefore(dayRange[0])) {
+      workRange[0].add(1, 'day')
+      workRange[1].add(1, 'day')
+    }
+    // full-day adjustments (to previous day)
+    // condition: now is before the start of sleep range (i.e. before 11pm of night before)
+    // action: adjusts to schedule for the current day
+    if (now.isBefore(dayRange[1].clone().subtract(1, 'day'))) {
+      console.log('now is before the start of sleep range') // DEBUGGING
+      today.subtract(1, 'day')
       dayRange[0].subtract(1, 'day')
       dayRange[1].subtract(1, 'day')
       workRange[0].subtract(1, 'day')
       workRange[1].subtract(1, 'day')
     }
-    const eventsByTypeForToday = await getEventsByTypeForToday(now)
+    // full-day adjustments (to next day)
+    // condition: now is between the start of sleep range and the end of sleep range
+    // action: adjusts to schedule for the next day
+    else if (
+      now.isAfter(dayRange[1]) &&
+      now.isBefore(dayRange[0].clone().add(1, 'day'))
+    ) {
+      console.log(
+        'now is between the start of sleep range and the end of sleep range',
+      ) // DEBUGGING
+      today.add(1, 'day')
+      dayRange[0].add(1, 'day')
+      dayRange[1].add(1, 'day')
+      workRange[0].add(1, 'day')
+      workRange[1].add(1, 'day')
+    }
+    const timeMin = today
+      .clone()
+      .subtract(1, 'day')
+      .subtract(2, 'hour')
+      .subtract(15, 'minute')
+      .toISOString()
+    const timeMax = today
+      .clone()
+      .add(2, 'day')
+      .add(2, 'hour')
+      .add(15, 'minute')
+      .toISOString()
+
+    // debugging statements for time:
+    // console.log('now:', now.format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('today:', today.format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('dayRange[0]:', dayRange[0].format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('dayRange[1]:', dayRange[1].format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('workRange[0]:', workRange[0].format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('workRange[1]:', workRange[1].format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('timeMin:', timeMin) // DEBUGGING
+    // console.log('timeMax:', timeMax) // DEBUGGING
+
+    const calendars = await fetchAllCalendars()
+    const calendarIds = calendars.map((calendar) => calendar.id)
+    const eventsByTypeForToday = await getEventsByTypeForToday(
+      timeMin,
+      timeMax,
+      calendarIds,
+    )
     const timeRangesForDay = await getTimeRangesForDay(
       eventsByTypeForToday.timeBlocked,
       dayRange[0],
@@ -113,10 +162,10 @@ const getTimeBlocksForToday = async (userId) => {
     const projects = await getAllUserProjects(userId)
     const tasksNotPassedDeadline = filterTaskNotPassedDeadline(
       tasks.nonCompleted,
-      now,
+      today,
     )
     const taskMap = getTaskMap(tasksNotPassedDeadline)
-    const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, now)
+    const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, today)
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
@@ -150,10 +199,14 @@ const getTimeBlocksForToday = async (userId) => {
     console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
     //*** TIME BLOCK FORMATTING END ***/
 
-    return { timeBlocks: timeBlocksWithTaskInfo, failed: false }
+    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
+    // WRITE CODE HERE
+    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+
+    return { checklist: [], failed: false }
   } catch (error) {
     console.log(error)
-    return { timeBlocks: [], failed: true }
+    return { checklist: [], failed: true }
   }
 }
 
@@ -426,11 +479,11 @@ const assignTimeBlocks = (blocks, tasks) => {
  * tasks: task[] (from firestore)
  * now: moment object
  * ***/
-const filterTaskNotPassedDeadline = (tasks, now) => {
+const filterTaskNotPassedDeadline = (tasks, today) => {
   return tasks.filter((task) => {
     if (task.date === '') return true
     const deadline = moment(task.date, 'DD-MM-YYYY')
-    return deadline.diff(now, 'days') >= 0
+    return deadline.diff(today, 'days') >= 0
   })
 }
 
@@ -439,7 +492,7 @@ const filterTaskNotPassedDeadline = (tasks, now) => {
  * tasks: task[] (from firestore)
  * projects: project[] (from firestore)
  * ***/
-const formatTasks = (tasks, projects, now) => {
+const formatTasks = (tasks, projects, today) => {
   const projectIdToIsWork = {}
   for (const project of projects) {
     projectIdToIsWork[project.projectId] = project.projectIsWork
@@ -452,7 +505,7 @@ const formatTasks = (tasks, projects, now) => {
       task.date !== '' ? moment(task.date, 'DD-MM-YYYY') : null
     const deadline =
       formattedDate !== null
-        ? Math.min(formattedDate.diff(now, 'days'), 14)
+        ? Math.min(formattedDate.diff(today, 'days'), 14)
         : null
     const preference = calculateTaskPreference(
       task.priority,
@@ -621,22 +674,7 @@ const divideTimeRangesIntoChunkRanges = (timeRanges) => {
   return chunkRanges
 }
 
-const getEventsByTypeForToday = async (now) => {
-  const today = now.startOf('day')
-  const timeMin = today
-    .clone()
-    .subtract(1, 'day')
-    .subtract(2, 'hour')
-    .subtract(15, 'minute')
-    .toISOString()
-  const timeMax = today
-    .clone()
-    .add(2, 'day')
-    .add(2, 'hour')
-    .add(15, 'minute')
-    .toISOString()
-  const calendars = await fetchAllCalendars()
-  const calendarIds = calendars.map((calendar) => calendar.id)
+const getEventsByTypeForToday = async (timeMin, timeMax, calendarIds) => {
   const events = await fetchAllEvents(timeMin, timeMax, calendarIds)
   const eventsByType = { timeBlocked: [], allDay: [] }
   for (const event of events) {
