@@ -114,12 +114,11 @@ export const scheduleToday = async (userId) => {
     const taskMap = getTaskMap(tasksNotPassedDeadline)
     const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, now)
 
-    console.log('formattedTasks:', formattedTasks) // DEBUGGING
+    // console.log('formattedTasks:', formattedTasks) // DEBUGGING
 
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
-    const t1 = new Date() // DEBUGGING
     assignTimeBlocks(
       blocksOfChunksWithRankingAndTaskId.work,
       formattedTasks.work,
@@ -128,29 +127,89 @@ export const scheduleToday = async (userId) => {
       blocksOfChunksWithRankingAndTaskId.personal,
       formattedTasks.personal,
     )
-    const t2 = new Date() // DEBUGGING
 
-    console.log(
-      'blocksOfChunksWithRankingAndTaskId:',
-      blocksOfChunksWithRankingAndTaskId,
-    ) // DEBUGGING
-    console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
+    // console.log(
+    //   'blocksOfChunksWithRankingAndTaskId:',
+    //   blocksOfChunksWithRankingAndTaskId,
+    // ) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
 
-    //*** CHUNKS FORMATTING START ***/
-    const groupedChunks = {
+    //*** TIME BLOCK FORMATTING START ***/
+    const timeBlocks = {
       work: groupChunksByTaskId(blocksOfChunksWithRankingAndTaskId.work),
       personal: groupChunksByTaskId(
         blocksOfChunksWithRankingAndTaskId.personal,
       ),
     }
 
-    console.log('groupedChunks:', groupedChunks) // DEBUGGING
-    //*** CHUNKS FORMATTING END ***/
+    // console.log('timeBlocks:', timeBlocks) // DEBUGGING
+
+    const formattedTimeBlocks = [
+      ...formatTimeBlocks(timeBlocks.work, true),
+      ...formatTimeBlocks(timeBlocks.personal, false),
+    ]
+
+    // console.log('formattedTimeBlocks:', formattedTimeBlocks) // DEBUGGING
+
+    const sortedTimeBlocks = getTimeBlocksSorted(formattedTimeBlocks)
+
+    // console.log('sortedTimeBlocks:', sortedTimeBlocks) // DEBUGGING
+
+    const timeBlocksWithTaskInfo = getTimeBlocksWithTaskInfo(
+      sortedTimeBlocks,
+      taskMap,
+    )
+
+    console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
+    //*** TIME BLOCK FORMATTING END ***/
   } catch (error) {
     console.log(error)
     return { checklist: [], failed: true }
   }
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId, isWork }[]
+ * taskMap: { taskId: task (firebase task object) }
+ * ***/
+const getTimeBlocksWithTaskInfo = (timeBlocks, taskMap) => {
+  return timeBlocks.map((timeBlock) => {
+    const taskId = timeBlock.taskId
+    const taskInfo = taskMap[taskId]
+    return {
+      ...timeBlock,
+      name: taskInfo.name,
+      description: taskInfo.description,
+    }
+  })
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId }[]
+ * ***/
+const formatTimeBlocks = (timeBlocks, isWork) => {
+  const formattedTimeBlocks = []
+  for (const timeBlock of timeBlocks) {
+    const formattedTimeBlock = {
+      ...timeBlock,
+      isWork: isWork,
+    }
+    formattedTimeBlocks.push(formattedTimeBlock)
+  }
+  return formattedTimeBlocks
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId, isWork }[]
+ * ***/
+const getTimeBlocksSorted = (timeBlocks) => {
+  const timeBlocksSorted = timeBlocks.sort((a, b) =>
+    a.start.isAfter(b.start) ? 1 : a.start.isBefore(b.start) ? -1 : 0,
+  )
+  return timeBlocksSorted
 }
 
 /***
@@ -171,32 +230,52 @@ const groupChunksByTaskId = (blocks) => {
         curTaskId = blocks[i][j].taskId
         startIdxI = i
         startIdxJ = j
-        endIdxI = i
-        endIdxJ = j
-      } else if (curTaskId === blocks[i][j].taskId) {
-        endIdxI = i
-        endIdxJ = j
       } else if (curTaskId !== blocks[i][j].taskId) {
+        if (
+          timeBlocksWithTaskId.length >= 1 &&
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].taskId ===
+            curTaskId &&
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end.isSame(
+            blocks[startIdxI][startIdxJ].start,
+          )
+        ) {
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end =
+            blocks[endIdxI][endIdxJ].end
+        } else {
+          timeBlocksWithTaskId.push({
+            taskId: curTaskId,
+            start: blocks[startIdxI][startIdxJ].start,
+            end: blocks[endIdxI][endIdxJ].end,
+            preference: blocks[startIdxI][startIdxJ].preference,
+          })
+        }
+        curTaskId = blocks[i][j].taskId
+        startIdxI = i
+        startIdxJ = j
+      }
+      // if current chunk has a task id, update the end index
+      endIdxI = i
+      endIdxJ = j
+    }
+    if (curTaskId !== null) {
+      if (
+        timeBlocksWithTaskId.length >= 1 &&
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].taskId ===
+          curTaskId &&
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end.isSame(
+          blocks[startIdxI][startIdxJ].start,
+        )
+      ) {
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end =
+          blocks[endIdxI][endIdxJ].end
+      } else {
         timeBlocksWithTaskId.push({
           taskId: curTaskId,
           start: blocks[startIdxI][startIdxJ].start,
           end: blocks[endIdxI][endIdxJ].end,
           preference: blocks[startIdxI][startIdxJ].preference,
         })
-        curTaskId = blocks[i][j].taskId
-        startIdxI = i
-        startIdxJ = j
-        endIdxI = i
-        endIdxJ = j
       }
-    }
-    if (curTaskId !== null) {
-      timeBlocksWithTaskId.push({
-        taskId: curTaskId,
-        start: blocks[startIdxI][startIdxJ].start,
-        end: blocks[endIdxI][endIdxJ].end,
-        preference: blocks[startIdxI][startIdxJ].preference,
-      })
       curTaskId = null
     }
   }
@@ -209,9 +288,9 @@ const groupChunksByTaskId = (blocks) => {
  * ***/
 const getTaskMap = (tasks) => {
   const taskMap = {}
-  tasks.forEach((task) => {
-    taskMap[task.id] = task
-  })
+  for (const task of tasks) {
+    taskMap[task.taskId] = task
+  }
   return taskMap
 }
 
