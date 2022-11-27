@@ -1,11 +1,11 @@
-import { fetchAllCalendars } from 'gapiHandlers'
+import { fetchAllCalendars, insertCalendar } from 'gapiHandlers'
 import { fetchAllEvents } from './events'
 import {
   getTimesWithInfo,
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo } from 'handleUserInfo'
+import { getUserInfo, updateUserInfo } from 'handleUserInfo'
 import moment from 'moment'
 import { timeType } from 'components/enums'
 import { getAllUserTasks } from 'handleUserTasks'
@@ -34,7 +34,6 @@ const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
 /***
  * Description:
  * - Allocates time blocks into Google Calendar
- * - Returns checklist for the day
  * Note:
  * - schedules the entire day, no matter what the current time is
  * ***/
@@ -122,7 +121,9 @@ export const scheduleToday = async (userId) => {
     // console.log('timeMax:', timeMax) // DEBUGGING
 
     const calendars = await fetchAllCalendars()
-    const calendarIds = calendars.map((calendar) => calendar.id)
+    const calendarIds = calendars
+      .filter((calendar) => calendar.id !== userData.calendarId)
+      .map((calendar) => calendar.id) // excluding the Algo calendar
     const eventsByTypeForToday = await getEventsByTypeForToday(
       timeMin,
       timeMax,
@@ -200,13 +201,21 @@ export const scheduleToday = async (userId) => {
     //*** TIME BLOCK FORMATTING END ***/
 
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
-    // WRITE CODE HERE
-    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+    if (userData.calendarId === null) {
+      const result = await insertCalendar('Algo')
+      await updateUserInfo(userId, { calendarId: result.id })
+    } else {
+      const eventsInAlgoCalendar = await getEventsByTypeForToday(
+        timeMin,
+        timeMax,
+        [userData.calendarId],
+      )
 
-    return { checklist: [], failed: false }
+      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
+    }
+    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {
     console.log(error)
-    return { checklist: [], failed: true }
   }
 }
 
