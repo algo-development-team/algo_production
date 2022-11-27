@@ -79,6 +79,15 @@ export const insertCalenderEvent = async (insertOption) => {
   }
 }
 
+export const updateCalenderEvent = async (updateOption) => {
+  try {
+    const event = await gapi.client.calendar.events.update(updateOption)
+    return event.result
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export const getUserTimeZone = async () => {
   try {
     const timezone = await gapi.client.calendar.settings.get({
@@ -115,23 +124,17 @@ export const fetchAllCalendars = async () => {
   }
 }
 
-export const insertCalendar = (summary) => {
-  const result = gapi.client.calendar.calendars
-    .insert({
+export const insertCalendar = async (summary) => {
+  try {
+    const response = await gapi.client.calendar.calendars.insert({
       resource: {
         summary: summary,
       },
     })
-    .then(
-      function (response) {
-        // Handle the results here (response.result has the parsed body).
-        console.log('Response', response)
-      },
-      function (err) {
-        console.error('Execute error', err)
-      },
-    )
-  return result
+    return response.result
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 /*** 

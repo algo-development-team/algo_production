@@ -1,11 +1,12 @@
-import { fetchAllCalendars } from 'gapiHandlers'
+import { fetchAllCalendars, insertCalendar } from 'gapiHandlers'
+import { updateEvent } from 'googleCalendar'
 import { fetchAllEvents } from './events'
 import {
   getTimesWithInfo,
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo } from 'handleUserInfo'
+import { getUserInfo, updateUserInfo } from 'handleUserInfo'
 import moment from 'moment'
 import { timeType } from 'components/enums'
 import { getAllUserTasks } from 'handleUserTasks'
@@ -14,15 +15,28 @@ import { getPreferences } from 'handlePreferences'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
-const DEADLINE_RANGE = Object.freeze([0, 14])
 /***
  * Range for time length before scaling is 1-32
  * ***/
 const TIME_LENGTH_RANGE = Object.freeze([0, 5]) // scaled by log2
+/***
+ * WEIGHTS values should be adjusted in the future using linear regression
+ * ***/
+const WEIGHTS = Object.freeze({
+  priority: 4,
+  deadline: 5,
+  timeLength: 1,
+  diffTimeLength: 2,
+  isPreference: 3,
+})
+const TOTAL_WEIGHTS_SUM = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
+const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
 
 /***
- * Note: schedules the entire day, no matter what the current time is
- * returns checklist for the day
+ * Description:
+ * - Allocates time blocks into Google Calendar
+ * Note:
+ * - schedules the entire day, no matter what the current time is
  * ***/
 export const scheduleToday = async (userId) => {
   try {
@@ -33,6 +47,7 @@ export const scheduleToday = async (userId) => {
     }
     const userData = userInfo.userInfoDoc.data()
     const now = moment()
+    const today = now.clone().startOf('day')
     const sleepRange = userData.sleepTimeRange
       .split('-')
       .map((time) => moment(time, 'HH:mm'))
@@ -40,29 +55,81 @@ export const scheduleToday = async (userId) => {
       .split('-')
       .map((time) => moment(time, 'HH:mm'))
     const dayRange = [sleepRange[1], sleepRange[0]]
-    // the end of the day is in the next day
+    // condition: the end of the day is in the next day
+    // action: adjusts the end of the day to the next day
     if (dayRange[0].isAfter(dayRange[1])) {
       dayRange[1].add(1, 'day')
     }
-    // the end of the work time is in the next day
+    // condition: the end of the work time is in the next day
+    // action: adjusts the end of the work to the next day
     if (workRange[0].isAfter(workRange[1])) {
       workRange[1].add(1, 'day')
     }
-    // now is before the start of sleep range (i.e. before 11pm of night before)
-    // continues to schedule for the current day
-    if (dayRange[1].clone().subtract(1, 'day').isAfter(now)) {
+    // condition: work starts before the day begins
+    // action: adjusts the work range to be within the day range
+    if (workRange[0].isBefore(dayRange[0])) {
+      workRange[0].add(1, 'day')
+      workRange[1].add(1, 'day')
+    }
+    // full-day adjustments (to previous day)
+    // condition: now is before the start of sleep range (i.e. before 11pm of night before)
+    // action: adjusts to schedule for the current day
+    if (now.isBefore(dayRange[1].clone().subtract(1, 'day'))) {
+      console.log('now is before the start of sleep range') // DEBUGGING
+      today.subtract(1, 'day')
       dayRange[0].subtract(1, 'day')
       dayRange[1].subtract(1, 'day')
       workRange[0].subtract(1, 'day')
       workRange[1].subtract(1, 'day')
     }
+    // full-day adjustments (to next day)
+    // condition: now is between the start of sleep range and the end of sleep range
+    // action: adjusts to schedule for the next day
+    else if (
+      now.isAfter(dayRange[1]) &&
+      now.isBefore(dayRange[0].clone().add(1, 'day'))
+    ) {
+      console.log(
+        'now is between the start of sleep range and the end of sleep range',
+      ) // DEBUGGING
+      today.add(1, 'day')
+      dayRange[0].add(1, 'day')
+      dayRange[1].add(1, 'day')
+      workRange[0].add(1, 'day')
+      workRange[1].add(1, 'day')
+    }
+    const timeMin = today
+      .clone()
+      .subtract(1, 'day')
+      .subtract(2, 'hour')
+      .subtract(15, 'minute')
+      .toISOString()
+    const timeMax = today
+      .clone()
+      .add(2, 'day')
+      .add(2, 'hour')
+      .add(15, 'minute')
+      .toISOString()
 
+    // debugging statements for time:
+    // console.log('now:', now.format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('today:', today.format('MM-DD HH:mm')) // DEBUGGING
     // console.log('dayRange[0]:', dayRange[0].format('MM-DD HH:mm')) // DEBUGGING
     // console.log('dayRange[1]:', dayRange[1].format('MM-DD HH:mm')) // DEBUGGING
     // console.log('workRange[0]:', workRange[0].format('MM-DD HH:mm')) // DEBUGGING
     // console.log('workRange[1]:', workRange[1].format('MM-DD HH:mm')) // DEBUGGING
+    // console.log('timeMin:', timeMin) // DEBUGGING
+    // console.log('timeMax:', timeMax) // DEBUGGING
 
-    const eventsByTypeForToday = await getEventsByTypeForToday(now)
+    const calendars = await fetchAllCalendars()
+    const calendarIds = calendars
+      .filter((calendar) => calendar.id !== userData.calendarId)
+      .map((calendar) => calendar.id) // excluding the Algo calendar
+    const eventsByTypeForToday = await getEventsByTypeForToday(
+      timeMin,
+      timeMax,
+      calendarIds,
+    )
     const timeRangesForDay = await getTimeRangesForDay(
       eventsByTypeForToday.timeBlocked,
       dayRange[0],
@@ -83,16 +150,13 @@ export const scheduleToday = async (userId) => {
     printBlocks(blocks.work, 'work') // DEBUGGING
     printBlocks(blocks.personal, 'personal') // DEBUGGING
 
-    const blocksOfChunksWithRanking = {
+    const blocksOfChunksWithRankingAndTaskId = {
       work: rankBlocksOfChunks(blocks.work, userData.rankingPreferences),
       personal: rankBlocksOfChunks(
         blocks.personal,
         userData.rankingPreferences,
       ),
     }
-
-    // console.log('blocksOfChunksWithRanking', blocksOfChunksWithRanking) // DEBUGGING
-
     //*** GETTING AVAILABLE TIME RANGES END ***//
 
     //*** FIND TIME BLOCKS FOR USER'S TASKS START ***/
@@ -100,35 +164,224 @@ export const scheduleToday = async (userId) => {
     const projects = await getAllUserProjects(userId)
     const tasksNotPassedDeadline = filterTaskNotPassedDeadline(
       tasks.nonCompleted,
-      now,
+      today,
     )
-    const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, now)
-
-    console.log('formattedTasks:', formattedTasks) // DEBUGGING
-
+    const taskMap = getTaskMap(tasksNotPassedDeadline)
+    const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, today)
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
-    const t1 = new Date() // DEBUGGING
     assignTimeBlocks(
-      blocksOfChunksWithRanking.work,
+      blocksOfChunksWithRankingAndTaskId.work,
       formattedTasks.work,
-      PRIORITY_RANGE,
-      TIME_LENGTH_RANGE,
     )
     assignTimeBlocks(
-      blocksOfChunksWithRanking.personal,
+      blocksOfChunksWithRankingAndTaskId.personal,
       formattedTasks.personal,
-      PRIORITY_RANGE,
-      TIME_LENGTH_RANGE,
     )
-    const t2 = new Date() // DEBUGGING
-    console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
+
+    //*** TIME BLOCK FORMATTING START ***/
+    const timeBlocks = {
+      work: groupChunksByTaskId(blocksOfChunksWithRankingAndTaskId.work),
+      personal: groupChunksByTaskId(
+        blocksOfChunksWithRankingAndTaskId.personal,
+      ),
+    }
+    const formattedTimeBlocks = [
+      ...formatTimeBlocks(timeBlocks.work, true),
+      ...formatTimeBlocks(timeBlocks.personal, false),
+    ]
+    const sortedTimeBlocks = getTimeBlocksSorted(formattedTimeBlocks)
+    const timeBlocksWithTaskInfo = getTimeBlocksWithTaskInfo(
+      sortedTimeBlocks,
+      taskMap,
+    )
+
+    console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
+    //*** TIME BLOCK FORMATTING END ***/
+
+    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
+    if (userData.calendarId === null) {
+      const result = await insertCalendar('Algo')
+      await updateUserInfo(userId, { calendarId: result.id })
+    } else {
+      const eventsInAlgoCalendar = await getEventsByTypeForToday(
+        timeMin,
+        timeMax,
+        [userData.calendarId],
+      )
+
+      const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
+        eventsInAlgoCalendar.timeBlocked,
+        dayRange[0],
+        dayRange[1],
+      )
+
+      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
+      console.log(
+        'eventsInAlgoCalendarWithinDayRange:',
+        eventsInAlgoCalendarWithinDayRange,
+      ) // DEBUGGING
+    }
+    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {
     console.log(error)
-    return { checklist: [], failed: true }
   }
+}
+
+/***
+ * requirements:
+ * tasks: task[] (from firestore)
+ * ***/
+const getEventsInRange = (events, start, end) => {
+  const eventsInBetween = []
+  const eventsAtStartBuffer = []
+  const eventsAtEndBuffer = []
+  for (const event of events) {
+    const eventStart = moment(event.start.dateTime)
+    const eventEnd = moment(event.end.dateTime)
+    const validStart = eventStart.isBetween(start, end)
+    const validEnd = eventEnd.isBetween(start, end)
+    if (validStart && validEnd) {
+      eventsInBetween.push(event)
+    } else if (validStart) {
+      eventsAtEndBuffer.push(event)
+    } else if (validEnd) {
+      eventsAtStartBuffer.push(event)
+    }
+  }
+  return {
+    between: eventsInBetween,
+    startBuffer: eventsAtStartBuffer,
+    endBuffer: eventsAtEndBuffer,
+  }
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId, isWork }[]
+ * taskMap: { taskId: task (firestore task item) }
+ * ***/
+const getTimeBlocksWithTaskInfo = (timeBlocks, taskMap) => {
+  return timeBlocks.map((timeBlock) => {
+    const taskId = timeBlock.taskId
+    const taskInfo = taskMap[taskId]
+    return {
+      ...timeBlock,
+      name: taskInfo.name,
+      description: taskInfo.description,
+    }
+  })
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId }[]
+ * ***/
+const formatTimeBlocks = (timeBlocks, isWork) => {
+  const formattedTimeBlocks = []
+  for (const timeBlock of timeBlocks) {
+    const formattedTimeBlock = {
+      ...timeBlock,
+      isWork: isWork,
+    }
+    formattedTimeBlocks.push(formattedTimeBlock)
+  }
+  return formattedTimeBlocks
+}
+
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId, isWork }[]
+ * ***/
+const getTimeBlocksSorted = (timeBlocks) => {
+  const timeBlocksSorted = timeBlocks.sort((a, b) =>
+    a.start.isAfter(b.start) ? 1 : a.start.isBefore(b.start) ? -1 : 0,
+  )
+  return timeBlocksSorted
+}
+
+/***
+ * requirements:
+ * blocks: { start, end, preference, taskId }[][] (taskId is firestore item id or null)
+ * ***/
+const groupChunksByTaskId = (blocks) => {
+  const timeBlocksWithTaskId = []
+  let curTaskId = null
+  let startIdxI = null
+  let startIdxJ = null
+  let endIdxI = null
+  let endIdxJ = null
+  for (let i = 0; i < blocks.length; i++) {
+    for (let j = 0; j < blocks[i].length; j++) {
+      if (blocks[i][j].taskId === null) continue
+      if (curTaskId === null) {
+        curTaskId = blocks[i][j].taskId
+        startIdxI = i
+        startIdxJ = j
+      } else if (curTaskId !== blocks[i][j].taskId) {
+        if (
+          timeBlocksWithTaskId.length >= 1 &&
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].taskId ===
+            curTaskId &&
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end.isSame(
+            blocks[startIdxI][startIdxJ].start,
+          )
+        ) {
+          timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end =
+            blocks[endIdxI][endIdxJ].end
+        } else {
+          timeBlocksWithTaskId.push({
+            taskId: curTaskId,
+            start: blocks[startIdxI][startIdxJ].start,
+            end: blocks[endIdxI][endIdxJ].end,
+            preference: blocks[startIdxI][startIdxJ].preference,
+          })
+        }
+        curTaskId = blocks[i][j].taskId
+        startIdxI = i
+        startIdxJ = j
+      }
+      // if current chunk has a task id, update the end index
+      endIdxI = i
+      endIdxJ = j
+    }
+    if (curTaskId !== null) {
+      if (
+        timeBlocksWithTaskId.length >= 1 &&
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].taskId ===
+          curTaskId &&
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end.isSame(
+          blocks[startIdxI][startIdxJ].start,
+        )
+      ) {
+        timeBlocksWithTaskId[timeBlocksWithTaskId.length - 1].end =
+          blocks[endIdxI][endIdxJ].end
+      } else {
+        timeBlocksWithTaskId.push({
+          taskId: curTaskId,
+          start: blocks[startIdxI][startIdxJ].start,
+          end: blocks[endIdxI][endIdxJ].end,
+          preference: blocks[startIdxI][startIdxJ].preference,
+        })
+      }
+      curTaskId = null
+    }
+  }
+  return timeBlocksWithTaskId
+}
+
+/***
+ * requirements:
+ * tasks: task[] (from firestore)
+ * ***/
+const getTaskMap = (tasks) => {
+  const taskMap = {}
+  for (const task of tasks) {
+    taskMap[task.taskId] = task
+  }
+  return taskMap
 }
 
 const normalize = (val, range, flip) => {
@@ -189,20 +442,45 @@ const normalizeDeadline = (deadline) => {
 
 /***
  * requirements:
- * blocks: { start, end, preference }[][]
- * tasks: { priority, deadline, timeLength }[]
+ * params and weights have the same property names and all values are numbers
  * ***/
-const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
+const calculateRelativePriority = (params, weights) => {
+  let relativePriority = 0
+  for (const key in params) {
+    relativePriority += params[key] * weights[key]
+  }
+  return normalize(relativePriority, RELATIVE_PRIORITY_RANGE, false)
+}
+
+/***
+ * requirements:
+ * blocks: { start, end, preference, taskId }[][] (taskId is null)
+ * tasks: { priority, deadline, timeLength, preference, taskId }[]
+ * Note:
+ * mutates the blocks array (sets the taskId property in each chunk)
+ * ***/
+const assignTimeBlocks = (blocks, tasks) => {
   // iterate over blocks
   for (let i = 0; i < blocks.length; i++) {
-    // for (let i = 0; i < 1; i++) {
-    // DEBUGGING
+    let selectedTaskIdx = null
     // iterate over chunks
     for (let j = 0; j < blocks[i].length; j++) {
-      // for (let j = 0; j < 1; j++) {
-      // DEBUGGING
+      if (selectedTaskIdx !== null) {
+        if (tasks[selectedTaskIdx].timeLength === 0) {
+          selectedTaskIdx = null
+        } else {
+          tasks[selectedTaskIdx].timeLength--
+          blocks[i][j].taskId = tasks[selectedTaskIdx].taskId
+          continue
+        }
+      }
+      let maxRealtivePriority = -1
+      let maxTaskIdx = null
       // iterate over tasks
       for (let k = 0; k < tasks.length; k++) {
+        // current task fully allocated
+        if (tasks[k].timeLength === 0) continue
+
         // calculate the relative priority of the task
         const diffTimeLength = Math.abs(
           tasks[k].timeLength - (blocks[i].length - j),
@@ -211,24 +489,35 @@ const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
           (tasks[k].preference === blocks[i][j].preference) === true ? 1 : 0
 
         const normalizedParams = {
-          priority: normalize(tasks[k].priority, priorityRange, false),
+          priority: normalize(tasks[k].priority, PRIORITY_RANGE, false),
           deadline: normalizeDeadline(tasks[k].deadline),
           timeLength: normalize(
             Math.log2(tasks[k].timeLength),
-            timeLengthRange,
+            TIME_LENGTH_RANGE,
             true,
           ), // scaled by log2
           diffTimeLength: normalize(
             Math.log2(diffTimeLength + 1),
-            timeLengthRange,
+            TIME_LENGTH_RANGE,
             true,
           ), // scaled by log2
           isPreference: isPreference,
         }
 
-        console.log('task data:', tasks[k]) // DEBUGGING
-        console.log('normalizedParams:', normalizedParams) // DEBUGGING
+        const relativePriority = calculateRelativePriority(
+          normalizedParams,
+          WEIGHTS,
+        )
+        if (relativePriority > maxRealtivePriority) {
+          maxRealtivePriority = relativePriority
+          maxTaskIdx = k
+        }
       }
+      // if no task was selected for max relative priority, then the assignment is done
+      if (maxTaskIdx === null) return
+      tasks[maxTaskIdx].timeLength--
+      blocks[i][j].taskId = tasks[maxTaskIdx].taskId
+      selectedTaskIdx = maxTaskIdx
     }
   }
 }
@@ -236,13 +525,13 @@ const assignTimeBlocks = (blocks, tasks, priorityRange, timeLengthRange) => {
 /***
  * requirements:
  * tasks: task[] (from firestore)
- * now: moment object
+ * today: moment object
  * ***/
-const filterTaskNotPassedDeadline = (tasks, now) => {
+const filterTaskNotPassedDeadline = (tasks, today) => {
   return tasks.filter((task) => {
     if (task.date === '') return true
     const deadline = moment(task.date, 'DD-MM-YYYY')
-    return deadline.diff(now, 'days') >= 0
+    return deadline.diff(today, 'days') >= 0
   })
 }
 
@@ -251,7 +540,7 @@ const filterTaskNotPassedDeadline = (tasks, now) => {
  * tasks: task[] (from firestore)
  * projects: project[] (from firestore)
  * ***/
-const formatTasks = (tasks, projects, now) => {
+const formatTasks = (tasks, projects, today) => {
   const projectIdToIsWork = {}
   for (const project of projects) {
     projectIdToIsWork[project.projectId] = project.projectIsWork
@@ -264,7 +553,7 @@ const formatTasks = (tasks, projects, now) => {
       task.date !== '' ? moment(task.date, 'DD-MM-YYYY') : null
     const deadline =
       formattedDate !== null
-        ? Math.min(formattedDate.diff(now, 'days'), 14)
+        ? Math.min(formattedDate.diff(today, 'days'), 14)
         : null
     const preference = calculateTaskPreference(
       task.priority,
@@ -276,6 +565,7 @@ const formatTasks = (tasks, projects, now) => {
       deadline: deadline,
       timeLength: formattedTimeLength,
       preference: preference,
+      taskId: task.taskId,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)
@@ -301,6 +591,7 @@ const rankBlocksOfChunks = (blocks, rankingPreferences) => {
         start: chunk.start,
         end: chunk.end,
         preference: preferences[chunk.start.hour()],
+        taskId: null,
       }
     }),
   )
@@ -431,22 +722,7 @@ const divideTimeRangesIntoChunkRanges = (timeRanges) => {
   return chunkRanges
 }
 
-const getEventsByTypeForToday = async (now) => {
-  const today = now.startOf('day')
-  const timeMin = today
-    .clone()
-    .subtract(1, 'day')
-    .subtract(2, 'hour')
-    .subtract(15, 'minute')
-    .toISOString()
-  const timeMax = today
-    .clone()
-    .add(2, 'day')
-    .add(2, 'hour')
-    .add(15, 'minute')
-    .toISOString()
-  const calendars = await fetchAllCalendars()
-  const calendarIds = calendars.map((calendar) => calendar.id)
+const getEventsByTypeForToday = async (timeMin, timeMax, calendarIds) => {
   const events = await fetchAllEvents(timeMin, timeMax, calendarIds)
   const eventsByType = { timeBlocked: [], allDay: [] }
   for (const event of events) {
