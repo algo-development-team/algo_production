@@ -32,10 +32,21 @@ const TOTAL_WEIGHTS_SUM = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
 const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
 
 /***
- * Note: schedules the entire day, no matter what the current time is
- * returns checklist for the day
+ * Description:
+ * - Allocates time blocks into Google Calendar
+ * - Returns checklist for the day
+ * Note:
+ * - schedules the entire day, no matter what the current time is
  * ***/
 export const scheduleToday = async (userId) => {
+  const timeBlocksWithFailureInfo = getTimeBlocksForToday(userId)
+  if (timeBlocksWithFailureInfo.failed) {
+    return { checklist: [], failed: true }
+  }
+  // WRITE CODE HERE
+}
+
+const getTimeBlocksForToday = async (userId) => {
   try {
     //*** GETTING AVAILABLE TIME RANGES START ***//
     const userInfo = await getUserInfo(userId)
@@ -162,16 +173,18 @@ export const scheduleToday = async (userId) => {
 
     console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
     //*** TIME BLOCK FORMATTING END ***/
+
+    return { timeBlocks: timeBlocksWithTaskInfo, failed: false }
   } catch (error) {
     console.log(error)
-    return { checklist: [], failed: true }
+    return { timeBlocks: [], failed: true }
   }
 }
 
 /***
  * requirements:
  * timeBlocks: { start, end, preference, taskId, isWork }[]
- * taskMap: { taskId: task (firebase task object) }
+ * taskMap: { taskId: task (firestore task item) }
  * ***/
 const getTimeBlocksWithTaskInfo = (timeBlocks, taskMap) => {
   return timeBlocks.map((timeBlock) => {
@@ -214,7 +227,7 @@ const getTimeBlocksSorted = (timeBlocks) => {
 
 /***
  * requirements:
- * blocks: { start, end, preference, taskId }[][] (taskId is firebase item id or null)
+ * blocks: { start, end, preference, taskId }[][] (taskId is firestore item id or null)
  * ***/
 const groupChunksByTaskId = (blocks) => {
   const timeBlocksWithTaskId = []
