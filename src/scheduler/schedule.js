@@ -1,4 +1,5 @@
 import { fetchAllCalendars, insertCalendar } from 'gapiHandlers'
+import { updateEvent } from 'googleCalendar'
 import { fetchAllEvents } from './events'
 import {
   getTimesWithInfo,
@@ -211,11 +212,49 @@ export const scheduleToday = async (userId) => {
         [userData.calendarId],
       )
 
+      const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
+        eventsInAlgoCalendar.timeBlocked,
+        dayRange[0],
+        dayRange[1],
+      )
+
       console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
+      console.log(
+        'eventsInAlgoCalendarWithinDayRange:',
+        eventsInAlgoCalendarWithinDayRange,
+      ) // DEBUGGING
     }
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {
     console.log(error)
+  }
+}
+
+/***
+ * requirements:
+ * tasks: task[] (from firestore)
+ * ***/
+const getEventsInRange = (events, start, end) => {
+  const eventsInBetween = []
+  const eventsAtStartBuffer = []
+  const eventsAtEndBuffer = []
+  for (const event of events) {
+    const eventStart = moment(event.start.dateTime)
+    const eventEnd = moment(event.end.dateTime)
+    const validStart = eventStart.isBetween(start, end)
+    const validEnd = eventEnd.isBetween(start, end)
+    if (validStart && validEnd) {
+      eventsInBetween.push(event)
+    } else if (validStart) {
+      eventsAtEndBuffer.push(event)
+    } else if (validEnd) {
+      eventsAtStartBuffer.push(event)
+    }
+  }
+  return {
+    between: eventsInBetween,
+    startBuffer: eventsAtStartBuffer,
+    endBuffer: eventsAtEndBuffer,
   }
 }
 
@@ -486,7 +525,7 @@ const assignTimeBlocks = (blocks, tasks) => {
 /***
  * requirements:
  * tasks: task[] (from firestore)
- * now: moment object
+ * today: moment object
  * ***/
 const filterTaskNotPassedDeadline = (tasks, today) => {
   return tasks.filter((task) => {

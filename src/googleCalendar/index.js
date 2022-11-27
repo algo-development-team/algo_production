@@ -3,7 +3,11 @@
  * Handles input and output
  * ***/
 
-import { getCalendarEvents, insertCalenderEvent } from 'gapiHandlers'
+import {
+  getCalendarEvents,
+  insertCalenderEvent,
+  updateCalenderEvent,
+} from 'gapiHandlers'
 
 /***
  * requirements:
@@ -32,7 +36,7 @@ export const fetchEvents = async (timeMin, timeMax, calendarId = 'primary') => {
  * dateTime format example: '2015-05-28T09:00:00-07:00'
  * ***/
 export const insertEvent = async (
-  calendarId = 'primary',
+  calendarId,
   startDateTime,
   endDateTime,
   timeZone,
@@ -54,5 +58,21 @@ export const insertEvent = async (
   }
 
   const item = await insertCalenderEvent(insertOption)
+  return item
+}
+
+/***
+ * requirements:
+ * the passed dateTimes should already be in the correct format
+ * dateTime format example: '2015-05-28T09:00:00-07:00'
+ * ***/
+export const updateEvent = async (calendarId, eventId, updatedEvent) => {
+  const updateOption = {
+    calendarId: calendarId,
+    eventId: eventId,
+    resource: updatedEvent,
+  }
+
+  const item = await updateCalenderEvent(updateOption)
   return item
 }

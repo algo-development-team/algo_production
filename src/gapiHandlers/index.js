@@ -79,6 +79,15 @@ export const insertCalenderEvent = async (insertOption) => {
   }
 }
 
+export const updateCalenderEvent = async (updateOption) => {
+  try {
+    const event = await gapi.client.calendar.events.update(updateOption)
+    return event.result
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export const getUserTimeZone = async () => {
   try {
     const timezone = await gapi.client.calendar.settings.get({
