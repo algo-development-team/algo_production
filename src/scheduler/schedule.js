@@ -202,6 +202,7 @@ export const scheduleToday = async (userId) => {
     //*** TIME BLOCK FORMATTING END ***/
 
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
+    let updatableAlgoCalendarEvents = []
     if (userData.calendarId === null) {
       const result = await insertCalendar('Algo')
       await updateUserInfo(userId, { calendarId: result.id })
@@ -218,11 +219,24 @@ export const scheduleToday = async (userId) => {
         dayRange[1],
       )
 
+      for (const event of eventsInAlgoCalendarWithinDayRange.startBuffer) {
+        event.end.dateTime = dayRange[0].toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      for (const event of eventsInAlgoCalendarWithinDayRange.endBuffer) {
+        event.start.dateTime = dayRange[1].toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
+
       console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
       console.log(
         'eventsInAlgoCalendarWithinDayRange:',
         eventsInAlgoCalendarWithinDayRange,
       ) // DEBUGGING
+      console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
     }
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {

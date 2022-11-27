@@ -61,11 +61,6 @@ export const insertEvent = async (
   return item
 }
 
-/***
- * requirements:
- * the passed dateTimes should already be in the correct format
- * dateTime format example: '2015-05-28T09:00:00-07:00'
- * ***/
 export const updateEvent = async (calendarId, eventId, updatedEvent) => {
   const updateOption = {
     calendarId: calendarId,
