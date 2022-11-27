@@ -113,6 +113,7 @@ export const scheduleToday = async (userId) => {
       tasks.nonCompleted,
       now,
     )
+    const taskMap = getTaskMap(tasksNotPassedDeadline)
     const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, now)
 
     console.log('formattedTasks:', formattedTasks) // DEBUGGING
@@ -127,12 +128,26 @@ export const scheduleToday = async (userId) => {
       formattedTasks.personal,
     )
     const t2 = new Date() // DEBUGGING
+
+    console.log('blocksOfChunksWithRanking:', blocksOfChunksWithRanking) // DEBUGGING
     console.log('time to run assign time blocks:', t2 - t1) // DEBUGGING
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS END ***/
   } catch (error) {
     console.log(error)
     return { checklist: [], failed: true }
   }
+}
+
+/***
+ * requirements:
+ * tasks: task[] (from firestore)
+ * ***/
+const getTaskMap = (tasks) => {
+  const taskMap = {}
+  tasks.forEach((task) => {
+    taskMap[task.id] = task
+  })
+  return taskMap
 }
 
 const normalize = (val, range, flip) => {
@@ -206,18 +221,33 @@ const calculateRelativePriority = (params, weights) => {
 
 /***
  * requirements:
- * blocks: { start, end, preference }[][]
- * tasks: { priority, deadline, timeLength }[]
+ * blocks: { start, end, preference, taskId }[][]
+ * tasks: { priority, deadline, timeLength, preference, taskId }[]
+ * Note:
+ * mutates the blocks array (sets the taskId property in each chunk)
  * ***/
 const assignTimeBlocks = (blocks, tasks) => {
   // iterate over blocks
   for (let i = 0; i < blocks.length; i++) {
+    let selectedTaskIdx = null
     // iterate over chunks
     for (let j = 0; j < blocks[i].length; j++) {
+      if (selectedTaskIdx !== null) {
+        if (tasks[selectedTaskIdx].timeLength === 0) {
+          selectedTaskIdx = null
+        } else {
+          tasks[selectedTaskIdx].timeLength--
+          blocks[i][j].taskId = tasks[selectedTaskIdx].taskId
+          continue
+        }
+      }
       let maxRealtivePriority = -1
       let maxTaskIdx = null
       // iterate over tasks
       for (let k = 0; k < tasks.length; k++) {
+        // current task fully allocated
+        if (tasks[k].timeLength === 0) continue
+
         // calculate the relative priority of the task
         const diffTimeLength = Math.abs(
           tasks[k].timeLength - (blocks[i].length - j),
@@ -250,8 +280,11 @@ const assignTimeBlocks = (blocks, tasks) => {
           maxTaskIdx = k
         }
       }
-      // maxTaskIdx is the index of the task with the highest relative priority
-      // WRITE SOME CODE
+      // if no task was selected for max relative priority, then the assignment is done
+      if (maxTaskIdx === null) return
+      tasks[maxTaskIdx].timeLength--
+      blocks[i][j].taskId = tasks[maxTaskIdx].taskId
+      selectedTaskIdx = maxTaskIdx
     }
   }
 }
@@ -299,6 +332,7 @@ const formatTasks = (tasks, projects, now) => {
       deadline: deadline,
       timeLength: formattedTimeLength,
       preference: preference,
+      taskId: task.taskId,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)
@@ -324,6 +358,7 @@ const rankBlocksOfChunks = (blocks, rankingPreferences) => {
         start: chunk.start,
         end: chunk.end,
         preference: preferences[chunk.start.hour()],
+        taskId: null,
       }
     }),
   )
