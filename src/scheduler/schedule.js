@@ -231,13 +231,12 @@ export const scheduleToday = async (userId) => {
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
 
-      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
       console.log(
         'eventsInAlgoCalendarWithinDayRange:',
         eventsInAlgoCalendarWithinDayRange,
       ) // DEBUGGING
-      console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
     }
+    // UPDATE UPDATABLE ALGO CALENDAR EVENTS, AND DELETE THE REST OR INSERT NEW EVENTS ACCORDINGLY
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {
     console.log(error)
