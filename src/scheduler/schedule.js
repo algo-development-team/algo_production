@@ -236,6 +236,8 @@ export const scheduleToday = async (userId) => {
         [userData.calendarId],
       )
 
+      const yesterdayEndTime = dayRange[1].clone().subtract(1, 'day')
+      const tomorrowStartTime = dayRange[0].clone().add(1, 'day')
       const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
         eventsInAlgoCalendar.timeBlocked,
         dayRange[0],
@@ -243,7 +245,6 @@ export const scheduleToday = async (userId) => {
       )
 
       for (const event of eventsInAlgoCalendarWithinDayRange.startBuffer) {
-        const yesterdayEndTime = dayRange[1].clone().subtract(1, 'day')
         const isPartOfYesterday = moment(event.start.dateTime).isBefore(
           yesterdayEndTime,
         )
@@ -256,7 +257,6 @@ export const scheduleToday = async (userId) => {
       }
 
       for (const event of eventsInAlgoCalendarWithinDayRange.endBuffer) {
-        const tomorrowStartTime = dayRange[0].clone().add(1, 'day')
         const isPartOfTomorrow = moment(event.end.dateTime).isAfter(
           tomorrowStartTime,
         )
