@@ -176,7 +176,6 @@ export const scheduleToday = async (userId) => {
       ...getTaskMap(formattedTasks.work),
       ...getTaskMap(formattedTasks.personal),
     }
-    console.log('taskMap:', taskMap) // DEBUGGING
 
     console.log('formattedTasks:', formattedTasks) // DEBUGGING
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
