@@ -1,5 +1,9 @@
-import { fetchAllCalendars, insertCalendar } from 'gapiHandlers'
-import { updateEvent } from 'googleCalendar'
+import {
+  fetchAllCalendars,
+  insertCalendar,
+  getUserTimeZone,
+} from 'gapiHandlers'
+import { insertEvent, updateEvent, deleteEvent } from 'googleCalendar'
 import { fetchAllEvents } from './events'
 import {
   getTimesWithInfo,
@@ -166,8 +170,14 @@ export const scheduleToday = async (userId) => {
       tasks.nonCompleted,
       today,
     )
-    const taskMap = getTaskMap(tasksNotPassedDeadline)
     const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, today)
+    const taskMap = {
+      ...getTaskMap(formattedTasks.work),
+      ...getTaskMap(formattedTasks.personal),
+    }
+    console.log('taskMap:', taskMap) // DEBUGGING
+
+    console.log('formattedTasks:', formattedTasks) // DEBUGGING
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
@@ -230,16 +240,115 @@ export const scheduleToday = async (userId) => {
       }
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
-
-      console.log(
-        'eventsInAlgoCalendarWithinDayRange:',
-        eventsInAlgoCalendarWithinDayRange,
-      ) // DEBUGGING
     }
     // UPDATE UPDATABLE ALGO CALENDAR EVENTS, AND DELETE THE REST OR INSERT NEW EVENTS ACCORDINGLY
-    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+    console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
+    const userTimeZone = await getUserTimeZone(userId)
+    changeAlgoCalendarSchedule(
+      timeBlocksWithTaskInfo,
+      updatableAlgoCalendarEvents,
+      userData.calendarId,
+      userTimeZone,
+    )
+    // *** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
   } catch (error) {
     console.log(error)
+  }
+}
+
+// def get_color_id(task_type):
+//   if task_type == TaskType.NONE:
+//     return 8
+//   elif task_type == TaskType.URGENT:
+//     return 6
+//   elif task_type == TaskType.DEEP:
+//     return 7
+//   elif task_type == TaskType.SHALLOW:
+//     return 2
+
+// Color ID:
+// 1 blue
+// 2 green
+// 3 purple
+// 4 red
+// 5 yellow
+// 6 orange
+// 7 turquoise
+// 8 grey
+// 9 bold blue
+// 10 bold green
+// 11 bold red
+
+const getColorId = (preference) => {
+  switch (preference) {
+    case 0:
+      return 6 // urgent: orange
+    case 1:
+      return 7 // deep: turquoise
+    case 2:
+      return 2 // shallow: green
+    default:
+      return 9 // default: bold blue
+  }
+}
+
+const changeAlgoCalendarSchedule = async (
+  timeBlocksWithTaskInfo,
+  updatableAlgoCalendarEvents,
+  calendarId,
+  userTimeZone,
+) => {
+  for (
+    let i = 0;
+    i <
+    Math.min(updatableAlgoCalendarEvents.length, timeBlocksWithTaskInfo.length);
+    i++
+  ) {
+    const event = updatableAlgoCalendarEvents[i]
+    const timeBlock = timeBlocksWithTaskInfo[i]
+    event.start.dateTime = timeBlock.start.toISOString()
+    event.start.timeZone = userTimeZone
+    event.end.dateTime = timeBlock.end.toISOString()
+    event.end.timeZone = userTimeZone
+    // UPDATE TIMEZONE
+    event.summary = timeBlock.name
+    event.description = timeBlock.description
+    event.colorId = getColorId(timeBlock.preference)
+    const item = await updateEvent(calendarId, event.id, event)
+
+    console.log('updated item:', item) // DEBUGGING
+  }
+  if (updatableAlgoCalendarEvents.length > timeBlocksWithTaskInfo.length) {
+    for (
+      let i = timeBlocksWithTaskInfo.length;
+      i < updatableAlgoCalendarEvents.length;
+      i++
+    ) {
+      const event = updatableAlgoCalendarEvents[i]
+      const result = await deleteEvent(calendarId, event.id)
+
+      console.log('deleted item?:', result) // DEBUGGING
+    }
+  }
+  if (updatableAlgoCalendarEvents.length < timeBlocksWithTaskInfo.length) {
+    for (
+      let i = updatableAlgoCalendarEvents.length;
+      i < timeBlocksWithTaskInfo.length;
+      i++
+    ) {
+      const timeBlock = timeBlocksWithTaskInfo[i]
+      const result = await insertEvent(
+        calendarId,
+        timeBlock.start.toISOString(),
+        timeBlock.end.toISOString(),
+        userTimeZone,
+        timeBlock.name,
+        timeBlock.description,
+        getColorId(timeBlock.preference),
+      )
+
+      console.log('inserted item:', result) // DEBUGGING
+    }
   }
 }
 
@@ -274,16 +383,20 @@ const getEventsInRange = (events, start, end) => {
 /***
  * requirements:
  * timeBlocks: { start, end, preference, taskId, isWork }[]
- * taskMap: { taskId: task (firestore task item) }
+ * taskMap: { taskId: { priority, deadline, timeLength, preference, taskId, name, description } }
  * ***/
 const getTimeBlocksWithTaskInfo = (timeBlocks, taskMap) => {
   return timeBlocks.map((timeBlock) => {
     const taskId = timeBlock.taskId
     const taskInfo = taskMap[taskId]
     return {
-      ...timeBlock,
+      taskId: taskId,
+      start: timeBlock.start,
+      end: timeBlock.end,
+      isWork: timeBlock.isWork,
       name: taskInfo.name,
       description: taskInfo.description,
+      preference: taskInfo.preference,
     }
   })
 }
@@ -387,7 +500,7 @@ const groupChunksByTaskId = (blocks) => {
 
 /***
  * requirements:
- * tasks: task[] (from firestore)
+ * tasks: { priority, deadline, timeLength, preference, taskId, name, description }[]
  * ***/
 const getTaskMap = (tasks) => {
   const taskMap = {}
@@ -468,7 +581,7 @@ const calculateRelativePriority = (params, weights) => {
 /***
  * requirements:
  * blocks: { start, end, preference, taskId }[][] (taskId is null)
- * tasks: { priority, deadline, timeLength, preference, taskId }[]
+ * tasks: { priority, deadline, timeLength, preference, taskId, name, description }[]
  * Note:
  * mutates the blocks array (sets the taskId property in each chunk)
  * ***/
@@ -579,6 +692,8 @@ const formatTasks = (tasks, projects, today) => {
       timeLength: formattedTimeLength,
       preference: preference,
       taskId: task.taskId,
+      name: task.name,
+      description: task.description,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)

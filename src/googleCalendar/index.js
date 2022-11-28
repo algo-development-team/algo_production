@@ -7,6 +7,7 @@ import {
   getCalendarEvents,
   insertCalenderEvent,
   updateCalenderEvent,
+  deleteCalenderEvent,
 } from 'gapiHandlers'
 
 /***
@@ -42,6 +43,7 @@ export const insertEvent = async (
   timeZone,
   summary,
   description,
+  colorId,
 ) => {
   const insertOption = {
     calendarId: calendarId,
@@ -55,6 +57,7 @@ export const insertEvent = async (
     },
     summary: summary,
     description: description,
+    colorId: colorId,
   }
 
   const item = await insertCalenderEvent(insertOption)
@@ -70,4 +73,14 @@ export const updateEvent = async (calendarId, eventId, updatedEvent) => {
 
   const item = await updateCalenderEvent(updateOption)
   return item
+}
+
+export const deleteEvent = async (calendarId, eventId) => {
+  const deleteOption = {
+    calendarId: calendarId,
+    eventId: eventId,
+  }
+
+  const result = await deleteCalenderEvent(deleteOption)
+  return result
 }
