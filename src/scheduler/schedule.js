@@ -243,13 +243,29 @@ export const scheduleToday = async (userId) => {
       )
 
       for (const event of eventsInAlgoCalendarWithinDayRange.startBuffer) {
-        event.end.dateTime = dayRange[0].toISOString()
-        await updateEvent(userData.calendarId, event.id, event)
+        const yesterdayEndTime = dayRange[1].clone().subtract(1, 'day')
+        const isPartOfYesterday = moment(event.start.dateTime).isBefore(
+          yesterdayEndTime,
+        )
+        if (isPartOfYesterday) {
+          event.end.dateTime = yesterdayEndTime.toISOString()
+          await updateEvent(userData.calendarId, event.id, event)
+        } else {
+          await deleteEvent(userData.calendarId, event.id)
+        }
       }
 
       for (const event of eventsInAlgoCalendarWithinDayRange.endBuffer) {
-        event.start.dateTime = dayRange[1].toISOString()
-        await updateEvent(userData.calendarId, event.id, event)
+        const tomorrowStartTime = dayRange[0].clone().add(1, 'day')
+        const isPartOfTomorrow = moment(event.end.dateTime).isAfter(
+          tomorrowStartTime,
+        )
+        if (isPartOfTomorrow) {
+          event.start.dateTime = tomorrowStartTime.toISOString()
+          await updateEvent(userData.calendarId, event.id, event)
+        } else {
+          await deleteEvent(userData.calendarId, event.id)
+        }
       }
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
