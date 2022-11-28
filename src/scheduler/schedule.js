@@ -223,6 +223,8 @@ export const scheduleToday = async (userId) => {
         [userData.calendarId],
       )
 
+      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
+
       const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
         eventsInAlgoCalendar.timeBlocked,
         dayRange[0],
@@ -240,9 +242,15 @@ export const scheduleToday = async (userId) => {
       }
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
+
+      console.log(
+        'eventsInAlgoCalendarWithinDayRange:',
+        eventsInAlgoCalendarWithinDayRange,
+      ) // DEBUGGING
     }
-    // UPDATE UPDATABLE ALGO CALENDAR EVENTS, AND DELETE THE REST OR INSERT NEW EVENTS ACCORDINGLY
+
     console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
+
     const userTimeZone = await getUserTimeZone(userId)
     changeAlgoCalendarSchedule(
       timeBlocksWithTaskInfo,
@@ -255,16 +263,6 @@ export const scheduleToday = async (userId) => {
     console.log(error)
   }
 }
-
-// def get_color_id(task_type):
-//   if task_type == TaskType.NONE:
-//     return 8
-//   elif task_type == TaskType.URGENT:
-//     return 6
-//   elif task_type == TaskType.DEEP:
-//     return 7
-//   elif task_type == TaskType.SHALLOW:
-//     return 2
 
 // Color ID:
 // 1 blue
@@ -288,7 +286,7 @@ const getColorId = (preference) => {
     case 2:
       return 2 // shallow: green
     default:
-      return 9 // default: bold blue
+      return 7 // default: turquoise
   }
 }
 
@@ -316,7 +314,7 @@ const changeAlgoCalendarSchedule = async (
     event.colorId = getColorId(timeBlock.preference)
     const item = await updateEvent(calendarId, event.id, event)
 
-    console.log('updated item:', item) // DEBUGGING
+    console.log('updated item:', item.id) // DEBUGGING
   }
   if (updatableAlgoCalendarEvents.length > timeBlocksWithTaskInfo.length) {
     for (
@@ -327,7 +325,7 @@ const changeAlgoCalendarSchedule = async (
       const event = updatableAlgoCalendarEvents[i]
       const result = await deleteEvent(calendarId, event.id)
 
-      console.log('deleted item?:', result) // DEBUGGING
+      console.log('is item deleted?:', result) // DEBUGGING
     }
   }
   if (updatableAlgoCalendarEvents.length < timeBlocksWithTaskInfo.length) {
@@ -337,7 +335,7 @@ const changeAlgoCalendarSchedule = async (
       i++
     ) {
       const timeBlock = timeBlocksWithTaskInfo[i]
-      const result = await insertEvent(
+      const item = await insertEvent(
         calendarId,
         timeBlock.start.toISOString(),
         timeBlock.end.toISOString(),
@@ -347,7 +345,7 @@ const changeAlgoCalendarSchedule = async (
         getColorId(timeBlock.preference),
       )
 
-      console.log('inserted item:', result) // DEBUGGING
+      console.log('inserted item:', item.id) // DEBUGGING
     }
   }
 }
@@ -363,8 +361,9 @@ const getEventsInRange = (events, start, end) => {
   for (const event of events) {
     const eventStart = moment(event.start.dateTime)
     const eventEnd = moment(event.end.dateTime)
-    const validStart = eventStart.isBetween(start, end)
-    const validEnd = eventEnd.isBetween(start, end)
+    const validStart =
+      eventStart.isBetween(start, end) || eventStart.isSame(start)
+    const validEnd = eventEnd.isBetween(start, end) || eventEnd.isSame(end)
     if (validStart && validEnd) {
       eventsInBetween.push(event)
     } else if (validStart) {
