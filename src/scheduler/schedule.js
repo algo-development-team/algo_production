@@ -44,6 +44,7 @@ const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
  * ***/
 export const scheduleToday = async (userId) => {
   try {
+    const t1 = new Date()
     //*** GETTING AVAILABLE TIME RANGES START ***//
     const userInfo = await getUserInfo(userId)
     if (userInfo.empty === true || userInfo.failed === true) {
@@ -252,6 +253,16 @@ export const scheduleToday = async (userId) => {
       userTimeZone,
     )
     // *** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+
+    // *** STORE ALLOCATED TASKS IN USER CHECKLIST START ***/
+    const checklist = timeBlocksWithTaskInfo.map(
+      (timeBlock) => timeBlock.taskId,
+    )
+    const checklistWithoutDuplicates = [...new Set(checklist)]
+    await updateUserInfo(userId, { checklist: checklistWithoutDuplicates })
+    // *** STORE ALLOCATED TASKS IN USER CHECKLIST END ***/
+    const t2 = new Date()
+    console.log("Run time of today's scheduler (ms):", t2 - t1) // DEBUGGING
   } catch (error) {
     console.log(error)
   }
@@ -284,19 +295,18 @@ const getColorId = (preference) => {
 }
 
 const changeAlgoCalendarSchedule = async (
-  timeBlocksWithTaskInfo,
+  timeBlocks,
   updatableAlgoCalendarEvents,
   calendarId,
   userTimeZone,
 ) => {
   for (
     let i = 0;
-    i <
-    Math.min(updatableAlgoCalendarEvents.length, timeBlocksWithTaskInfo.length);
+    i < Math.min(updatableAlgoCalendarEvents.length, timeBlocks.length);
     i++
   ) {
     const event = updatableAlgoCalendarEvents[i]
-    const timeBlock = timeBlocksWithTaskInfo[i]
+    const timeBlock = timeBlocks[i]
     event.start.dateTime = timeBlock.start.toISOString()
     event.start.timeZone = userTimeZone
     event.end.dateTime = timeBlock.end.toISOString()
@@ -309,9 +319,9 @@ const changeAlgoCalendarSchedule = async (
 
     console.log('updated item:', item.id) // DEBUGGING
   }
-  if (updatableAlgoCalendarEvents.length > timeBlocksWithTaskInfo.length) {
+  if (updatableAlgoCalendarEvents.length > timeBlocks.length) {
     for (
-      let i = timeBlocksWithTaskInfo.length;
+      let i = timeBlocks.length;
       i < updatableAlgoCalendarEvents.length;
       i++
     ) {
@@ -321,13 +331,13 @@ const changeAlgoCalendarSchedule = async (
       console.log('is item deleted?:', result) // DEBUGGING
     }
   }
-  if (updatableAlgoCalendarEvents.length < timeBlocksWithTaskInfo.length) {
+  if (updatableAlgoCalendarEvents.length < timeBlocks.length) {
     for (
       let i = updatableAlgoCalendarEvents.length;
-      i < timeBlocksWithTaskInfo.length;
+      i < timeBlocks.length;
       i++
     ) {
-      const timeBlock = timeBlocksWithTaskInfo[i]
+      const timeBlock = timeBlocks[i]
       const item = await insertEvent(
         calendarId,
         timeBlock.start.toISOString(),
