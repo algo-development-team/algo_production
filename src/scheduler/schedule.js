@@ -264,7 +264,14 @@ export const scheduleToday = async (userId) => {
       filterExistingTimeBlocksAndEvents(
         timeBlocksWithTaskInfo,
         updatableAlgoCalendarEvents,
+        userTimeZone,
       )
+
+    console.log('filteredTimeBlocks:', filteredTimeBlocks) // DEBUGGING
+    console.log(
+      'filteredUpdatableAlgoCalendarEvents:',
+      filteredUpdatableAlgoCalendarEvents,
+    ) // DEBUGGING
 
     changeAlgoCalendarSchedule(
       filteredTimeBlocks,
@@ -292,8 +299,63 @@ const areTwoArraysEqual = (arr1, arr2) => {
   return true
 }
 
-const filterExistingTimeBlocksAndEvents = (timeBlocks, events) => {
-  return [timeBlocks, events]
+const filterExistingTimeBlocksAndEvents = (
+  timeBlocks,
+  events,
+  userTimeZone,
+) => {
+  const filteredTimeBlocks = []
+  const filteredEvents = []
+  let timeBlockIdx = 0
+  let eventIdx = 0
+  while (timeBlockIdx < timeBlocks.length && eventIdx < events.length) {
+    const timeBlock = timeBlocks[timeBlockIdx]
+    const event = events[eventIdx]
+    const timeBlockStartTime = timeBlock.start
+    const eventStartTime = moment(event.start.dateTime)
+    if (timeBlockStartTime.isSame(eventStartTime)) {
+      const isSameStartTimeZone = userTimeZone === event.start.timeZone
+      const isSameEndTime = timeBlock.end.isSame(moment(event.end.dateTime))
+      const isSameEndTimeZone = userTimeZone === event.end.timeZone
+      const isSameSummary = timeBlock.name === event.summary
+      const isSameDescription =
+        timeBlock.description === event.description ||
+        (timeBlock.description === '' && event.description === undefined)
+      const isSameColorId =
+        getColorId(timeBlock.preference) === parseInt(event.colorId)
+      if (
+        isSameStartTimeZone &&
+        isSameEndTime &&
+        isSameEndTimeZone &&
+        isSameSummary &&
+        isSameDescription &&
+        isSameColorId
+      ) {
+        timeBlockIdx++
+        eventIdx++
+      } else {
+        // ELSE MOVE ON TO THE NEXT TIME BLOCK
+        filteredTimeBlocks.push(timeBlock)
+        timeBlockIdx++
+      }
+    } else if (timeBlockStartTime.isBefore(eventStartTime)) {
+      filteredTimeBlocks.push(timeBlock)
+      timeBlockIdx++
+    } else {
+      filteredEvents.push(event)
+      eventIdx++
+    }
+  }
+  while (timeBlockIdx < timeBlocks.length) {
+    filteredTimeBlocks.push(timeBlocks[timeBlockIdx])
+    timeBlockIdx++
+  }
+  while (eventIdx < events.length) {
+    filteredEvents.push(events[eventIdx])
+    eventIdx++
+  }
+
+  return [filteredTimeBlocks, filteredEvents]
 }
 
 // Color ID:
@@ -335,7 +397,6 @@ const changeAlgoCalendarSchedule = async (
     event.start.timeZone = userTimeZone
     event.end.dateTime = timeBlock.end.toISOString()
     event.end.timeZone = userTimeZone
-    // UPDATE TIMEZONE
     event.summary = timeBlock.name
     event.description = timeBlock.description
     event.colorId = getColorId(timeBlock.preference)
