@@ -223,8 +223,6 @@ export const scheduleToday = async (userId) => {
         [userData.calendarId],
       )
 
-      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
-
       const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
         eventsInAlgoCalendar.timeBlocked,
         dayRange[0],
@@ -242,11 +240,6 @@ export const scheduleToday = async (userId) => {
       }
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
-
-      console.log(
-        'eventsInAlgoCalendarWithinDayRange:',
-        eventsInAlgoCalendarWithinDayRange,
-      ) // DEBUGGING
     }
 
     console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
