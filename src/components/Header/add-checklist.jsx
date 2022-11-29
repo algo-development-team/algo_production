@@ -8,7 +8,7 @@ import { useParams } from 'react-router-dom'
 export const AddChecklist = () => {
   const { defaultGroup } = useParams()
   const { setShowDialog } = useOverlayContextValue()
-  const { currentUser } = useAuth()
+  const { currentUser, isClientLoaded } = useAuth()
 
   return (
     <div>
@@ -43,8 +43,9 @@ export const AddChecklist = () => {
           borderWidth: '1px',
           backgroundColor: '#555',
         }}
+        disabled={!isClientLoaded}
       >
-        Generate Schedule
+        {isClientLoaded ? 'Generate Schedule' : 'Loading...'}
       </button>
     </div>
   )
