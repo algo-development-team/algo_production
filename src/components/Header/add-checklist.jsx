@@ -1,9 +1,12 @@
+import { useState, useEffect } from 'react'
 import { useOverlayContextValue } from 'context'
 import { checkSignInStatus } from 'gapiHandlers'
 import { scheduleToday } from 'scheduler/schedule'
 import { useAuth } from 'hooks'
+import { useParams } from 'react-router-dom'
 
 export const AddChecklist = () => {
+  const { defaultGroup } = useParams()
   const { setShowDialog } = useOverlayContextValue()
   const { currentUser } = useAuth()
 
@@ -24,7 +27,8 @@ export const AddChecklist = () => {
               alert('Please try again soon.')
             } else {
               // Calling Scheduler Algorithm for Today
-              scheduleToday(currentUser.id)
+              const isPageChecklist = defaultGroup === 'Checklist'
+              scheduleToday(currentUser.id, isPageChecklist)
             }
           } else if (signInStatus === 2) {
             console.log(

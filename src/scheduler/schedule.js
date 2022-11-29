@@ -42,7 +42,7 @@ const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
  * note:
  * - schedules the entire day, no matter what the current time is
  * ***/
-export const scheduleToday = async (userId) => {
+export const scheduleToday = async (userId, isPageChecklist) => {
   try {
     const t1 = new Date()
     //*** GETTING AVAILABLE TIME RANGES START ***//
@@ -301,6 +301,10 @@ export const scheduleToday = async (userId) => {
     const t2 = new Date()
 
     console.log("Run time of today's scheduler (ms):", t2 - t1) // DEBUGGING
+
+    if (isPageChecklist) {
+      console.log('should reload checklist...') // DEBUGGING
+    }
   } catch (error) {
     console.log(error)
   }
