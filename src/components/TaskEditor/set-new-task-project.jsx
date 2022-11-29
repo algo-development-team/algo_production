@@ -1,57 +1,75 @@
-import { ReactComponent as Dot } from "assets/svg/dot.svg";
-import { ReactComponent as InboxIcon } from "assets/svg/inbox.svg";
-import { useOverlayContextValue } from "context";
-import { useProjects, useSelectedProject } from "hooks";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { SetNewTaskProjectPopper } from "components/dropdowns/set-new-task-project-popper";
+import { ReactComponent as Dot } from 'assets/svg/dot.svg'
+import { ReactComponent as InboxIcon } from 'assets/svg/inbox.svg'
+import { useOverlayContextValue } from 'context'
+import { useProjects, useSelectedProject } from 'hooks'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
 export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
-  const params = useParams();
+  const params = useParams()
   // const { selectedProject } = useSelectedProjectValue(params);
-  const { projects } = useProjects();
-  const { selectedProject, defaultGroup } = useSelectedProject(params, projects);
-  const [popupSelectedProject, setPopupSelectedProject] = useState(selectedProject);
-  const { setShowDialog, setDialogProps } = useOverlayContextValue();
-  const [showPopup, setShowPopup] = useState(false);
-  const [parentPosition, setParentPosition] = useState({});
+  const { projects } = useProjects()
+  const { selectedProject, defaultGroup } = useSelectedProject(params, projects)
+  const [popupSelectedProject, setPopupSelectedProject] =
+    useState(selectedProject)
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
+  const [showPopup, setShowPopup] = useState(false)
+  const [parentPosition, setParentPosition] = useState({})
 
-  const defaultProjectValue = { selectedProjectName: "Inbox", selectedProjectId: "", defaultProject: true };
+  const defaultProjectValue = {
+    selectedProjectName: 'Inbox',
+    selectedProjectId: '',
+    defaultProject: true,
+  }
   useEffect(() => {
+    console.log('project', project) // DEBUGGING
     if (!project.defaultProject) {
-      setPopupSelectedProject(project);
+      setPopupSelectedProject(project)
     } else {
-      setPopupSelectedProject(defaultProjectValue);
+      setPopupSelectedProject(defaultProjectValue)
     }
-  }, [project]);
+  }, [project])
   useEffect(() => {
+    console.log('selectedProject', selectedProject) // DEBUGGING
     if (!selectedProject.defaultProject) {
-      setProject(selectedProject);
+      setProject(selectedProject)
     } else {
-      setProject(defaultProjectValue);
+      setProject(defaultProjectValue)
     }
-  }, [selectedProject]);
+  }, [selectedProject])
 
   const showQUickAddDropDown = (parentPosition) => {
-    setParentPosition(parentPosition);
-    setShowPopup(true);
-  };
+    setParentPosition(parentPosition)
+    setShowPopup(true)
+  }
   return (
     <div
-      className="set-new-task__project"
-      role="button"
+      className='set-new-task__project'
+      role='button'
       onClick={(e) => {
         setDialogProps(
-          Object.assign({ elementPosition: e.currentTarget.getBoundingClientRect() }, { setProject, setPopupSelectedProject })
-        );
-        isQuickAdd ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect()) : setShowDialog("SET_PROJECT");
+          Object.assign(
+            { elementPosition: e.currentTarget.getBoundingClientRect() },
+            { setProject, setPopupSelectedProject },
+          ),
+        )
+        isQuickAdd
+          ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          : setShowDialog('SET_PROJECT')
       }}
     >
-      {popupSelectedProject?.selectedProjectName === "Inbox" ? (
-        <InboxIcon width="18px" height="18px" fill="#5297ff" />
+      {popupSelectedProject?.selectedProjectName === 'Inbox' ? (
+        <InboxIcon width='18px' height='18px' fill='#5297ff' />
       ) : (
-        <Dot color={`${popupSelectedProject?.projectColour?.hex}`} width={17} height={17} />
+        <Dot
+          color={`${popupSelectedProject?.projectColour?.hex}`}
+          width={17}
+          height={17}
+        />
       )}
-      <p className="set-new-task__project--name">{popupSelectedProject.selectedProjectName}</p>
+      <p className='set-new-task__project--name'>
+        {popupSelectedProject.selectedProjectName}
+      </p>
       {showPopup && (
         <SetNewTaskProjectPopper
           setShowPopup={setShowPopup}
@@ -64,5 +82,5 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
         />
       )}
     </div>
-  );
-};
+  )
+}

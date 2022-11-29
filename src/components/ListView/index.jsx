@@ -37,10 +37,6 @@ export const TaskList = () => {
     }
   }, [currentUser, defaultGroup, tasks])
 
-  useEffect(() => {
-    console.log('checklist:', checklist) // DEBUGGING
-  }, [checklist])
-
   const showTaskEditor = () => {
     if (defaultGroup !== 'Checklist') return tasks
     if (checklist.length === 0) return false
