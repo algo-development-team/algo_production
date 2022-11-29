@@ -88,6 +88,16 @@ export const updateCalenderEvent = async (updateOption) => {
   }
 }
 
+export const deleteCalenderEvent = async (deleteOption) => {
+  try {
+    await gapi.client.calendar.events.delete(deleteOption)
+    return true
+  } catch (error) {
+    console.log(error)
+    return false
+  }
+}
+
 export const getUserTimeZone = async () => {
   try {
     const timezone = await gapi.client.calendar.settings.get({

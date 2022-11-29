@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { useOverlayContextValue } from 'context'
 import { checkSignInStatus } from 'gapiHandlers'
 import { scheduleToday } from 'scheduler/schedule'
@@ -5,7 +6,7 @@ import { useAuth } from 'hooks'
 
 export const AddChecklist = () => {
   const { setShowDialog } = useOverlayContextValue()
-  const { currentUser } = useAuth()
+  const { currentUser, isClientLoaded } = useAuth()
 
   return (
     <div>
@@ -39,6 +40,7 @@ export const AddChecklist = () => {
           borderWidth: '1px',
           backgroundColor: '#555',
         }}
+        disabled={!isClientLoaded}
       >
         Generate Schedule
       </button>

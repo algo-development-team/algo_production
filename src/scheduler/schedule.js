@@ -1,5 +1,9 @@
-import { fetchAllCalendars, insertCalendar } from 'gapiHandlers'
-import { updateEvent } from 'googleCalendar'
+import {
+  fetchAllCalendars,
+  insertCalendar,
+  getUserTimeZone,
+} from 'gapiHandlers'
+import { insertEvent, updateEvent, deleteEvent } from 'googleCalendar'
 import { fetchAllEvents } from './events'
 import {
   getTimesWithInfo,
@@ -33,13 +37,14 @@ const TOTAL_WEIGHTS_SUM = Object.values(WEIGHTS).reduce((a, b) => a + b, 0)
 const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
 
 /***
- * Description:
- * - Allocates time blocks into Google Calendar
- * Note:
+ * description:
+ * - allocates time blocks into Google Calendar
+ * note:
  * - schedules the entire day, no matter what the current time is
  * ***/
 export const scheduleToday = async (userId) => {
   try {
+    const t1 = new Date()
     //*** GETTING AVAILABLE TIME RANGES START ***//
     const userInfo = await getUserInfo(userId)
     if (userInfo.empty === true || userInfo.failed === true) {
@@ -166,8 +171,13 @@ export const scheduleToday = async (userId) => {
       tasks.nonCompleted,
       today,
     )
-    const taskMap = getTaskMap(tasksNotPassedDeadline)
     const formattedTasks = formatTasks(tasksNotPassedDeadline, projects, today)
+    const taskMap = {
+      ...getTaskMap(formattedTasks.work),
+      ...getTaskMap(formattedTasks.personal),
+    }
+
+    console.log('formattedTasks:', formattedTasks) // DEBUGGING
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
@@ -201,7 +211,21 @@ export const scheduleToday = async (userId) => {
     console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
     //*** TIME BLOCK FORMATTING END ***/
 
+    // *** STORE ALLOCATED TASKS IN USER CHECKLIST START ***/
+    const newChecklist = timeBlocksWithTaskInfo.map(
+      (timeBlock) => timeBlock.taskId,
+    )
+    const newChecklistWithoutDuplicates = [...new Set(newChecklist)]
+    const isSameChecklist = areTwoArraysEqual(
+      userData.checklist,
+      newChecklistWithoutDuplicates,
+    )
+    if (!isSameChecklist)
+      await updateUserInfo(userId, { checklist: newChecklistWithoutDuplicates })
+    // *** STORE ALLOCATED TASKS IN USER CHECKLIST END ***/
+
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
+    let updatableAlgoCalendarEvents = []
     if (userData.calendarId === null) {
       const result = await insertCalendar('Algo')
       await updateUserInfo(userId, { calendarId: result.id })
@@ -212,21 +236,215 @@ export const scheduleToday = async (userId) => {
         [userData.calendarId],
       )
 
+      const yesterdayEndTime = dayRange[1].clone().subtract(1, 'day')
+      const tomorrowStartTime = dayRange[0].clone().add(1, 'day')
       const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
         eventsInAlgoCalendar.timeBlocked,
-        dayRange[0],
-        dayRange[1],
+        yesterdayEndTime,
+        tomorrowStartTime,
       )
 
-      console.log('eventsInAlgoCalendar:', eventsInAlgoCalendar) // DEBUGGING
-      console.log(
-        'eventsInAlgoCalendarWithinDayRange:',
-        eventsInAlgoCalendarWithinDayRange,
-      ) // DEBUGGING
+      for (const event of eventsInAlgoCalendarWithinDayRange.startOuter) {
+        console.log('event (startOuter):', event) // DEBUGGING
+        event.end.dateTime = yesterdayEndTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      for (const event of eventsInAlgoCalendarWithinDayRange.endOuter) {
+        console.log('event (endOuter):', event) // DEBUGGING
+        event.start.dateTime = tomorrowStartTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      for (const event of eventsInAlgoCalendarWithinDayRange.bothOuter) {
+        console.log('event (bothOuter):', event) // DEBUGGING
+        await insertEvent(
+          userData.calendarId,
+          tomorrowStartTime.toISOString(),
+          event.end.dateTime,
+          event.start.timeZone,
+          event.summary,
+          event.description,
+          parseInt(event.colorId),
+        )
+        event.end.dateTime = yesterdayEndTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
     }
-    //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+
+    console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
+
+    const userTimeZone = await getUserTimeZone(userId)
+
+    const [filteredTimeBlocks, filteredUpdatableAlgoCalendarEvents] =
+      filterExistingTimeBlocksAndEvents(
+        timeBlocksWithTaskInfo,
+        updatableAlgoCalendarEvents,
+        userTimeZone,
+      )
+
+    console.log('filteredTimeBlocks:', filteredTimeBlocks) // DEBUGGING
+    console.log(
+      'filteredUpdatableAlgoCalendarEvents:',
+      filteredUpdatableAlgoCalendarEvents,
+    ) // DEBUGGING
+
+    changeAlgoCalendarSchedule(
+      filteredTimeBlocks,
+      filteredUpdatableAlgoCalendarEvents,
+      userData.calendarId,
+      userTimeZone,
+    )
+    // *** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
+    const t2 = new Date()
+
+    console.log("Run time of today's scheduler (ms):", t2 - t1) // DEBUGGING
   } catch (error) {
     console.log(error)
+  }
+}
+
+/***
+ * note: takes order into consideration
+ * ***/
+const areTwoArraysEqual = (arr1, arr2) => {
+  if (arr1.length !== arr2.length) return false
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false
+  }
+  return true
+}
+
+const filterExistingTimeBlocksAndEvents = (
+  timeBlocks,
+  events,
+  userTimeZone,
+) => {
+  const filteredTimeBlocks = []
+  const filteredEvents = []
+  let timeBlockIdx = 0
+  let eventIdx = 0
+  while (timeBlockIdx < timeBlocks.length && eventIdx < events.length) {
+    const timeBlock = timeBlocks[timeBlockIdx]
+    const event = events[eventIdx]
+    const timeBlockStartTime = timeBlock.start
+    const eventStartTime = moment(event.start.dateTime)
+    if (timeBlockStartTime.isSame(eventStartTime)) {
+      const isSameStartTimeZone = userTimeZone === event.start.timeZone
+      const isSameEndTime = timeBlock.end.isSame(moment(event.end.dateTime))
+      const isSameEndTimeZone = userTimeZone === event.end.timeZone
+      const isSameSummary = timeBlock.name === event.summary
+      const isSameDescription =
+        timeBlock.description === event.description ||
+        (timeBlock.description === '' && event.description === undefined)
+      const isSameColorId =
+        getColorId(timeBlock.preference) === parseInt(event.colorId)
+      if (
+        isSameStartTimeZone &&
+        isSameEndTime &&
+        isSameEndTimeZone &&
+        isSameSummary &&
+        isSameDescription &&
+        isSameColorId
+      ) {
+        timeBlockIdx++
+        eventIdx++
+      } else {
+        // ELSE MOVE ON TO THE NEXT TIME BLOCK
+        filteredTimeBlocks.push(timeBlock)
+        timeBlockIdx++
+      }
+    } else if (timeBlockStartTime.isBefore(eventStartTime)) {
+      filteredTimeBlocks.push(timeBlock)
+      timeBlockIdx++
+    } else {
+      filteredEvents.push(event)
+      eventIdx++
+    }
+  }
+  while (timeBlockIdx < timeBlocks.length) {
+    filteredTimeBlocks.push(timeBlocks[timeBlockIdx])
+    timeBlockIdx++
+  }
+  while (eventIdx < events.length) {
+    filteredEvents.push(events[eventIdx])
+    eventIdx++
+  }
+
+  return [filteredTimeBlocks, filteredEvents]
+}
+
+// Color ID:
+// 1 blue
+// 2 green
+// 3 purple
+// 4 red
+// 5 yellow
+// 6 orange
+// 7 turquoise
+// 8 grey
+// 9 bold blue
+// 10 bold green
+// 11 bold red
+
+const getColorId = (preference) => {
+  switch (preference) {
+    case 0:
+      return 6 // urgent: orange
+    case 1:
+      return 7 // deep: turquoise
+    case 2:
+      return 2 // shallow: green
+    default:
+      return 7 // default: turquoise
+  }
+}
+
+const changeAlgoCalendarSchedule = async (
+  timeBlocks,
+  events,
+  calendarId,
+  userTimeZone,
+) => {
+  for (let i = 0; i < Math.min(events.length, timeBlocks.length); i++) {
+    const event = events[i]
+    const timeBlock = timeBlocks[i]
+    event.start.dateTime = timeBlock.start.toISOString()
+    event.start.timeZone = userTimeZone
+    event.end.dateTime = timeBlock.end.toISOString()
+    event.end.timeZone = userTimeZone
+    event.summary = timeBlock.name
+    event.description = timeBlock.description
+    event.colorId = getColorId(timeBlock.preference)
+    const item = await updateEvent(calendarId, event.id, event)
+
+    console.log('updated item:', item.id) // DEBUGGING
+  }
+  if (events.length > timeBlocks.length) {
+    for (let i = timeBlocks.length; i < events.length; i++) {
+      const event = events[i]
+      const result = await deleteEvent(calendarId, event.id)
+
+      console.log('is item deleted?:', result) // DEBUGGING
+    }
+  }
+  if (events.length < timeBlocks.length) {
+    for (let i = events.length; i < timeBlocks.length; i++) {
+      const timeBlock = timeBlocks[i]
+      const item = await insertEvent(
+        calendarId,
+        timeBlock.start.toISOString(),
+        timeBlock.end.toISOString(),
+        userTimeZone,
+        timeBlock.name,
+        timeBlock.description,
+        getColorId(timeBlock.preference),
+      )
+
+      console.log('inserted item:', item.id) // DEBUGGING
+    }
   }
 }
 
@@ -235,42 +453,58 @@ export const scheduleToday = async (userId) => {
  * tasks: task[] (from firestore)
  * ***/
 const getEventsInRange = (events, start, end) => {
-  const eventsInBetween = []
-  const eventsAtStartBuffer = []
-  const eventsAtEndBuffer = []
+  const between = []
+  const startOuter = []
+  const endOuter = []
+  const bothOuter = []
   for (const event of events) {
     const eventStart = moment(event.start.dateTime)
     const eventEnd = moment(event.end.dateTime)
-    const validStart = eventStart.isBetween(start, end)
-    const validEnd = eventEnd.isBetween(start, end)
+    // validStart when: start <= eventStart < end
+    const validStart =
+      (eventStart.isAfter(start) || eventStart.isSame(start)) &&
+      eventStart.isBefore(end)
+    // validEnd when: start < eventEnd <= end
+    const validEnd =
+      eventEnd.isAfter(start) &&
+      (eventEnd.isBefore(end) || eventEnd.isSame(end))
     if (validStart && validEnd) {
-      eventsInBetween.push(event)
+      between.push(event)
     } else if (validStart) {
-      eventsAtEndBuffer.push(event)
+      endOuter.push(event)
     } else if (validEnd) {
-      eventsAtStartBuffer.push(event)
+      startOuter.push(event)
+    } else {
+      if (eventStart.isBefore(start) && eventEnd.isAfter(end)) {
+        bothOuter.push(event)
+      }
     }
   }
   return {
-    between: eventsInBetween,
-    startBuffer: eventsAtStartBuffer,
-    endBuffer: eventsAtEndBuffer,
+    between: between,
+    startOuter: startOuter,
+    endOuter: endOuter,
+    bothOuter: bothOuter,
   }
 }
 
 /***
  * requirements:
  * timeBlocks: { start, end, preference, taskId, isWork }[]
- * taskMap: { taskId: task (firestore task item) }
+ * taskMap: { taskId: { priority, deadline, timeLength, preference, taskId, name, description } }
  * ***/
 const getTimeBlocksWithTaskInfo = (timeBlocks, taskMap) => {
   return timeBlocks.map((timeBlock) => {
     const taskId = timeBlock.taskId
     const taskInfo = taskMap[taskId]
     return {
-      ...timeBlock,
+      taskId: taskId,
+      start: timeBlock.start,
+      end: timeBlock.end,
+      isWork: timeBlock.isWork,
       name: taskInfo.name,
       description: taskInfo.description,
+      preference: taskInfo.preference,
     }
   })
 }
@@ -374,7 +608,7 @@ const groupChunksByTaskId = (blocks) => {
 
 /***
  * requirements:
- * tasks: task[] (from firestore)
+ * tasks: { priority, deadline, timeLength, preference, taskId, name, description }[]
  * ***/
 const getTaskMap = (tasks) => {
   const taskMap = {}
@@ -455,8 +689,8 @@ const calculateRelativePriority = (params, weights) => {
 /***
  * requirements:
  * blocks: { start, end, preference, taskId }[][] (taskId is null)
- * tasks: { priority, deadline, timeLength, preference, taskId }[]
- * Note:
+ * tasks: { priority, deadline, timeLength, preference, taskId, name, description }[]
+ * note:
  * mutates the blocks array (sets the taskId property in each chunk)
  * ***/
 const assignTimeBlocks = (blocks, tasks) => {
@@ -566,6 +800,8 @@ const formatTasks = (tasks, projects, today) => {
       timeLength: formattedTimeLength,
       preference: preference,
       taskId: task.taskId,
+      name: task.name,
+      description: task.description,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)

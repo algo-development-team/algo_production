@@ -27,10 +27,7 @@ export const useTasks = () => {
         where('projectId', '==', selectedProject),
       )
     } else if (selectedProject === 'Checklist') {
-      q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('date', '==', moment().format('DD-MM-YYYY')),
-      )
+      // NO CHANGES TO q HERE
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
@@ -58,10 +55,10 @@ export const useTasks = () => {
       })
 
       if (selectedProject === 'Scheduled') {
-        let sevenDaysTasks = result.filter(
-          (task) => moment(task.date, 'DD-MM-YYYY').diff(moment(), 'days') <= 7,
-        )
-        setTasks(sevenDaysTasks)
+        let resultSortedByDate = result.sort((a, b) => {
+          return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'))
+        })
+        setTasks(resultSortedByDate)
         setLoading(false)
       } else {
         setTasks(result)

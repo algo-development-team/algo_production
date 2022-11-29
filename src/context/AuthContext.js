@@ -20,6 +20,7 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
+  const [isClientLoaded, setIsClientLoaded] = useState(false)
   let navigate = useNavigate()
   const authUser = getAuth()
 
@@ -38,6 +39,7 @@ export const AuthProvider = ({ children }) => {
     initClient((result) => {
       if (result) {
         console.log('Client initialized')
+        setIsClientLoaded(true)
       } else {
         console.log('Client not initialized')
       }
@@ -140,6 +142,7 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
+    isClientLoaded,
     signupWithEmail,
     signinWithEmail,
     signinGoogle,

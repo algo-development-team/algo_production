@@ -406,7 +406,8 @@ export const SettingEditor = ({ closeOverlay }) => {
                 className={`work-day-btn${
                   workDay ? '__selected' : '__not-selected'
                 }`}
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault()
                   const newWorkDays = [...workDays]
                   newWorkDays[i] = !newWorkDays[i]
                   setWorkDays(newWorkDays)
