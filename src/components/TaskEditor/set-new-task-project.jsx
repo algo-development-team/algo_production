@@ -22,7 +22,6 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
     defaultProject: true,
   }
   useEffect(() => {
-    console.log('project', project) // DEBUGGING
     if (!project.defaultProject) {
       setPopupSelectedProject(project)
     } else {
@@ -30,7 +29,6 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
     }
   }, [project])
   useEffect(() => {
-    console.log('selectedProject', selectedProject) // DEBUGGING
     if (!selectedProject.defaultProject) {
       setProject(selectedProject)
     } else {
