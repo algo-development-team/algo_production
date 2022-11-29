@@ -240,32 +240,35 @@ export const scheduleToday = async (userId) => {
       const tomorrowStartTime = dayRange[0].clone().add(1, 'day')
       const eventsInAlgoCalendarWithinDayRange = getEventsInRange(
         eventsInAlgoCalendar.timeBlocked,
-        dayRange[0],
-        dayRange[1],
+        yesterdayEndTime,
+        tomorrowStartTime,
       )
 
-      for (const event of eventsInAlgoCalendarWithinDayRange.startBuffer) {
-        const isPartOfYesterday = moment(event.start.dateTime).isBefore(
-          yesterdayEndTime,
-        )
-        if (isPartOfYesterday) {
-          event.end.dateTime = yesterdayEndTime.toISOString()
-          await updateEvent(userData.calendarId, event.id, event)
-        } else {
-          await deleteEvent(userData.calendarId, event.id)
-        }
+      for (const event of eventsInAlgoCalendarWithinDayRange.startOuter) {
+        console.log('event (startOuter):', event) // DEBUGGING
+        event.end.dateTime = yesterdayEndTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
       }
 
-      for (const event of eventsInAlgoCalendarWithinDayRange.endBuffer) {
-        const isPartOfTomorrow = moment(event.end.dateTime).isAfter(
-          tomorrowStartTime,
+      for (const event of eventsInAlgoCalendarWithinDayRange.endOuter) {
+        console.log('event (endOuter):', event) // DEBUGGING
+        event.start.dateTime = tomorrowStartTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
+      }
+
+      for (const event of eventsInAlgoCalendarWithinDayRange.bothOuter) {
+        console.log('event (bothOuter):', event) // DEBUGGING
+        await insertEvent(
+          userData.calendarId,
+          tomorrowStartTime.toISOString(),
+          event.end.dateTime,
+          event.start.timeZone,
+          event.summary,
+          event.description,
+          parseInt(event.colorId),
         )
-        if (isPartOfTomorrow) {
-          event.start.dateTime = tomorrowStartTime.toISOString()
-          await updateEvent(userData.calendarId, event.id, event)
-        } else {
-          await deleteEvent(userData.calendarId, event.id)
-        }
+        event.end.dateTime = yesterdayEndTime.toISOString()
+        await updateEvent(userData.calendarId, event.id, event)
       }
 
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
@@ -450,27 +453,38 @@ const changeAlgoCalendarSchedule = async (
  * tasks: task[] (from firestore)
  * ***/
 const getEventsInRange = (events, start, end) => {
-  const eventsInBetween = []
-  const eventsAtStartBuffer = []
-  const eventsAtEndBuffer = []
+  const between = []
+  const startOuter = []
+  const endOuter = []
+  const bothOuter = []
   for (const event of events) {
     const eventStart = moment(event.start.dateTime)
     const eventEnd = moment(event.end.dateTime)
+    // validStart when: start <= eventStart < end
     const validStart =
-      eventStart.isBetween(start, end) || eventStart.isSame(start)
-    const validEnd = eventEnd.isBetween(start, end) || eventEnd.isSame(end)
+      (eventStart.isAfter(start) || eventStart.isSame(start)) &&
+      eventStart.isBefore(end)
+    // validEnd when: start < eventEnd <= end
+    const validEnd =
+      eventEnd.isAfter(start) &&
+      (eventEnd.isBefore(end) || eventEnd.isSame(end))
     if (validStart && validEnd) {
-      eventsInBetween.push(event)
+      between.push(event)
     } else if (validStart) {
-      eventsAtEndBuffer.push(event)
+      endOuter.push(event)
     } else if (validEnd) {
-      eventsAtStartBuffer.push(event)
+      startOuter.push(event)
+    } else {
+      if (eventStart.isBefore(start) && eventEnd.isAfter(end)) {
+        bothOuter.push(event)
+      }
     }
   }
   return {
-    between: eventsInBetween,
-    startBuffer: eventsAtStartBuffer,
-    endBuffer: eventsAtEndBuffer,
+    between: between,
+    startOuter: startOuter,
+    endOuter: endOuter,
+    bothOuter: bothOuter,
   }
 }
 
