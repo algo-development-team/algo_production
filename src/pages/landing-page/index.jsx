@@ -14,23 +14,20 @@ export const LandingPage = () => {
               <LogoMobile className='logo__mobile' />
             </div>
             <div className='intro__nav--group__wrapper'>
-              {/* <div className="nav-logo__mobile">
-                  <LogoMobile />
-                </div> */}
               <Link className='intro__nav--item intro__nav--link' to='/'>
-                Features
+                Home
               </Link>
-              <Link className='intro__nav--item intro__nav--link' to='/'>
-                Templates
+              <Link
+                className='intro__nav--item intro__nav--link'
+                to='/privacy-policy'
+              >
+                Privacy Policy
               </Link>
-              <Link className='intro__nav--item intro__nav--link' to='/'>
-                For Teams
-              </Link>
-              <Link className='intro__nav--item intro__nav--link' to='/'>
-                Resources
-              </Link>
-              <Link className='intro__nav--item intro__nav--link' to='/'>
-                Pricing
+              <Link
+                className='intro__nav--item intro__nav--link'
+                to='/terms-of-service'
+              >
+                Terms of Service
               </Link>
             </div>
           </div>
