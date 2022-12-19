@@ -66,6 +66,34 @@ export const LandingPage = () => {
           width={1256}
         />
       </section>
+
+      <section className='section__content'>
+        <h1>Title</h1>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
+          officia sunt dignissimos, temporibus pariatur ratione consequatur
+          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
+          debitis magni minus architecto.
+        </p>
+      </section>
+      <section className='section__content'>
+        <h1>Title</h1>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
+          officia sunt dignissimos, temporibus pariatur ratione consequatur
+          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
+          debitis magni minus architecto.
+        </p>
+      </section>
+      <section className='section__content'>
+        <h1>Title</h1>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
+          officia sunt dignissimos, temporibus pariatur ratione consequatur
+          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
+          debitis magni minus architecto.
+        </p>
+      </section>
     </main>
   )
 }
