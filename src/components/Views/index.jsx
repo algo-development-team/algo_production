@@ -40,11 +40,6 @@ export const Views = () => {
           path='/terms-of-service'
           element={<TermsOfServicePage />}
         />
-        <Route
-          exact
-          path='/google59d46803f404236f.html'
-          element={<>google-site-verification: google59d46803f404236f.html</>}
-        />
         <Route path='/app' element={<>Page Not Found</>} />
         <Route path='*' element={<>Page Not Found</>} />
       </Routes>
