@@ -68,31 +68,52 @@ export const LandingPage = () => {
       </section>
 
       <section className='section__content'>
-        <h1>Title</h1>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
-          officia sunt dignissimos, temporibus pariatur ratione consequatur
-          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
-          debitis magni minus architecto.
-        </p>
-      </section>
-      <section className='section__content'>
-        <h1>Title</h1>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
-          officia sunt dignissimos, temporibus pariatur ratione consequatur
-          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
-          debitis magni minus architecto.
-        </p>
-      </section>
-      <section className='section__content'>
-        <h1>Title</h1>
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi
-          officia sunt dignissimos, temporibus pariatur ratione consequatur
-          cupiditate saepe in maxime dolorem aperiam itaque minima sed nostrum
-          debitis magni minus architecto.
-        </p>
+        <div className='sub-section'>
+          <h2>What is Algo?</h2>
+          <p>
+            Algo is a next-generation task management platform that
+            automatically generates schedules for you.
+          </p>
+        </div>
+        <div className='sub-section'>
+          <p>
+            Using Algo for your schedule management can dramatically boost your
+            productivity in both work and personal life, resulting in better
+            work performance and improved work-life balance.
+          </p>
+        </div>
+        <div className='sub-section'>
+          <h2>How do you use it?</h2>
+          <p>
+            You simply need to add your tasks and click the "Generate Schedule"
+            button, and our schedule generator algorithm will create a daily
+            schedule in your Google Calendar within 2 seconds.
+          </p>
+        </div>
+        <div className='sub-section'>
+          <h2>How does it work?</h2>
+          <p>
+            The schedule generator algorithm identifies empty time ranges in
+            your Google Calendar, and it assigns your tasks from Algo into your
+            Google Calendar according to the task's relative priority and your
+            preference in the setting.
+          </p>
+        </div>
+        <div className='sub-section'>
+          <p>
+            The schedule generator algorithm schedules both your work and
+            personal tasks.
+          </p>
+        </div>
+        <div className='sub-section'>
+          <h2>Features</h2>
+          <ul>
+            <li>- Checklist</li>
+            <li>- Task Projects</li>
+            <li>- Kanban Board</li>
+            <li>- Schedule Generator</li>
+          </ul>
+        </div>
       </section>
     </main>
   )
