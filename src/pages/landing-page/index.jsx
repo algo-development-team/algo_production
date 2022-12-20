@@ -93,10 +93,10 @@ export const LandingPage = () => {
         <div className='sub-section'>
           <h2>How does it work?</h2>
           <p>
-            The schedule generator algorithm identifies empty time ranges in
-            your Google Calendar, and it assigns your tasks from Algo into your
-            Google Calendar according to the task's relative priority and your
-            preference in the setting.
+            The schedule generator algorithm reads events in your Google
+            Calendar to identify empty time ranges, and it assigns your tasks
+            from Algo as time blocks into your Google Calendar according to the
+            task's relative priority and your preference in the setting.
           </p>
         </div>
         <div className='sub-section'>
