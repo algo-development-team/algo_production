@@ -322,6 +322,16 @@ export const SettingEditor = ({ closeOverlay }) => {
     }
   }
 
+  const handleAmPm = (hour) => {
+    if (hour > 12) {
+      return hour - 12
+    } else if (hour === 0) {
+      return 12
+    } else {
+      return hour
+    }
+  }
+
   return (
     <div
       className={'add-task__wrapper quick-add__wrapper'}
@@ -339,7 +349,7 @@ export const SettingEditor = ({ closeOverlay }) => {
           <h4>Sleep Hours</h4>
           <div className='display-row'>
             <TimeToggler
-              time={sleepStartTimeHour}
+              time={handleAmPm(sleepStartTimeHour)}
               changeTime={changeTime}
               isHour={true}
               timeRangeTypeVal={timeRangeType.sleepStart}
@@ -350,6 +360,7 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.sleepStart}
             />
+            {sleepStartTimeHour >= 12 ? 'pm' : 'am'}
             <h3 className='reg-left-margin'>to</h3>
             <TimeToggler
               time={sleepEndTimeHour}
