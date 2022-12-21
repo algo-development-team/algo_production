@@ -22,7 +22,7 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
     e.preventDefault()
     try {
       const q = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/"projects"`),
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
         where('projectId', '==', projectId),
       )
       const docs = await getDocs(q)
@@ -34,12 +34,12 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
     }
     try {
       const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', projectId),
       )
-      const projectDocs = await getDocs(taskQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await deleteDoc(projectDoc.ref)
+      const taskDocs = await getDocs(taskQuery)
+      taskDocs.forEach(async (taskDoc) => {
+        await deleteDoc(taskDoc.ref)
       })
     } catch (error) {
       console.log(error)
