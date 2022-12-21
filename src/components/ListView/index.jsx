@@ -42,7 +42,7 @@ export const TaskList = () => {
       setTasklist([])
       setChecklist([])
     }
-  }, [currentUser, defaultGroup, projectId, tasks])
+  }, [currentUser, defaultGroup, tasks])
 
   const showTaskEditor = () => {
     if (defaultGroup !== 'Checklist') return tasklist
@@ -67,21 +67,14 @@ export const TaskList = () => {
 
   const moveTask = (dragIndex, hoverIndex, isChecklist) => {
     const newlist = isChecklist ? [...checklist] : [...tasklist]
-    console.log('newlist before change:', newlist) // DEBUGGING
     const draggedItem = newlist[dragIndex]
     newlist.splice(dragIndex, 1)
     newlist.splice(hoverIndex, 0, draggedItem)
-    console.log('newlist after change:', newlist) // DEBUGGING')
     if (isChecklist) {
       setChecklist(newlist)
     } else {
       setTasklist(newlist)
     }
-  }
-
-  const handleChangeChecklist = () => {
-    const isChecklist = defaultGroup === 'Checklist'
-    moveTask(0, 1, isChecklist)
   }
 
   return (
@@ -97,6 +90,7 @@ export const TaskList = () => {
                   key={task.taskId}
                   task={task}
                   index={i}
+                  moveTask={moveTask}
                   projects={projects}
                 />
               )}
@@ -105,6 +99,7 @@ export const TaskList = () => {
                   taskId={task.taskId}
                   task={task}
                   index={i}
+                  moveTask={moveTask}
                   projects={projects}
                   isEdit
                 />
@@ -113,7 +108,6 @@ export const TaskList = () => {
           )
         })}
       <TaskEditor projects={projects} />
-      <button onClick={() => handleChangeChecklist()}>change</button>
       {tasks.length ? null : <EmptyState />}
     </div>
   )
