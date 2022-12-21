@@ -1,0 +1,60 @@
+import React, { useState } from 'react';
+import { useDrag, useDrop } from 'react-dnd';
+
+const Item = ({ id, text, index, moveItem }) => {
+  const [{ isDragging }, drag] = useDrag({
+    item: { type: 'ITEM', id, index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+  const [, drop] = useDrop({
+    accept: 'ITEM',
+    hover(item, monitor) {
+      if (!isDragging) {
+        const dragIndex = item.index;
+        const hoverIndex = index;
+        if (dragIndex === hoverIndex) {
+          return;
+        }
+        moveItem(dragIndex, hoverIndex);
+        item.index = hoverIndex;
+      }
+    },
+  });
+  return (
+    <div ref={(node) => drag(drop(node))}>
+      {text}
+    </div>
+  );
+};
+
+const Checklist = () => {
+  const [items, setItems] = useState([
+    { id: 1, text: 'Task 1' },
+    { id: 2, text: 'Task 2' },
+    { id: 3, text: 'Task 3' },
+  ]);
+  const moveItem = (dragIndex, hoverIndex) => {
+    const newItems = [...items];
+    const draggedItem = newItems[dragIndex];
+    newItems.splice(dragIndex, 1);
+    newItems.splice(hoverIndex, 0, draggedItem);
+    setItems(newItems);
+  };
+  return (
+    <div>
+      {items.map((item, index) => (
+        <Item
+          key={item.id}
+          index={index}
+          id={item.id}
+          text={item.text}
+          moveItem={moveItem}
+        />
+      ))}
+    </div>
+  );
+};
+
+export default Checklist;
