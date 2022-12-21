@@ -10,7 +10,7 @@ import './styles/light.scss'
 import './styles/listview.scss'
 import { Task } from './task'
 import { getUserInfo } from 'handleUserInfo'
-import { useAuth, useReloadChecklist } from 'hooks'
+import { useAuth } from 'hooks'
 
 export const TaskList = () => {
   const { projectId, defaultGroup } = useParams()
@@ -20,6 +20,7 @@ export const TaskList = () => {
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
   const { currentUser } = useAuth()
+  const [tasklist, setTasklist] = useState([])
   const [checklist, setChecklist] = useState([])
 
   useEffect(() => {
@@ -32,44 +33,70 @@ export const TaskList = () => {
       setChecklist(userData.checklist)
     }
 
-    if (currentUser && defaultGroup === 'Checklist' && tasks.length > 0) {
-      getChecklist(currentUser.id).catch(console.error)
+    if (tasks.length > 0) {
+      setTasklist(tasks)
+      if (currentUser && defaultGroup === 'Checklist') {
+        getChecklist(currentUser.id).catch(console.error)
+      }
+    } else {
+      setTasklist([])
+      setChecklist([])
     }
-  }, [currentUser, defaultGroup, tasks])
+  }, [currentUser, defaultGroup, projectId, tasks])
 
   const showTaskEditor = () => {
-    if (defaultGroup !== 'Checklist') return tasks
+    if (defaultGroup !== 'Checklist') return tasklist
     if (checklist.length === 0) return false
     return true
   }
 
-  const filterTasks = (tasks) => {
-    if (defaultGroup !== 'Checklist') return tasks
-    const filteredTasks = []
+  const filterTasks = (tasklist) => {
+    if (defaultGroup !== 'Checklist') return tasklist
+    const filteredTasklist = []
     const taskMap = {}
-    for (const task of tasks) {
+    for (const task of tasklist) {
       taskMap[task.taskId] = task
     }
     for (const taskId of checklist) {
       if (taskMap[taskId]) {
-        filteredTasks.push(taskMap[taskId])
+        filteredTasklist.push(taskMap[taskId])
       }
     }
-    return filteredTasks
+    return filteredTasklist
+  }
+
+  const moveTask = (dragIndex, hoverIndex, isChecklist) => {
+    const newlist = isChecklist ? [...checklist] : [...tasklist]
+    console.log('newlist before change:', newlist) // DEBUGGING
+    const draggedItem = newlist[dragIndex]
+    newlist.splice(dragIndex, 1)
+    newlist.splice(hoverIndex, 0, draggedItem)
+    console.log('newlist after change:', newlist) // DEBUGGING')
+    if (isChecklist) {
+      setChecklist(newlist)
+    } else {
+      setTasklist(newlist)
+    }
+  }
+
+  const handleChangeChecklist = () => {
+    const isChecklist = defaultGroup === 'Checklist'
+    moveTask(0, 1, isChecklist)
   }
 
   return (
     <div className='task-list__wrapper'>
       <ViewHeader />
       {showTaskEditor() &&
-        filterTasks(tasks).map((task) => {
+        filterTasks(tasklist).map((task, i) => {
           return (
             <React.Fragment key={task.taskId}>
-              {taskEditorToShow != task.taskId && (
+              {taskEditorToShow !== task.taskId && (
                 <Task
                   name={task.name}
                   key={task.taskId}
                   task={task}
+                  index={i}
                   projects={projects}
                 />
               )}
@@ -77,6 +104,7 @@ export const TaskList = () => {
                 <TaskEditor
                   taskId={task.taskId}
                   task={task}
+                  index={i}
                   projects={projects}
                   isEdit
                 />
@@ -84,8 +112,8 @@ export const TaskList = () => {
             </React.Fragment>
           )
         })}
-
       <TaskEditor projects={projects} />
+      <button onClick={() => handleChangeChecklist()}>change</button>
       {tasks.length ? null : <EmptyState />}
     </div>
   )
