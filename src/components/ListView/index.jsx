@@ -84,9 +84,6 @@ export const TaskList = () => {
   const onDragEnd = async (result) => {
     const { destination, source, draggableId } = result
 
-    console.log('destination', destination) // DEBUGGING
-    console.log('source', source) // DEBUGGING
-
     if (!destination) {
       return
     }
