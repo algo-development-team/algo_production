@@ -7,6 +7,8 @@ import { useAuth } from 'hooks'
 export const AddChecklist = () => {
   const { setShowDialog } = useOverlayContextValue()
   const { currentUser, isClientLoaded } = useAuth()
+  const [isScheduleBeingGenerated, setIsScheduleBeingGenerated] =
+    useState(false)
 
   return (
     <div>
@@ -25,7 +27,9 @@ export const AddChecklist = () => {
               alert('Please try again soon.')
             } else {
               // Calling Scheduler Algorithm for Today
-              scheduleToday(currentUser.id)
+              setIsScheduleBeingGenerated(true)
+              await scheduleToday(currentUser.id)
+              setIsScheduleBeingGenerated(false)
             }
           } else if (signInStatus === 2) {
             console.log(
@@ -39,10 +43,14 @@ export const AddChecklist = () => {
           borderColor: 'white',
           borderWidth: '1px',
           backgroundColor: '#555',
+          width: '150px',
+          paddingTop: '5px',
+          paddingBottom: '5px',
+          fontSize: '15px',
         }}
-        disabled={!isClientLoaded}
+        disabled={!isClientLoaded || isScheduleBeingGenerated}
       >
-        Generate Schedule
+        {isScheduleBeingGenerated ? 'Running' : 'Generate Schedule'}
       </button>
     </div>
   )

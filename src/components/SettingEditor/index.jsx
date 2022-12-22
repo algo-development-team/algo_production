@@ -329,7 +329,6 @@ export const SettingEditor = ({ closeOverlay }) => {
         event.stopPropagation()
       }}
     >
-      (
       <form
         className='add-task'
         onSubmit={(event) => updateUserInfoInFirestore(event)}
