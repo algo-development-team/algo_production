@@ -7,7 +7,9 @@ import { useSelectedProject } from 'hooks'
 import moment from 'moment'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo, getProjectTitle } from '../../utils'
-export const Task = ({ name, task, index, moveTask, projects }) => {
+import { Draggable } from 'react-beautiful-dnd'
+
+export const Task = ({ name, task, index, projects }) => {
   moment.defaultFormat = 'DD-MM-YYYY'
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
@@ -43,37 +45,48 @@ export const Task = ({ name, task, index, moveTask, projects }) => {
     )
     setShowDialog('MENU_LIST')
   }
+
   return (
-    <div
-      className='task'
-      onClick={(event) =>
-        menuTriggerHandler(event, event.currentTarget.getBoundingClientRect())
-      }
-    >
-      <TaskCheckbox taskId={task?.taskId} />
+    <Draggable draggableId={task.taskId} index={index}>
+      {(provided) => (
+        <div
+          className='task'
+          {...provided.dragHandleProps}
+          {...provided.draggableProps}
+          ref={provided.innerRef}
+          onClick={(event) =>
+            menuTriggerHandler(
+              event,
+              event.currentTarget.getBoundingClientRect(),
+            )
+          }
+        >
+          <TaskCheckbox taskId={task?.taskId} />
 
-      <div className='task__details'>
-        <p className='task__text'>{name}</p>
+          <div className='task__details'>
+            <p className='task__text'>{name}</p>
 
-        <div className='task__info'>
-          <div>{task.date && <TaskDate date={task.date} />} </div>
+            <div className='task__info'>
+              <div>{task.date && <TaskDate date={task.date} />} </div>
 
-          <div>
-            {' '}
-            {defaultGroup && (
-              <TaskProject
-                projectHexColour={taskProject?.projectColour?.hex}
-                projectName={taskProject?.name}
-              />
-            )}
+              <div>
+                {' '}
+                {defaultGroup && (
+                  <TaskProject
+                    projectHexColour={taskProject?.projectColour?.hex}
+                    projectName={taskProject?.name}
+                  />
+                )}
+              </div>
+            </div>
           </div>
+          <OptionsButton
+            taskId={task.taskId}
+            taskIsImportant={task.important}
+            targetIsTask
+          />
         </div>
-      </div>
-      <OptionsButton
-        taskId={task.taskId}
-        taskIsImportant={task.important}
-        targetIsTask
-      />
-    </div>
+      )}
+    </Draggable>
   )
 }
