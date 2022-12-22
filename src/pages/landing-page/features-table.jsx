@@ -2,9 +2,7 @@ export const FeatureTable = () => {
   return (
     <div>
       <table>
-        <thead>
-          <tr>Features</tr>
-        </thead>
+        <h2>Features</h2>
         <tbody>
           <tr>
             <td>Checklist</td>
