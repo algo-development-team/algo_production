@@ -11,6 +11,8 @@ import './styles/listview.scss'
 import { Task } from './task'
 import { getUserInfo } from 'handleUserInfo'
 import { useAuth } from 'hooks'
+import { DragDropContext } from 'react-beautiful-dnd'
+import { Droppable } from 'react-beautiful-dnd'
 
 export const TaskList = () => {
   const { projectId, defaultGroup } = useParams()
@@ -65,48 +67,86 @@ export const TaskList = () => {
     return filteredTasklist
   }
 
-  const moveTask = (dragIndex, hoverIndex, isChecklist) => {
-    const newlist = isChecklist ? [...checklist] : [...tasklist]
-    const draggedItem = newlist[dragIndex]
-    newlist.splice(dragIndex, 1)
-    newlist.splice(hoverIndex, 0, draggedItem)
-    if (isChecklist) {
-      setChecklist(newlist)
+  const filterAndIndexMapTasks = (tasklist) => {
+    const filteredTasklist = []
+    const taskMap = {}
+    for (const task of tasklist) {
+      taskMap[task.taskId] = task
+    }
+    for (let i = 0; i < checklist.length; i++) {
+      if (taskMap[checklist[i]]) {
+        filteredTasklist.push([taskMap[checklist[i]], i])
+      }
+    }
+    return filteredTasklist
+  }
+
+  const onDragEnd = async (result) => {
+    const { destination, source, draggableId } = result
+
+    if (!destination) {
+      return
+    }
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return
+    }
+
+    if (defaultGroup !== 'Checklist') {
+      const newTasklist = Array.from(tasklist)
+      const [removed] = newTasklist.splice(source.index, 1)
+      newTasklist.splice(destination.index, 0, removed)
+      setTasklist(newTasklist)
+      return
     } else {
-      setTasklist(newlist)
+      const filteredTasklist = filterAndIndexMapTasks(tasklist)
+      const mappedSourceIndex = filteredTasklist[source.index][1]
+      const mappedDestinationIndex = filteredTasklist[destination.index][1]
+      const newChecklist = Array.from(checklist)
+      const [removed] = newChecklist.splice(mappedSourceIndex, 1)
+      newChecklist.splice(mappedDestinationIndex, 0, removed)
+      setChecklist(newChecklist)
+      return
     }
   }
 
   return (
     <div className='task-list__wrapper'>
       <ViewHeader />
-      {showTaskEditor() &&
-        filterTasks(tasklist).map((task, i) => {
-          return (
-            <React.Fragment key={task.taskId}>
-              {taskEditorToShow !== task.taskId && (
-                <Task
-                  name={task.name}
-                  key={task.taskId}
-                  task={task}
-                  index={i}
-                  moveTask={moveTask}
-                  projects={projects}
-                />
-              )}
-              {taskEditorToShow === task.taskId && (
-                <TaskEditor
-                  taskId={task.taskId}
-                  task={task}
-                  index={i}
-                  moveTask={moveTask}
-                  projects={projects}
-                  isEdit
-                />
-              )}
-            </React.Fragment>
-          )
-        })}
+      <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
+        <Droppable droppableId={1}>
+          {(provided) => (
+            <div ref={provided.innerRef} {...provided.droppableProps}>
+              {showTaskEditor() &&
+                filterTasks(tasklist).map((task, index) => (
+                  <>
+                    {taskEditorToShow !== task.taskId && (
+                      <Task
+                        name={task.name}
+                        key={task.taskId}
+                        task={task}
+                        index={index}
+                        projects={projects}
+                      />
+                    )}
+                    {taskEditorToShow === task.taskId && (
+                      <TaskEditor
+                        taskId={task.taskId}
+                        task={task}
+                        projects={projects}
+                        isEdit
+                      />
+                    )}
+                  </>
+                ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
       <TaskEditor projects={projects} />
       {tasks.length ? null : <EmptyState />}
     </div>
