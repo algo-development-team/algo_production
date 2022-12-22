@@ -2,6 +2,8 @@ import illustration from 'assets/svg/main-background.webp'
 import { ReactComponent as LogoMobile } from 'assets/svg/new-logo-mobile.svg'
 import { ReactComponent as Logo } from 'assets/svg/new-logo.svg'
 import { Link } from 'react-router-dom'
+import { FeatureTable } from './features-table'
+
 import './main.scss'
 export const LandingPage = () => {
   return (
@@ -106,13 +108,7 @@ export const LandingPage = () => {
           </p>
         </div>
         <div className='sub-section'>
-          <h2>Features</h2>
-          <ul>
-            <li>- Checklist</li>
-            <li>- Task Projects</li>
-            <li>- Kanban Board</li>
-            <li>- Schedule Generator</li>
-          </ul>
+          <FeatureTable />
         </div>
       </section>
     </main>
