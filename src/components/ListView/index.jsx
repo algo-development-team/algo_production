@@ -13,6 +13,7 @@ import { getUserInfo } from 'handleUserInfo'
 import { useAuth } from 'hooks'
 import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
+import { updateUserInfo } from 'handleUserInfo'
 
 export const TaskList = () => {
   const { projectId, defaultGroup } = useParams()
@@ -100,7 +101,6 @@ export const TaskList = () => {
       const [removed] = newTasklist.splice(source.index, 1)
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
-      return
     } else {
       const filteredTasklist = filterAndIndexMapTasks(tasklist)
       const mappedSourceIndex = filteredTasklist[source.index][1]
@@ -109,7 +109,7 @@ export const TaskList = () => {
       const [removed] = newChecklist.splice(mappedSourceIndex, 1)
       newChecklist.splice(mappedDestinationIndex, 0, removed)
       setChecklist(newChecklist)
-      return
+      await updateUserInfo(currentUser.id, { checklist: newChecklist })
     }
   }
 
