@@ -12,6 +12,7 @@ import { useEffect } from 'react'
 import './main.scss'
 import { ProjectEditor } from './ProjectEditor'
 import { QuickAddTaskDialog } from './quick-add-task-dialog'
+import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
 export const Overlay = () => {
@@ -29,6 +30,16 @@ export const Overlay = () => {
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
         return <QuickAddTaskDialog closeOverlay={closeOverlay} />
+      case 'TASK_POPUP':
+        return (
+          <TaskPopup
+            closeOverlay={closeOverlay}
+            taskId={dialogProps.task.taskId}
+            task={dialogProps.task}
+            projects={dialogProps.projects}
+            isEdit
+          />
+        )
       case 'GOOGLE_CALENDAR_AUTH':
         return <GoogleCalendarAuth closeOverlay={closeOverlay} />
       case 'SETTING':
