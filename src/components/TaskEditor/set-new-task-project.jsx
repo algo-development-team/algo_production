@@ -22,6 +22,7 @@ export const SetNewTaskProject = ({
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
   const [parentPosition, setParentPosition] = useState({})
+  const [initialProjectSelected, setInitialProjectSelected] = useState(false)
 
   const defaultProjectValue = {
     selectedProjectName: 'Inbox',
@@ -49,7 +50,7 @@ export const SetNewTaskProject = ({
   }
 
   useEffect(() => {
-    if (isChecklist) {
+    if (isChecklist && !initialProjectSelected) {
       setPopupSelectedProject(getChecklistProjectValue())
     } else if (!project.defaultProject) {
       setPopupSelectedProject(project)
@@ -59,7 +60,7 @@ export const SetNewTaskProject = ({
   }, [project])
 
   useEffect(() => {
-    if (isChecklist) {
+    if (isChecklist && !initialProjectSelected) {
       setPopupSelectedProject(getChecklistProjectValue())
     } else if (!selectedProject.defaultProject) {
       setProject(selectedProject)
@@ -117,8 +118,10 @@ export const SetNewTaskProject = ({
           setPopupSelectedProject={setPopupSelectedProject}
           parentPosition={parentPosition}
           isQuickAdd={isQuickAdd}
+          isChecklist={isChecklist}
           isPopup={isPopup}
           showPopup={showPopup}
+          setInitialProjectSelected={setInitialProjectSelected}
         />
       )}
     </div>

@@ -60,7 +60,7 @@ export const TaskEditor = ({
   )
   const [taskName, setTaskName] = useState(isEdit && task.name)
   const [taskDescription, setTaskDescription] = useState(
-    isEdit && task.description,
+    isEdit ? task.description : '',
   )
   const [taskPriority, setTaskPriority] = useState(isEdit && task.priority)
   const [taskTimeLength, setTaskTimeLength] = useState(
