@@ -245,9 +245,10 @@ export const TaskEditor = ({
               <div className='add-task__attributes--left'>
                 <SetNewTaskProject
                   isQuickAdd={isQuickAdd}
+                  isChecklist={defaultGroup === 'Checklist'}
+                  isPopup={isPopup}
                   project={project}
                   setProject={setProject}
-                  isChecklist={defaultGroup === 'Checklist'}
                   projectId={task ? task.projectId : ''}
                 />
               </div>
@@ -257,16 +258,19 @@ export const TaskEditor = ({
               <div className='add-task__attributes--left'>
                 <SetNewTaskSchedule
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   schedule={schedule}
                   setSchedule={setSchedule}
                 />
                 <SetNewTaskPriority
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskPriority={taskPriority}
                   setTaskPriority={setTaskPriority}
                 />
                 <SetNewTaskTimeLength
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskTimeLength={taskTimeLength}
                   setTaskTimeLength={setTaskTimeLength}
                 />

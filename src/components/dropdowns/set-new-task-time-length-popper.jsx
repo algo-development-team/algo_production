@@ -8,6 +8,7 @@ import './main.scss'
 
 export const SetNewTaskTimeLengthPopper = ({
   isQuickAdd,
+  isPopup,
   setShowPopup,
   setTaskTimeLength,
   closeOverlay,

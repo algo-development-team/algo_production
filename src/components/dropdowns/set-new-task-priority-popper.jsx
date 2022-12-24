@@ -8,6 +8,7 @@ import './main.scss'
 
 export const SetNewTaskPriorityPopper = ({
   isQuickAdd,
+  isPopup,
   setShowPopup,
   setTaskPriority,
   closeOverlay,

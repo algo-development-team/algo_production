@@ -4,6 +4,7 @@ import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const SetNewTaskTimeLength = ({
   isQuickAdd,
+  isPopup,
   setTaskTimeLength,
   taskTimeLength,
 }) => {
@@ -53,6 +54,7 @@ export const SetNewTaskTimeLength = ({
       {showPopup && (
         <SetNewTaskTimeLengthPopper
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           setShowPopup={setShowPopup}
           setTaskTimeLength={setTaskTimeLength}
           parentPosition={parentPosition}

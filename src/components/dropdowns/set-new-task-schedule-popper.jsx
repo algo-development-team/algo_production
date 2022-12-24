@@ -10,6 +10,7 @@ import './main.scss'
 
 export const SetNewTaskSchedulePopper = ({
   isQuickAdd,
+  isPopup,
   setShowPopup,
   setSchedule,
   closeOverlay,

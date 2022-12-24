@@ -7,9 +7,10 @@ import { useParams } from 'react-router-dom'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
 export const SetNewTaskProject = ({
   isQuickAdd,
+  isChecklist,
+  isPopup,
   project,
   setProject,
-  isChecklist,
   projectId,
 }) => {
   const params = useParams()
@@ -70,6 +71,15 @@ export const SetNewTaskProject = ({
     setParentPosition(parentPosition)
     setShowPopup(true)
   }
+
+  useEffect(() => {
+    console.log('isQuickAdd', isQuickAdd) // DEBUGGING
+  }, [isQuickAdd])
+
+  useEffect(() => {
+    console.log('isPopup', isPopup) // DEBUGGING
+  }, [isPopup])
+
   return (
     <div
       className='set-new-task__project'
@@ -106,6 +116,7 @@ export const SetNewTaskProject = ({
           setPopupSelectedProject={setPopupSelectedProject}
           parentPosition={parentPosition}
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           showPopup={showPopup}
         />
       )}

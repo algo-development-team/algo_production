@@ -4,6 +4,7 @@ import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const SetNewTaskPriority = ({
   isQuickAdd,
+  isPopup,
   setTaskPriority,
   taskPriority,
 }) => {
@@ -65,6 +66,7 @@ export const SetNewTaskPriority = ({
       {showPopup && (
         <SetNewTaskPriorityPopper
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           setShowPopup={setShowPopup}
           setTaskPriority={setTaskPriority}
           parentPosition={parentPosition}
