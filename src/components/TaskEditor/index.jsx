@@ -60,7 +60,7 @@ export const TaskEditor = ({
   )
   const [taskName, setTaskName] = useState(isEdit && task.name)
   const [taskDescription, setTaskDescription] = useState(
-    isEdit ? task.description : '',
+    isEdit && task.description,
   )
   const [taskPriority, setTaskPriority] = useState(isEdit && task.priority)
   const [taskTimeLength, setTaskTimeLength] = useState(
@@ -88,7 +88,7 @@ export const TaskEditor = ({
           important: defaultGroup === 'Important' ? true : false,
           ...(!projectIsList && column && { boardStatus: column?.id }),
           // new fields
-          description: taskDescription, // string
+          description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
         },
