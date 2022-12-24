@@ -129,7 +129,7 @@ export const TaskEditor = ({
       await updateDoc(taskDoc.ref, {
         name: taskName,
         date: schedule.date,
-        projectId: project.selectedProjectId || task.projectId,
+        projectId: project.selectedProjectId,
         // new fields
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)

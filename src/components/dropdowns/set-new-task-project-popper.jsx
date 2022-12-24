@@ -36,12 +36,18 @@ export const SetNewTaskProjectPopper = ({
     }
   }
   const setProjectAsInbox = () => {
-    setProject({ selectedProjectName: 'Inbox', selectedProjectId: '' })
+    setProject({
+      selectedProjectName: 'Inbox',
+      selectedProjectId: '',
+    })
     setPopupSelectedProject({
       selectedProjectName: 'Inbox',
       selectedProjectId: '',
       defaultProject: true,
     })
+    if (isChecklist) {
+      setInitialProjectSelected(true)
+    }
   }
 
   const targetedposition = parentPosition
