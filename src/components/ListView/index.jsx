@@ -147,7 +147,7 @@ export const TaskList = () => {
           )}
         </Droppable>
       </DragDropContext>
-      <TaskEditor projects={projects} />
+      <TaskEditor />
       {tasks.length ? null : <EmptyState />}
     </div>
   )

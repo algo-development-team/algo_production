@@ -36,7 +36,6 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
             taskId={dialogProps.task.taskId}
             task={dialogProps.task}
-            projects={dialogProps.projects}
             isEdit
           />
         )

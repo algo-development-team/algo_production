@@ -244,8 +244,9 @@ export const TaskEditor = ({
                 <SetNewTaskProject
                   isQuickAdd={isQuickAdd}
                   project={project}
-                  projects={projects}
                   setProject={setProject}
+                  isChecklist={defaultGroup === 'Checklist'}
+                  projectId={task.projectId}
                 />
               </div>
               <div className='add-task__attributes--right'></div>

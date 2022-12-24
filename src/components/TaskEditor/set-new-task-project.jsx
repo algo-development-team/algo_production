@@ -5,7 +5,13 @@ import { useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
-export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
+export const SetNewTaskProject = ({
+  isQuickAdd,
+  project,
+  setProject,
+  isChecklist,
+  projectId,
+}) => {
   const params = useParams()
   // const { selectedProject } = useSelectedProjectValue(params);
   const { projects } = useProjects()
@@ -21,15 +27,39 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
     selectedProjectId: '',
     defaultProject: true,
   }
+
+  const getChecklistProjectValue = () => {
+    const projectMap = {}
+    for (const project of projects) {
+      projectMap[project.projectId] = project
+    }
+    if (projectMap.hasOwnProperty(projectId)) {
+      const checklistProjectValue = {
+        selectedProjectName: projectMap[projectId].name,
+        selectedProjectId: projectMap[projectId].projectId,
+        defaultProject: false,
+        projectColour: projectMap[projectId].projectColour,
+      }
+      return checklistProjectValue
+    } else {
+      return defaultProjectValue
+    }
+  }
+
   useEffect(() => {
-    if (!project.defaultProject) {
+    if (isChecklist) {
+      setPopupSelectedProject(getChecklistProjectValue())
+    } else if (!project.defaultProject) {
       setPopupSelectedProject(project)
     } else {
       setPopupSelectedProject(defaultProjectValue)
     }
   }, [project])
+
   useEffect(() => {
-    if (!selectedProject.defaultProject) {
+    if (isChecklist) {
+      setPopupSelectedProject(getChecklistProjectValue())
+    } else if (!selectedProject.defaultProject) {
       setProject(selectedProject)
     } else {
       setProject(defaultProjectValue)

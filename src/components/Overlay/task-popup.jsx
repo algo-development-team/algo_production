@@ -7,7 +7,6 @@ export const TaskPopup = ({ closeOverlay, task, projects }) => {
           closeOverlay={closeOverlay}
           taskId={task.taskId}
           task={task}
-          projects={projects}
           isEdit
         />
       </div>
