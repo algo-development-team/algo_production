@@ -51,9 +51,6 @@ export const SetNewTaskTimeLength = ({
           } else {
             setShowDialog('SET_TASK_TIME_LENGTH')
           }
-          // isQuickAdd
-          //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-          //   : setShowDialog('SET_TASK_TIME_LENGTH')
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />

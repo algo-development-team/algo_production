@@ -82,14 +82,6 @@ export const SetNewTaskProject = ({
     }
   }, [selectedProject])
 
-  useEffect(() => {
-    console.log('project', project) // DEBUGGING
-  }, [project])
-
-  useEffect(() => {
-    console.log('popupSelectedProject', popupSelectedProject) // DEBUGGING
-  }, [popupSelectedProject])
-
   const showQUickAddDropDown = (parentPosition) => {
     setParentPosition(parentPosition)
     setShowPopup(true)
@@ -114,9 +106,6 @@ export const SetNewTaskProject = ({
         } else {
           setShowDialog('SET_PROJECT')
         }
-        // isQuickAdd
-        //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-        //   : setShowDialog('SET_PROJECT')
       }}
     >
       {popupSelectedProject?.selectedProjectName === 'Inbox' ? (

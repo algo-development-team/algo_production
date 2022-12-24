@@ -63,9 +63,6 @@ export const SetNewTaskPriority = ({
           } else {
             setShowDialog('SET_TASK_PRIORITY')
           }
-          // isQuickAdd
-          //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-          //   : setShowDialog('SET_TASK_PRIORITY')
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />

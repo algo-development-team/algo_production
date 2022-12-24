@@ -55,9 +55,6 @@ export const SetNewTaskSchedule = ({
           } else {
             setShowDialog('SET_SCHEDULE')
           }
-          // isQuickAdd
-          //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-          //   : setShowDialog('SET_SCHEDULE')
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
