@@ -137,6 +137,7 @@ export const TaskEditor = ({
       })
     })
     setTaskEditorToShow('')
+    isPopup && closeOverlay()
   }
 
   const { defaultProject } = selectedProject
