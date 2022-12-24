@@ -42,6 +42,7 @@ export const TaskEditor = ({
   column,
   isQuickAdd,
   isEdit,
+  isPopup,
   task,
   closeOverlay,
 }) => {
@@ -246,7 +247,7 @@ export const TaskEditor = ({
                   project={project}
                   setProject={setProject}
                   isChecklist={defaultGroup === 'Checklist'}
-                  projectId={task.projectId}
+                  projectId={task ? task.projectId : ''}
                 />
               </div>
               <div className='add-task__attributes--right'></div>
@@ -289,9 +290,13 @@ export const TaskEditor = ({
               className={` action  ${
                 isLight ? 'action__cancel' : 'action__cancel--dark'
               }`}
-              onClick={(event) =>
-                isQuickAdd ? closeOverlay() : showAddTaskFormHandler(event)
-              }
+              onClick={(event) => {
+                if (isQuickAdd || isPopup) {
+                  closeOverlay()
+                } else {
+                  showAddTaskFormHandler(event)
+                }
+              }}
             >
               Cancel
             </button>
