@@ -39,6 +39,7 @@ export const SetNewTaskProjectPopper = ({
     setProject({
       selectedProjectName: 'Inbox',
       selectedProjectId: '',
+      defaultProject: true,
     })
     setPopupSelectedProject({
       selectedProjectName: 'Inbox',

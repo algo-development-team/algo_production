@@ -5,6 +5,19 @@ import { useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
+
+/*
+ * project schema: (selectedProjectId automatically set by useEffect)
+ * { selectedProjectName, defaultProject } ->
+ * { selectedProjectName, selectedProjectId, defaultProject }
+ */
+
+/*
+ * popupSelectedProject schema: (selectedProjectId automatically set by useEffect)
+ * { selectedProjectName, defaultProject } ->
+ * { selectedProjectName, selectedProjectId, defaultProject, projectColour (optional) }
+ */
+
 export const SetNewTaskProject = ({
   isQuickAdd,
   isChecklist,
@@ -68,6 +81,14 @@ export const SetNewTaskProject = ({
       setProject(defaultProjectValue)
     }
   }, [selectedProject])
+
+  useEffect(() => {
+    console.log('project', project) // DEBUGGING
+  }, [project])
+
+  useEffect(() => {
+    console.log('popupSelectedProject', popupSelectedProject) // DEBUGGING
+  }, [popupSelectedProject])
 
   const showQUickAddDropDown = (parentPosition) => {
     setParentPosition(parentPosition)
