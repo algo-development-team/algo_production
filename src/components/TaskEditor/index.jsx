@@ -276,7 +276,7 @@ export const TaskEditor = ({
 
           <div
             className={`add-task__actions ${
-              isQuickAdd ? 'quick-add__actions' : ''
+              isQuickAdd || isPopup ? 'quick-add__actions' : ''
             }`}
           >
             <button
