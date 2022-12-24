@@ -11,7 +11,7 @@ export const SetNewTaskProject = ({
   isPopup,
   project,
   setProject,
-  projectId,
+  task,
 }) => {
   const params = useParams()
   // const { selectedProject } = useSelectedProjectValue(params);
@@ -30,16 +30,17 @@ export const SetNewTaskProject = ({
   }
 
   const getChecklistProjectValue = () => {
+    if (!task) return defaultProjectValue
     const projectMap = {}
     for (const project of projects) {
       projectMap[project.projectId] = project
     }
-    if (projectMap.hasOwnProperty(projectId)) {
+    if (projectMap.hasOwnProperty(task.projectId)) {
       const checklistProjectValue = {
-        selectedProjectName: projectMap[projectId].name,
-        selectedProjectId: projectMap[projectId].projectId,
+        selectedProjectName: projectMap[task.projectId].name,
+        selectedProjectId: projectMap[task.projectId].projectId,
         defaultProject: false,
-        projectColour: projectMap[projectId].projectColour,
+        projectColour: projectMap[task.projectId].projectColour,
       }
       return checklistProjectValue
     } else {
@@ -72,14 +73,6 @@ export const SetNewTaskProject = ({
     setShowPopup(true)
   }
 
-  useEffect(() => {
-    console.log('isQuickAdd', isQuickAdd) // DEBUGGING
-  }, [isQuickAdd])
-
-  useEffect(() => {
-    console.log('isPopup', isPopup) // DEBUGGING
-  }, [isPopup])
-
   return (
     <div
       className='set-new-task__project'
@@ -91,9 +84,17 @@ export const SetNewTaskProject = ({
             { setProject, setPopupSelectedProject },
           ),
         )
-        isQuickAdd
-          ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-          : setShowDialog('SET_PROJECT')
+        if (isPopup) {
+          setDialogProps({ task })
+          showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+        } else if (isQuickAdd) {
+          showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+        } else {
+          setShowDialog('SET_PROJECT')
+        }
+        // isQuickAdd
+        //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+        //   : setShowDialog('SET_PROJECT')
       }}
     >
       {popupSelectedProject?.selectedProjectName === 'Inbox' ? (

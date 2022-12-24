@@ -249,7 +249,7 @@ export const TaskEditor = ({
                   isPopup={isPopup}
                   project={project}
                   setProject={setProject}
-                  projectId={task ? task.projectId : ''}
+                  task={task}
                 />
               </div>
               <div className='add-task__attributes--right'></div>
@@ -261,18 +261,21 @@ export const TaskEditor = ({
                   isPopup={isPopup}
                   schedule={schedule}
                   setSchedule={setSchedule}
+                  task={task}
                 />
                 <SetNewTaskPriority
                   isQuickAdd={isQuickAdd}
                   isPopup={isPopup}
                   taskPriority={taskPriority}
                   setTaskPriority={setTaskPriority}
+                  task={task}
                 />
                 <SetNewTaskTimeLength
                   isQuickAdd={isQuickAdd}
                   isPopup={isPopup}
                   taskTimeLength={taskTimeLength}
                   setTaskTimeLength={setTaskTimeLength}
+                  task={task}
                 />
               </div>
               <div className='add-task__attributes--right'></div>

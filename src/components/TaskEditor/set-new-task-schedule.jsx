@@ -7,6 +7,7 @@ export const SetNewTaskSchedule = ({
   isPopup,
   setSchedule,
   schedule,
+  task,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -46,9 +47,17 @@ export const SetNewTaskSchedule = ({
               { setSchedule },
             ),
           )
-          isQuickAdd
-            ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-            : setShowDialog('SET_SCHEDULE')
+          if (isPopup) {
+            setDialogProps({ task })
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else if (isQuickAdd) {
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else {
+            setShowDialog('SET_SCHEDULE')
+          }
+          // isQuickAdd
+          //   ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          //   : setShowDialog('SET_SCHEDULE')
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />

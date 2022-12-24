@@ -43,20 +43,12 @@ export const SetNewTaskProjectPopper = ({
     ? parentPosition
     : { x: xPosition, y: yPosition }
 
-  useEffect(() => {
-    console.log('isQuickAdd', isQuickAdd) // DEBUGGING
-  }, [isQuickAdd])
-
-  useEffect(() => {
-    console.log('isPopup', isPopup) // DEBUGGING
-  }, [isPopup])
-
   return (
     <div
       className='option__overlay'
       onClick={(event) => {
         event.stopPropagation()
-        isQuickAdd ? setShowPopup(!showPopup) : closeOverlay(event)
+        isQuickAdd || isPopup ? setShowPopup(!showPopup) : closeOverlay(event)
       }}
     >
       <div

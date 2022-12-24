@@ -25,25 +25,25 @@ export const SetNewTaskSchedulePopper = ({
       day: 'Next Week',
       date: moment().add(7, 'days').format('DD-MM-YYYY'),
     })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setTomorrow = () => {
     setSchedule({
       day: 'Tomorrow',
       date: moment().add(1, 'day').format('DD-MM-YYYY'),
     })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setToday = () => {
     setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setWeekend = () => {
     setSchedule({
       day: 'Weekend',
       date: moment().day('Saturday').format('DD-MM-YYYY'),
     })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setCustom = () => {
     const customDateFormatted = moment(customDate)
@@ -53,11 +53,11 @@ export const SetNewTaskSchedulePopper = ({
       day: moment().add(daysDiff, 'day').format('MMM DD'),
       date: moment().add(daysDiff, 'day').format('DD-MM-YYYY'),
     })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setNoDate = () => {
     setSchedule({ day: '', date: '' })
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
   const targetedposition = parentPosition
@@ -69,7 +69,7 @@ export const SetNewTaskSchedulePopper = ({
       className='option__overlay'
       onClick={(event) => {
         event.stopPropagation()
-        isQuickAdd ? setShowPopup(false) : closeOverlay(event)
+        isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay(event)
       }}
     >
       <div
