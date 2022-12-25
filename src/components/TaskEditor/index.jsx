@@ -71,6 +71,8 @@ export const TaskEditor = ({
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
 
+  const [initialProjectSelected, setInitialProjectSelected] = useState(false)
+
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
@@ -129,7 +131,9 @@ export const TaskEditor = ({
       await updateDoc(taskDoc.ref, {
         name: taskName,
         date: schedule.date,
-        projectId: project.selectedProjectId,
+        projectId: initialProjectSelected
+          ? project.selectedProjectId
+          : task.projectId,
         // new fields
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)
@@ -248,6 +252,8 @@ export const TaskEditor = ({
                   project={project}
                   setProject={setProject}
                   task={task}
+                  initialProjectSelected={initialProjectSelected}
+                  setInitialProjectSelected={setInitialProjectSelected}
                 />
               </div>
               <div className='add-task__attributes--right'></div>

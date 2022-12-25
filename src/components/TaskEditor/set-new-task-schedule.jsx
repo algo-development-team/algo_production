@@ -37,10 +37,6 @@ export const SetNewTaskSchedule = ({
     }
   }
 
-  useEffect(() => {
-    console.log('schedule', schedule) // DEBUGGING
-  }, [schedule])
-
   return (
     <>
       <div
