@@ -21,6 +21,7 @@ import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import './styles/main.scss'
 import './styles/light.scss'
+import { TaskList } from 'components/ListView'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -71,8 +72,6 @@ export const TaskEditor = ({
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
 
-  const [initialProjectSelected, setInitialProjectSelected] = useState(false)
-
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
@@ -120,8 +119,21 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const getProjectId = () => {
+    if (defaultGroup === 'Checklist') {
+      return task.projectId
+    } else if (project.selectedProjectName !== task.projectId) {
+      return project.selectedProjectId
+    } else {
+      return task.projectId
+    }
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
+    console.log('project.selectedProjectId:', project.selectedProjectId) // DEBUGGING
+    console.log('task:', task) // DEBUGGING
+    console.log('getProjectId:', getProjectId()) // DEBUGGING
     const taskQuery = await query(
       collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
       where('taskId', '==', task.taskId),
@@ -131,9 +143,7 @@ export const TaskEditor = ({
       await updateDoc(taskDoc.ref, {
         name: taskName,
         date: schedule.date,
-        projectId: initialProjectSelected
-          ? project.selectedProjectId
-          : task.projectId,
+        projectId: getProjectId(),
         // new fields
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)
@@ -245,16 +255,15 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                <SetNewTaskProject
-                  isQuickAdd={isQuickAdd}
-                  isChecklist={defaultGroup === 'Checklist'}
-                  isPopup={isPopup}
-                  project={project}
-                  setProject={setProject}
-                  task={task}
-                  initialProjectSelected={initialProjectSelected}
-                  setInitialProjectSelected={setInitialProjectSelected}
-                />
+                {defaultGroup !== 'Checklist' && (
+                  <SetNewTaskProject
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    project={project}
+                    setProject={setProject}
+                    task={task}
+                  />
+                )}
               </div>
               <div className='add-task__attributes--right'></div>
             </div>

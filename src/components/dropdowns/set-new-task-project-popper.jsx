@@ -8,7 +8,6 @@ export const SetNewTaskProjectPopper = ({
   setShowPopup,
   showPopup,
   isQuickAdd,
-  isChecklist,
   isPopup,
   setProject,
   setPopupSelectedProject,
@@ -16,7 +15,6 @@ export const SetNewTaskProjectPopper = ({
   yPosition,
   closeOverlay,
   parentPosition,
-  setInitialProjectSelected,
 }) => {
   const { projects } = useProjects()
   // const [popupSelectedProject, setPopupSelectedProject] = useState(project);
@@ -31,9 +29,6 @@ export const SetNewTaskProjectPopper = ({
       selectedProjectId: project.projectId,
       ...project,
     })
-    if (isChecklist) {
-      setInitialProjectSelected(true)
-    }
   }
   const setProjectAsInbox = () => {
     setProject({
@@ -46,9 +41,6 @@ export const SetNewTaskProjectPopper = ({
       selectedProjectId: '',
       defaultProject: true,
     })
-    if (isChecklist) {
-      setInitialProjectSelected(true)
-    }
   }
 
   const targetedposition = parentPosition

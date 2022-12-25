@@ -20,13 +20,10 @@ import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-proje
 
 export const SetNewTaskProject = ({
   isQuickAdd,
-  isChecklist,
   isPopup,
   project,
   setProject,
   task,
-  initialProjectSelected,
-  setInitialProjectSelected,
 }) => {
   const params = useParams()
   // const { selectedProject } = useSelectedProjectValue(params);
@@ -44,29 +41,8 @@ export const SetNewTaskProject = ({
     defaultProject: true,
   }
 
-  const getChecklistProjectValue = () => {
-    if (!task) return defaultProjectValue
-    const projectMap = {}
-    for (const project of projects) {
-      projectMap[project.projectId] = project
-    }
-    if (projectMap.hasOwnProperty(task.projectId)) {
-      const checklistProjectValue = {
-        selectedProjectName: projectMap[task.projectId].name,
-        selectedProjectId: projectMap[task.projectId].projectId,
-        defaultProject: false,
-        projectColour: projectMap[task.projectId].projectColour,
-      }
-      return checklistProjectValue
-    } else {
-      return defaultProjectValue
-    }
-  }
-
   useEffect(() => {
-    if (isChecklist && !initialProjectSelected) {
-      setPopupSelectedProject(getChecklistProjectValue())
-    } else if (!project.defaultProject) {
+    if (!project.defaultProject) {
       setPopupSelectedProject(project)
     } else {
       setPopupSelectedProject(defaultProjectValue)
@@ -74,9 +50,7 @@ export const SetNewTaskProject = ({
   }, [project])
 
   useEffect(() => {
-    if (isChecklist && !initialProjectSelected) {
-      setPopupSelectedProject(getChecklistProjectValue())
-    } else if (!selectedProject.defaultProject) {
+    if (!selectedProject.defaultProject) {
       setProject(selectedProject)
     } else {
       setProject(defaultProjectValue)
@@ -129,10 +103,8 @@ export const SetNewTaskProject = ({
           setPopupSelectedProject={setPopupSelectedProject}
           parentPosition={parentPosition}
           isQuickAdd={isQuickAdd}
-          isChecklist={isChecklist}
           isPopup={isPopup}
           showPopup={showPopup}
-          setInitialProjectSelected={setInitialProjectSelected}
         />
       )}
     </div>
