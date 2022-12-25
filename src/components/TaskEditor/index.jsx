@@ -152,9 +152,7 @@ export const TaskEditor = ({
     } else {
       setProject({ ...selectedProject })
     }
-    if (defaultGroup === 'Checklist') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
-    } else if (isEdit) {
+    if (isEdit) {
       moment.defaultFormat = 'DD-MM-YYYY'
       setSchedule({
         day:
