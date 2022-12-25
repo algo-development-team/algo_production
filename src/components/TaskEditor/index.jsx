@@ -104,8 +104,8 @@ export const TaskEditor = ({
     isQuickAdd && closeOverlay()
     setTaskName('')
     setTaskDescription('')
-    setTaskPriority(1)
-    setTaskTimeLength(15)
+    setTaskPriority(2)
+    setTaskTimeLength(60)
     setSchedule({ day: '', date: '' })
     setTaskEditorToShow('')
   }
