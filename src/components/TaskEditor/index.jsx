@@ -131,9 +131,6 @@ export const TaskEditor = ({
 
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    console.log('project.selectedProjectId:', project.selectedProjectId) // DEBUGGING
-    console.log('task:', task) // DEBUGGING
-    console.log('getProjectId:', getProjectId()) // DEBUGGING
     const taskQuery = await query(
       collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
       where('taskId', '==', task.taskId),
