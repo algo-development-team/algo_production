@@ -21,6 +21,7 @@ import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import './styles/main.scss'
 import './styles/light.scss'
+import { TaskList } from 'components/ListView'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -42,6 +43,7 @@ export const TaskEditor = ({
   column,
   isQuickAdd,
   isEdit,
+  isPopup,
   task,
   closeOverlay,
 }) => {
@@ -87,7 +89,7 @@ export const TaskEditor = ({
           important: defaultGroup === 'Important' ? true : false,
           ...(!projectIsList && column && { boardStatus: column?.id }),
           // new fields
-          description: taskDescription, // string
+          description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
         },
@@ -117,6 +119,16 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const getProjectId = () => {
+    if (defaultGroup === 'Checklist') {
+      return task.projectId
+    } else if (project.selectedProjectName !== task.projectId) {
+      return project.selectedProjectId
+    } else {
+      return task.projectId
+    }
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
     const taskQuery = await query(
@@ -128,7 +140,7 @@ export const TaskEditor = ({
       await updateDoc(taskDoc.ref, {
         name: taskName,
         date: schedule.date,
-        projectId: project.selectedProjectId || task.projectId,
+        projectId: getProjectId(),
         // new fields
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)
@@ -136,6 +148,7 @@ export const TaskEditor = ({
       })
     })
     setTaskEditorToShow('')
+    isPopup && closeOverlay()
   }
 
   const { defaultProject } = selectedProject
@@ -150,9 +163,7 @@ export const TaskEditor = ({
     } else {
       setProject({ ...selectedProject })
     }
-    if (defaultGroup === 'Checklist') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
-    } else if (isEdit) {
+    if (isEdit) {
       moment.defaultFormat = 'DD-MM-YYYY'
       setSchedule({
         day:
@@ -241,12 +252,15 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                <SetNewTaskProject
-                  isQuickAdd={isQuickAdd}
-                  project={project}
-                  projects={projects}
-                  setProject={setProject}
-                />
+                {defaultGroup !== 'Checklist' && (
+                  <SetNewTaskProject
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    project={project}
+                    setProject={setProject}
+                    task={task}
+                  />
+                )}
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
@@ -254,18 +268,24 @@ export const TaskEditor = ({
               <div className='add-task__attributes--left'>
                 <SetNewTaskSchedule
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   schedule={schedule}
                   setSchedule={setSchedule}
+                  task={task}
                 />
                 <SetNewTaskPriority
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskPriority={taskPriority}
                   setTaskPriority={setTaskPriority}
+                  task={task}
                 />
                 <SetNewTaskTimeLength
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskTimeLength={taskTimeLength}
                   setTaskTimeLength={setTaskTimeLength}
+                  task={task}
                 />
               </div>
               <div className='add-task__attributes--right'></div>
@@ -274,7 +294,7 @@ export const TaskEditor = ({
 
           <div
             className={`add-task__actions ${
-              isQuickAdd ? 'quick-add__actions' : ''
+              isQuickAdd || isPopup ? 'quick-add__actions' : ''
             }`}
           >
             <button
@@ -288,9 +308,13 @@ export const TaskEditor = ({
               className={` action  ${
                 isLight ? 'action__cancel' : 'action__cancel--dark'
               }`}
-              onClick={(event) =>
-                isQuickAdd ? closeOverlay() : showAddTaskFormHandler(event)
-              }
+              onClick={(event) => {
+                if (isQuickAdd || isPopup) {
+                  closeOverlay()
+                } else {
+                  showAddTaskFormHandler(event)
+                }
+              }}
             >
               Cancel
             </button>

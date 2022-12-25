@@ -4,8 +4,10 @@ import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const SetNewTaskPriority = ({
   isQuickAdd,
+  isPopup,
   setTaskPriority,
   taskPriority,
+  task,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -53,9 +55,14 @@ export const SetNewTaskPriority = ({
               { setTaskPriority },
             ),
           )
-          isQuickAdd
-            ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-            : setShowDialog('SET_TASK_PRIORITY')
+          if (isPopup) {
+            setDialogProps({ task })
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else if (isQuickAdd) {
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else {
+            setShowDialog('SET_TASK_PRIORITY')
+          }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
@@ -65,6 +72,7 @@ export const SetNewTaskPriority = ({
       {showPopup && (
         <SetNewTaskPriorityPopper
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           setShowPopup={setShowPopup}
           setTaskPriority={setTaskPriority}
           parentPosition={parentPosition}

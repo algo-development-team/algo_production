@@ -171,33 +171,6 @@ export const MenuList = ({
               <span className='menu__list--content'>Archive Project</span>
             </li>
           )}
-
-          {targetIsTask && (
-            <li
-              className='menu__list--item'
-              onClick={() => importanceHandler()}
-            >
-              <div className='menu__list--icon'>
-                <svg
-                  width='21'
-                  height='21'
-                  stroke='currentColor'
-                  fill='none'
-                  strokeWidth='1'
-                >
-                  <use
-                    width='21'
-                    height='21'
-                    href={`${featherIcon}#star`}
-                  ></use>
-                </svg>
-              </div>
-
-              <span className='menu__list--content'>
-                {taskIsImportant ? 'Remove' : 'Add'} Importance{' '}
-              </span>
-            </li>
-          )}
         </ul>
       </div>
     </div>

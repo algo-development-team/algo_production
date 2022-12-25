@@ -54,12 +54,10 @@ export const Task = ({ name, task, index, projects }) => {
           {...provided.dragHandleProps}
           {...provided.draggableProps}
           ref={provided.innerRef}
-          onClick={(event) =>
-            menuTriggerHandler(
-              event,
-              event.currentTarget.getBoundingClientRect(),
-            )
-          }
+          onClick={() => {
+            setDialogProps({ task, projects })
+            setShowDialog('TASK_POPUP')
+          }}
         >
           <TaskCheckbox taskId={task?.taskId} />
 
