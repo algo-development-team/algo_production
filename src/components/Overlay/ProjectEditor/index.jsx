@@ -75,6 +75,20 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectColour: projectColour,
       projectIsList: projectIsList,
       projectIsWork: projectIsWork,
+      columns: [
+        {
+          id: 'TODO',
+          title: 'To do',
+        },
+        {
+          id: 'INPROGRESS',
+          title: 'In Progress',
+        },
+        {
+          id: 'COMPLETE',
+          title: 'Complete',
+        },
+      ],
     }
     const projectsDocRef = doc(
       collection(db, 'user', `${currentUser && currentUser.id}/projects`),
