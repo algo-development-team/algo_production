@@ -12,8 +12,10 @@ import { useParams } from 'react-router-dom'
 import { db } from '_firebase'
 import { ViewHeader } from '../ViewHeader'
 import { BoardColumn } from './column'
+import { getUUID } from '../../handleUUID'
 import './styles/light.scss'
 import './styles/main.scss'
+
 export const Board = () => {
   const params = useParams()
   const { projects } = useProjects()
@@ -24,9 +26,41 @@ export const Board = () => {
   const boardData = useBoardData(selectedProject)
   const { currentUser } = useAuth()
   const [boardState, setBoardState] = useState(boardData)
+  const [addingColumn, setAddingColumn] = useState(false)
+  const [newColumnName, setNewColumnName] = useState('')
+
   useEffect(() => {
     setBoardState(boardData)
   }, [boardData])
+
+  const handleCreateNewColumn = async (e) => {
+    e.preventDefault()
+
+    const newSelectedProjectColumns = []
+    for (const column of selectedProject.columns) {
+      newSelectedProjectColumns.push({ ...column })
+    }
+    const uuid = getUUID(selectedProject.columns.map((column) => column.id))
+    newSelectedProjectColumns.push({
+      id: uuid,
+      title: newColumnName,
+    })
+
+    try {
+      const projectQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        where('projectId', '==', selectedProject.selectedProjectId),
+      )
+      const projectDocs = await getDocs(projectQuery)
+      projectDocs.forEach(async (projectDoc) => {
+        await updateDoc(projectDoc.ref, {
+          columns: newSelectedProjectColumns,
+        })
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const onDragEnd = async (result) => {
     const { destination, source, draggableId } = result
@@ -114,6 +148,7 @@ export const Board = () => {
       setBoardState(oldState)
     }
   }
+
   return (
     <>
       <ViewHeader />
@@ -130,6 +165,23 @@ export const Board = () => {
               )
             })}
         </DragDropContext>
+        <div className='board-column__container'>
+          {!addingColumn ? (
+            <button onClick={() => setAddingColumn(true)}>Add Column</button>
+          ) : (
+            <form onSubmit={(e) => handleCreateNewColumn(e)}>
+              <input
+                type='text'
+                value={newColumnName}
+                onChange={(e) => {
+                  setNewColumnName(e.target.value)
+                }}
+              />
+              <button type='submit'>O</button>
+              <button onClick={() => setAddingColumn(false)}>X</button>
+            </form>
+          )}
+        </div>
       </div>
     </>
   )

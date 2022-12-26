@@ -12,7 +12,6 @@ export const useBoardData = (selectedProject) => {
   }
   useEffect(() => {
     if (selectedProject.columns) {
-      console.log(selectedProject.columns) // DEBUGGING
       data.tasks = Object.assign({}, tasks)
       data.columns = {}
       for (const column of selectedProject.columns) {
