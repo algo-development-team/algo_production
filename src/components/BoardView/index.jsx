@@ -12,7 +12,6 @@ import { useParams } from 'react-router-dom'
 import { db } from '_firebase'
 import { ViewHeader } from '../ViewHeader'
 import { BoardColumn } from './column'
-import { getUUID } from '../../handleUUID'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -40,7 +39,7 @@ export const Board = () => {
     for (const column of selectedProject.columns) {
       newSelectedProjectColumns.push({ ...column })
     }
-    const uuid = getUUID(selectedProject.columns.map((column) => column.id))
+    const uuid = crypto.randomUUID()
     newSelectedProjectColumns.push({
       id: uuid,
       title: newColumnName,

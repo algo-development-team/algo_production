@@ -8,7 +8,10 @@ export const BoardColumn = ({ column, tasks }) => {
   const { taskEditorToShow } = useTaskEditorContextValue()
   return (
     <div className='board-column__container'>
-      <p className='board-column__title'>{column.title}</p>
+      <div>
+        <p className='board-column__title'>{column.title}</p>
+        <button>X</button>
+      </div>
       <Droppable droppableId={column.id}>
         {(provided) => (
           <div
