@@ -11,30 +11,21 @@ export const useBoardData = (selectedProject) => {
     return tasks.filter((task) => task.boardStatus === column)
   }
   useEffect(() => {
-    data.tasks = Object.assign({}, tasks)
-    let todoTasks = getColumnTasks('TODO')
-    let completeTasks = getColumnTasks('COMPLETE')
-    let inprogressTasks = getColumnTasks('INPROGRESS')
-    data.columns = {
-      TODO: {
-        id: 'TODO',
-        title: 'To do',
-        columnTasks: todoTasks,
-      },
-      INPROGRESS: {
-        id: 'INPROGRESS',
-        title: 'In Progress',
-        columnTasks: inprogressTasks,
-      },
-      COMPLETE: {
-        id: 'COMPLETE',
-        title: 'Complete',
-        columnTasks: completeTasks,
-      },
-    }
-    data.columnOrder = ['TODO', 'INPROGRESS', 'COMPLETE']
+    if (selectedProject.columns) {
+      console.log(selectedProject.columns) // DEBUGGING
+      data.tasks = Object.assign({}, tasks)
+      data.columns = {}
+      for (const column of selectedProject.columns) {
+        data.columns[column.id] = {
+          id: column.id,
+          title: column.title,
+          columnTasks: getColumnTasks(column.id),
+        }
+      }
+      data.columnOrder = selectedProject.columns.map((column) => column.id)
 
-    setBoardData(data)
+      setBoardData(data)
+    }
   }, [tasks])
 
   return boardData
