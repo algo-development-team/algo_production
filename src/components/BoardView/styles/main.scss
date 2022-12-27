@@ -17,6 +17,15 @@
       font-weight: 600;
       margin-bottom: 1rem;
     }
+    &__add-column {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      &:hover {
+        color: rgb(144, 144, 144);
+        cursor: pointer;
+      }
+    }
     &__container {
       min-width: 250px;
       display: inline-block;
