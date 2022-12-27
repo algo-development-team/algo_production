@@ -5,6 +5,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { useColumnEditorContextValue } from 'context'
 import { useAuth, useBoardData, useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { DragDropContext } from 'react-beautiful-dnd'
@@ -22,11 +23,13 @@ export const Board = () => {
     params,
     projects,
   )
+  const { setColumnEditorToShow } = useColumnEditorContextValue()
   const boardData = useBoardData(selectedProject)
   const { currentUser } = useAuth()
   const [boardState, setBoardState] = useState(boardData)
   const [addingColumn, setAddingColumn] = useState(false)
   const [newColumnName, setNewColumnName] = useState('')
+  const [modifiedColumnName, setModifiedColumnName] = useState('')
 
   useEffect(() => {
     setBoardState(boardData)
@@ -59,6 +62,40 @@ export const Board = () => {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const handleUpdateColumn = async (e, columnId) => {
+    e.preventDefault()
+
+    const updatedSelectedProjectColumns = []
+    for (const column of selectedProject.columns) {
+      if (column.id === columnId) {
+        updatedSelectedProjectColumns.push({
+          ...column,
+          title: modifiedColumnName,
+        })
+      } else {
+        updatedSelectedProjectColumns.push({ ...column })
+      }
+    }
+
+    try {
+      const projectQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        where('projectId', '==', selectedProject.selectedProjectId),
+      )
+      const projectDocs = await getDocs(projectQuery)
+      projectDocs.forEach(async (projectDoc) => {
+        await updateDoc(projectDoc.ref, {
+          columns: updatedSelectedProjectColumns,
+        })
+      })
+    } catch (error) {
+      console.log(error)
+    }
+
+    setNewColumnName('')
+    setColumnEditorToShow(null)
   }
 
   const onDragEnd = async (result) => {
@@ -166,6 +203,9 @@ export const Board = () => {
                   column={column}
                   columns={selectedProject.columns}
                   projectId={selectedProject.selectedProjectId}
+                  modifiedColumnName={modifiedColumnName}
+                  setModifiedColumnName={setModifiedColumnName}
+                  handleUpdateColumn={handleUpdateColumn}
                 />
               )
             })}

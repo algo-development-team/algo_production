@@ -1,17 +1,71 @@
-import { useTaskEditorContextValue } from 'context'
+import { useTaskEditorContextValue, useColumnEditorContextValue } from 'context'
 import { useProjects } from 'hooks'
 import { Droppable } from 'react-beautiful-dnd'
 import { TaskEditor } from '../TaskEditor'
 import { BoardTask } from './board-task'
 import { OptionsButton } from '../MenuButton'
+import { useEffect } from 'react'
 
-export const BoardColumn = ({ column, columns, tasks, projectId }) => {
+export const BoardColumn = ({
+  column,
+  columns,
+  tasks,
+  projectId,
+  modifiedColumnName,
+  setModifiedColumnName,
+  handleUpdateColumn,
+}) => {
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
+  const { columnEditorToShow, setColumnEditorToShow } =
+    useColumnEditorContextValue()
+
+  useEffect(() => {
+    if (
+      columnEditorToShow &&
+      columnEditorToShow.projectId === projectId &&
+      columnEditorToShow.columnId === column.id
+    ) {
+      setModifiedColumnName(column.title)
+    }
+  }, [columnEditorToShow])
+
   return (
     <div className='board-column__container'>
       <div className='board-column__header'>
-        <p className='board-column__title'>{column.title}</p>
+        {columnEditorToShow &&
+        columnEditorToShow.projectId === projectId &&
+        columnEditorToShow.columnId === column.id ? (
+          <>
+            <form onSubmit={(e) => handleUpdateColumn(e, column.id)}>
+              <input
+                className='add-project__project-name'
+                value={modifiedColumnName}
+                onChange={(e) => {
+                  setModifiedColumnName(e.target.value)
+                }}
+                type='text'
+                required
+              />
+              <div>
+                <button className='action action__add-project' type='submit'>
+                  Save
+                </button>
+                <button
+                  className='action action__cancel'
+                  type='button'
+                  onClick={() => setColumnEditorToShow(null)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </>
+        ) : (
+          <>
+            <p className='board-column__title'>{column.title}</p>
+          </>
+        )}
         <OptionsButton
           targetIsColumn
           projectId={projectId}
@@ -51,9 +105,7 @@ export const BoardColumn = ({ column, columns, tasks, projectId }) => {
           </div>
         )}
       </Droppable>
-      <div className='board-column__footer'>
-        <TaskEditor column={column} />
-      </div>
+      <TaskEditor column={column} />
     </div>
   )
 }

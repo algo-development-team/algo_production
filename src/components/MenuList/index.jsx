@@ -2,7 +2,11 @@ import { ReactComponent as ArchiveIcon } from 'assets/svg/archive.svg'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import featherIcon from 'assets/svg/feather-sprite.svg'
-import { useOverlayContextValue, useTaskEditorContextValue } from 'context'
+import {
+  useOverlayContextValue,
+  useTaskEditorContextValue,
+  useColumnEditorContextValue,
+} from 'context'
 import {
   collection,
   deleteDoc,
@@ -35,6 +39,7 @@ export const MenuList = ({
   const { currentUser } = useAuth()
   const navigate = useNavigate()
   const { setTaskEditorToShow } = useTaskEditorContextValue()
+  const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, showDialog, setDialogProps } = useOverlayContextValue()
 
   const handleProjectDeleteConfirmation = () => {
@@ -138,11 +143,11 @@ export const MenuList = ({
     e.preventDefault()
     e.stopPropagation()
     if (targetIsTask) {
-      console.log(taskId)
       setTaskEditorToShow(taskId)
       closeOverlay(e)
     } else if (targetIsColumn) {
-      console.log('show popup for editing column...') // DEBUGGING
+      setColumnEditorToShow({ projectId, columnId })
+      closeOverlay(e)
     } else if (targetIsProject) {
       setShowDialog('EDIT_PROJECT')
     }
