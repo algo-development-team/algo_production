@@ -117,7 +117,7 @@ export const TaskList = () => {
     <div className='task-list__wrapper'>
       <ViewHeader />
       <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-        <Droppable droppableId={1}>
+        <Droppable droppableId='list'>
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {showTaskEditor() &&

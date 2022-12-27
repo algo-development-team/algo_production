@@ -5,6 +5,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
+import { useColumnEditorContextValue } from 'context'
 import { useAuth, useBoardData, useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { DragDropContext } from 'react-beautiful-dnd'
@@ -14,6 +15,7 @@ import { ViewHeader } from '../ViewHeader'
 import { BoardColumn } from './column'
 import './styles/light.scss'
 import './styles/main.scss'
+
 export const Board = () => {
   const params = useParams()
   const { projects } = useProjects()
@@ -21,12 +23,80 @@ export const Board = () => {
     params,
     projects,
   )
+  const { setColumnEditorToShow } = useColumnEditorContextValue()
   const boardData = useBoardData(selectedProject)
   const { currentUser } = useAuth()
   const [boardState, setBoardState] = useState(boardData)
+  const [addingColumn, setAddingColumn] = useState(false)
+  const [newColumnName, setNewColumnName] = useState('')
+  const [modifiedColumnName, setModifiedColumnName] = useState('')
+
   useEffect(() => {
     setBoardState(boardData)
   }, [boardData])
+
+  const handleCreateNewColumn = async (e) => {
+    e.preventDefault()
+
+    const newSelectedProjectColumns = []
+    for (const column of selectedProject.columns) {
+      newSelectedProjectColumns.push({ ...column })
+    }
+    const uuid = crypto.randomUUID()
+    newSelectedProjectColumns.push({
+      id: uuid,
+      title: newColumnName,
+    })
+
+    try {
+      const projectQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        where('projectId', '==', selectedProject.selectedProjectId),
+      )
+      const projectDocs = await getDocs(projectQuery)
+      projectDocs.forEach(async (projectDoc) => {
+        await updateDoc(projectDoc.ref, {
+          columns: newSelectedProjectColumns,
+        })
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleUpdateColumn = async (e, columnId) => {
+    e.preventDefault()
+
+    const updatedSelectedProjectColumns = []
+    for (const column of selectedProject.columns) {
+      if (column.id === columnId) {
+        updatedSelectedProjectColumns.push({
+          ...column,
+          title: modifiedColumnName,
+        })
+      } else {
+        updatedSelectedProjectColumns.push({ ...column })
+      }
+    }
+
+    try {
+      const projectQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        where('projectId', '==', selectedProject.selectedProjectId),
+      )
+      const projectDocs = await getDocs(projectQuery)
+      projectDocs.forEach(async (projectDoc) => {
+        await updateDoc(projectDoc.ref, {
+          columns: updatedSelectedProjectColumns,
+        })
+      })
+    } catch (error) {
+      console.log(error)
+    }
+
+    setNewColumnName('')
+    setColumnEditorToShow(null)
+  }
 
   const onDragEnd = async (result) => {
     const { destination, source, draggableId } = result
@@ -114,6 +184,7 @@ export const Board = () => {
       setBoardState(oldState)
     }
   }
+
   return (
     <>
       <ViewHeader />
@@ -126,10 +197,55 @@ export const Board = () => {
               const tasks = column.columnTasks
 
               return (
-                <BoardColumn key={column.id} tasks={tasks} column={column} />
+                <BoardColumn
+                  key={column.id}
+                  tasks={tasks}
+                  column={column}
+                  columns={selectedProject.columns}
+                  projectId={selectedProject.selectedProjectId}
+                  modifiedColumnName={modifiedColumnName}
+                  setModifiedColumnName={setModifiedColumnName}
+                  handleUpdateColumn={handleUpdateColumn}
+                />
               )
             })}
         </DragDropContext>
+        <div className='board-column__container'>
+          {!addingColumn ? (
+            <div className='board-column__header'>
+              <p
+                className='board-column__add-column'
+                onClick={() => setAddingColumn(true)}
+              >
+                Add Column
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={(e) => handleCreateNewColumn(e)}>
+              <input
+                className='add-project__project-name'
+                value={newColumnName}
+                onChange={(e) => {
+                  setNewColumnName(e.target.value)
+                }}
+                type='text'
+                required
+              />
+              <div>
+                <button className='action action__add-project' type='submit'>
+                  Add
+                </button>
+                <button
+                  className='action action__cancel'
+                  type='button'
+                  onClick={() => setAddingColumn(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </>
   )

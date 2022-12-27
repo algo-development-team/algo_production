@@ -1,13 +1,17 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, createContext, useContext } from 'react'
 
-export const TaskEditorContext = createContext();
+export const TaskEditorContext = createContext()
 
 export const TaskEditorContextProvider = ({ children }) => {
-  const [taskEditorToShow, setTaskEditorToShow] = useState();
+  const [taskEditorToShow, setTaskEditorToShow] = useState(null)
 
-  useEffect(() => {}, [taskEditorToShow]);
+  return (
+    <TaskEditorContext.Provider
+      value={{ taskEditorToShow, setTaskEditorToShow }}
+    >
+      {children}
+    </TaskEditorContext.Provider>
+  )
+}
 
-  return <TaskEditorContext.Provider value={{ taskEditorToShow, setTaskEditorToShow }}>{children}</TaskEditorContext.Provider>;
-};
-
-export const useTaskEditorContextValue = () => useContext(TaskEditorContext);
+export const useTaskEditorContextValue = () => useContext(TaskEditorContext)
