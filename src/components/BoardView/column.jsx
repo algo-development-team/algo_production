@@ -10,15 +10,7 @@ export const BoardColumn = ({ column, columns, tasks, projectId }) => {
   const { taskEditorToShow } = useTaskEditorContextValue()
   return (
     <div className='board-column__container'>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          paddingLeft: '0.5rem',
-          paddingRight: '0.5rem',
-        }}
-      >
+      <div className='board-column__header'>
         <p className='board-column__title'>{column.title}</p>
         <OptionsButton
           targetIsColumn
@@ -59,7 +51,7 @@ export const BoardColumn = ({ column, columns, tasks, projectId }) => {
           </div>
         )}
       </Droppable>
-      <div style={{ marginLeft: '0.5rem' }}>
+      <div className='board-column__footer'>
         <TaskEditor column={column} />
       </div>
     </div>

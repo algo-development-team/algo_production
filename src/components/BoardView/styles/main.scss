@@ -31,6 +31,17 @@
         min-height: 1px;
       }
     }
+    &__header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+
+    &__footer {
+      margin-left: 0.5rem;
+    }
   }
 
   &-task {
