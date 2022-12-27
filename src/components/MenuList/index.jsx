@@ -8,10 +8,11 @@ import {
   deleteDoc,
   getDocs,
   query,
-  setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore'
 import { useAuth } from 'hooks'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db } from '_firebase'
 import './styles/light.scss'
@@ -20,10 +21,13 @@ import './styles/menu-list.scss'
 export const MenuList = ({
   closeOverlay,
   taskId,
+  projectId,
+  columnId,
+  columns,
   xPosition,
   yPosition,
   targetIsProject,
-  projectId,
+  targetIsColumn,
   targetIsTask,
   taskIsImportant,
   targetIsBoardTask,
@@ -32,16 +36,48 @@ export const MenuList = ({
   const navigate = useNavigate()
   const { setTaskEditorToShow } = useTaskEditorContextValue()
   const { setShowDialog, showDialog, setDialogProps } = useOverlayContextValue()
-  const deleteHandler = async (e) => {
-    e.stopPropagation()
-    closeOverlay()
-    if (targetIsProject) {
-      setDialogProps({ projectId: projectId })
-      setShowDialog('CONFIRM_DELETE')
-      return
-    }
 
-    //setSelectedProject({ selectedProjectName: "Inbox", defaultProject: true });
+  const handleProjectDeleteConfirmation = () => {
+    setDialogProps({ projectId: projectId })
+    setShowDialog('CONFIRM_DELETE')
+  }
+
+  const handleColumnDelete = async () => {
+    const newColumns = columns.filter((column) => column.id !== columnId)
+
+    try {
+      const projectQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+        where('projectId', '==', projectId),
+      )
+      const projectDocs = await getDocs(projectQuery)
+      projectDocs.forEach(async (projectDoc) => {
+        await updateDoc(projectDoc.ref, {
+          columns: newColumns,
+        })
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleColumnTasksDelete = async () => {
+    try {
+      const taskQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        where('projectId', '==', projectId),
+        where('boardStatus', '==', columnId),
+      )
+      const taskDocs = await getDocs(taskQuery)
+      taskDocs.forEach(async (taskDoc) => {
+        await deleteDoc(taskDoc.ref)
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleProjectOrTaskDelete = async () => {
     try {
       const q = await query(
         collection(
@@ -65,6 +101,9 @@ export const MenuList = ({
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const handleProjectTasksDelete = async () => {
     try {
       const taskQuery = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
@@ -79,24 +118,20 @@ export const MenuList = ({
     }
   }
 
-  const importanceHandler = async () => {
+  const deleteHandler = async (e) => {
+    e.stopPropagation()
     closeOverlay()
-
-    try {
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', taskId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await setDoc(taskDoc.ref, {
-          ...taskDoc.data(),
-          important: !taskIsImportant,
-        })
-      })
-    } catch (error) {
-      console.log(error)
+    if (targetIsProject) {
+      handleProjectDeleteConfirmation()
+      return
+    } else if (targetIsColumn) {
+      await handleColumnDelete()
+      await handleColumnTasksDelete()
+      return
     }
+
+    await handleProjectOrTaskDelete()
+    await handleProjectTasksDelete()
   }
 
   const editHandler = (e) => {
@@ -106,10 +141,13 @@ export const MenuList = ({
       console.log(taskId)
       setTaskEditorToShow(taskId)
       closeOverlay(e)
-    } else {
+    } else if (targetIsColumn) {
+      console.log('show popup for editing column...') // DEBUGGING
+    } else if (targetIsProject) {
       setShowDialog('EDIT_PROJECT')
     }
   }
+
   const computeXPosition = () => {
     let computedXPosition
     if (!targetIsBoardTask) {
@@ -148,7 +186,8 @@ export const MenuList = ({
               <EditIcon />
             </div>
             <span className='menu__list--content'>
-              Edit {targetIsProject ? 'Project' : 'Task'}
+              Edit{' '}
+              {targetIsProject ? 'Project' : targetIsColumn ? 'Column' : 'Task'}
             </span>
           </li>
 
@@ -158,19 +197,10 @@ export const MenuList = ({
             </div>
 
             <span className='menu__list--content'>
-              Delete {targetIsProject ? 'Project' : 'Task'}
+              Delete{' '}
+              {targetIsProject ? 'Project' : targetIsColumn ? 'Column' : 'Task'}
             </span>
           </li>
-
-          {targetIsProject && (
-            <li className='menu__list--item' style={{ opacity: 0.5 }}>
-              <div className='menu__list--icon'>
-                <ArchiveIcon />
-              </div>
-
-              <span className='menu__list--content'>Archive Project</span>
-            </li>
-          )}
         </ul>
       </div>
     </div>

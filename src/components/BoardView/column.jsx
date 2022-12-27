@@ -3,14 +3,22 @@ import { useProjects } from 'hooks'
 import { Droppable } from 'react-beautiful-dnd'
 import { TaskEditor } from '../TaskEditor'
 import { BoardTask } from './board-task'
-export const BoardColumn = ({ column, tasks }) => {
+import { OptionsButton } from '../MenuButton'
+
+export const BoardColumn = ({ column, columns, tasks, projectId }) => {
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
   return (
     <div className='board-column__container'>
-      <div>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <p className='board-column__title'>{column.title}</p>
-        <button>X</button>
+        <OptionsButton
+          targetIsColumn
+          projectId={projectId}
+          columnId={column.id}
+          columns={columns}
+          isHeaderButton
+        />
       </div>
       <Droppable droppableId={column.id}>
         {(provided) => (

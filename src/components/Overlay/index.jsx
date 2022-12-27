@@ -65,10 +65,13 @@ export const Overlay = () => {
           <MenuList
             closeOverlay={closeOverlay}
             taskId={dialogProps.taskId}
+            columnId={dialogProps.columnId}
             projectId={dialogProps.projectId}
+            columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             targetIsProject={dialogProps.targetIsProject}
+            targetIsColumn={dialogProps.targetIsColumn}
             targetIsTask={dialogProps.targetIsTask}
             taskIsImportant={dialogProps.taskIsImportant}
           />

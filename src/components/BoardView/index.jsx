@@ -160,7 +160,13 @@ export const Board = () => {
               const tasks = column.columnTasks
 
               return (
-                <BoardColumn key={column.id} tasks={tasks} column={column} />
+                <BoardColumn
+                  key={column.id}
+                  tasks={tasks}
+                  column={column}
+                  columns={selectedProject.columns}
+                  projectId={selectedProject.selectedProjectId}
+                />
               )
             })}
         </DragDropContext>
