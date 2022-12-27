@@ -8,4 +8,3 @@
 > GitHub CI/CD Deployment
 
 - Set-up completed, merge the non-main branch with main branch to automatically deploy
-.
