@@ -1,5 +1,5 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
-import { useAuth } from 'hooks'
+import { useAuth, useProjects } from 'hooks'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -11,6 +11,8 @@ export const useTasks = () => {
   const selectedProject = projectId || defaultGroup
 
   const { currentUser } = useAuth()
+  const { projects } = useProjects()
+
   const [tasks, setTasks] = useState([])
 
   const [loading, setLoading] = useState(true)
@@ -26,8 +28,6 @@ export const useTasks = () => {
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', selectedProject),
       )
-    } else if (selectedProject === 'Checklist') {
-      // NO CHANGES TO q HERE
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
@@ -54,17 +54,28 @@ export const useTasks = () => {
         }
       })
 
-      if (selectedProject === 'Scheduled') {
+      if (selectedProject === 'Inbox' || selectedProject === 'Important') {
+        let resultSortedByIndex = result.sort((a, b) => {
+          if (a.index > b.index) {
+            return 1
+          }
+          if (a.index < b.index) {
+            return -1
+          }
+          return 0
+        })
+        setTasks(resultSortedByIndex)
+      } else if (selectedProject === 'Scheduled') {
         let resultSortedByDate = result.sort((a, b) => {
           return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'))
         })
         setTasks(resultSortedByDate)
-        setLoading(false)
       } else {
         setTasks(result)
       }
+      setLoading(false)
     })
     return unsubscribe
-  }, [selectedProject, currentUser])
+  }, [selectedProject, currentUser, projects])
   return { setTasks, tasks, loading }
 }

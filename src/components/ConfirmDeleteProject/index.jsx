@@ -44,6 +44,7 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
     } catch (error) {
       console.log(error)
     }
+    // UPDATE TASK INDEX HERE
     navigate('/app/Checklist')
 
     closeOverlay()

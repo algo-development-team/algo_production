@@ -77,6 +77,10 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectIsWork: projectIsWork,
       columns: [
         {
+          id: 'NOSECTION',
+          title: '(No Section)',
+        },
+        {
           id: 'TODO',
           title: 'To do',
         },

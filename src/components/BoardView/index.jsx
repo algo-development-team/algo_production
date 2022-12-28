@@ -15,6 +15,7 @@ import { ViewHeader } from '../ViewHeader'
 import { BoardColumn } from './column'
 import './styles/light.scss'
 import './styles/main.scss'
+import { generatePushId } from 'utils'
 
 export const Board = () => {
   const params = useParams()
@@ -42,9 +43,9 @@ export const Board = () => {
     for (const column of selectedProject.columns) {
       newSelectedProjectColumns.push({ ...column })
     }
-    const uuid = crypto.randomUUID()
+    const columnId = generatePushId()
     newSelectedProjectColumns.push({
-      id: uuid,
+      id: columnId,
       title: newColumnName,
     })
 
@@ -179,6 +180,7 @@ export const Board = () => {
           boardStatus: destination.droppableId,
         })
       })
+      // UPDATE TASK INDEX HERE
     } catch (error) {
       console.log(error)
       setBoardState(oldState)

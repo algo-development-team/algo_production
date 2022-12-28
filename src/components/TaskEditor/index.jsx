@@ -9,7 +9,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { useAuth, useProjects, useSelectedProject } from 'hooks'
+import { useAuth, useProjects, useSelectedProject, useTasks } from 'hooks'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -71,12 +71,37 @@ export const TaskEditor = ({
   const [disabled, setDisabled] = useState(true)
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
+  const { tasks } = useTasks(
+    selectedProject.selectedProjectId ?? selectedProject.selectedProjectName,
+  )
+
+  const getBoardStatus = () => {
+    if (!projectIsList && column) {
+      return column.id
+    } else {
+      return 'NOSECTION'
+    }
+  }
+
+  const getMaxIndex = (tasks, boardStatus) => {
+    const currentColumnTaskIds = tasks
+      .filter((task) => task.boardStatus === boardStatus)
+      .map((task) => task.index)
+    if (currentColumnTaskIds.length === 0) {
+      return -1
+    } else {
+      return Math.max(...currentColumnTaskIds)
+    }
+  }
 
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
+    const boardStatus = getBoardStatus()
+    const index = getMaxIndex(tasks, boardStatus) + 1
     try {
       resetForm()
+
       await addDoc(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         {
@@ -85,15 +110,15 @@ export const TaskEditor = ({
           name: taskName,
           taskId: taskId,
           completed: false,
-          boardStatus: 'TODO',
+          boardStatus: boardStatus,
           important: defaultGroup === 'Important' ? true : false,
-          ...(!projectIsList && column && { boardStatus: column?.id }),
-          // new fields
           description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
+          index: index, // ADD THE CORRECT INDEX HERE
         },
       )
+      // UPDATE TASK INDEX HERE (COMPLETED)
     } catch (error) {
       console.log(error)
     }
@@ -131,22 +156,27 @@ export const TaskEditor = ({
 
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    const taskQuery = await query(
-      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-      where('taskId', '==', task.taskId),
-    )
-    const taskDocs = await getDocs(taskQuery)
-    taskDocs.forEach(async (taskDoc) => {
-      await updateDoc(taskDoc.ref, {
-        name: taskName,
-        date: schedule.date,
-        projectId: getProjectId(),
-        // new fields
-        description: taskDescription, // string
-        priority: taskPriority, // number (int) (range: 1-3)
-        timeLength: taskTimeLength, // number (int) (range: 15-480)
+    try {
+      const taskQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        where('taskId', '==', task.taskId),
+      )
+      const taskDocs = await getDocs(taskQuery)
+      // UPDATE BOARDSTATUS HERE
+      taskDocs.forEach(async (taskDoc) => {
+        await updateDoc(taskDoc.ref, {
+          name: taskName,
+          date: schedule.date,
+          projectId: getProjectId(),
+          // new fields
+          description: taskDescription, // string
+          priority: taskPriority, // number (int) (range: 1-3)
+          timeLength: taskTimeLength, // number (int) (range: 15-480)
+        })
       })
-    })
+    } catch (error) {
+      console.log(error)
+    }
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }

@@ -48,6 +48,24 @@ export const batchWriteIcebreakerTasks = async (userId) => {
       },
       projectIsList: false,
       projectIsWork: true,
+      columns: [
+        {
+          id: 'NOSECTION',
+          title: '(No Section)',
+        },
+        {
+          id: 'TODO',
+          title: 'To do',
+        },
+        {
+          id: 'INPROGRESS',
+          title: 'In Progress',
+        },
+        {
+          id: 'COMPLETE',
+          title: 'Complete',
+        },
+      ],
     }
     const projectsDocRef = doc(collection(db, 'user', `${userId}/projects`))
     setDoc(projectsDocRef, icebreakerProject).then(() => {
