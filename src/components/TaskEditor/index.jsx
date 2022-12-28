@@ -162,44 +162,9 @@ export const TaskEditor = ({
         where('taskId', '==', task.taskId),
       )
       const taskDocs = await getDocs(taskQuery)
-      // UPDATE BOARDSTATUS HERE
       const newProjectId = getNewProjectId()
 
-      if (task.projectId !== newProjectId) {
-        // projectId changed
-        // use projects to figure out the new boardStatus
-        // and update the index
-        console.log('task.projectId:', task.projectId) // DEBUGGING
-        console.log('newProjectId:', newProjectId) // DEBUGGING
-        console.log('tasks:', tasks) // DEBUGGING
-
-        const currentProjectIsInbox = task.projectId === ''
-        const newProjectIsInbox = newProjectId === ''
-
-        let newBoardStatus = task.boardStatus
-        if (currentProjectIsInbox) {
-          // handle moving from inbox to a project
-        } else {
-          // handle moving from a project to inbox/project
-          const currentProject = projects.find(
-            (project) => project.projectId === task.projectId,
-          )
-          console.log('currentProject:', currentProject) // DEBUGGING
-        }
-
-        if (newProjectIsInbox) {
-          // handle moving from project to inbox
-          newBoardStatus = 'NOSECTION'
-        } else {
-          // handle moving from inbox/project to a project
-          const newProject = projects.find(
-            (project) => project.projectId === newProjectId,
-          )
-          console.log('newProject:', newProject) // DEBUGGING
-        }
-
-        console.log('newBoardStatus:', newBoardStatus) // DEBUGGING
-      }
+      // UPDATE BOARDSTATUS HERE (IN PROGRESS)
 
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
