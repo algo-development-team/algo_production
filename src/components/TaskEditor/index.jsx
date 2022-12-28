@@ -144,7 +144,7 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
-  const getProjectId = () => {
+  const getNewProjectId = () => {
     if (defaultGroup === 'Checklist') {
       return task.projectId
     } else if (project.selectedProjectName !== task.projectId) {
@@ -163,11 +163,17 @@ export const TaskEditor = ({
       )
       const taskDocs = await getDocs(taskQuery)
       // UPDATE BOARDSTATUS HERE
+      const newProjectId = getNewProjectId()
+      if (task.projectId !== newProjectId) {
+        // projectId changed
+        // use projects to figure out the new boardStatus
+        // and update the index
+      }
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
           name: taskName,
           date: schedule.date,
-          projectId: getProjectId(),
+          projectId: newProjectId,
           // new fields
           description: taskDescription, // string
           priority: taskPriority, // number (int) (range: 1-3)
