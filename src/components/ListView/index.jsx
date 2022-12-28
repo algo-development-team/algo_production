@@ -1,7 +1,7 @@
 import { TaskEditor } from 'components/TaskEditor'
 import { ViewHeader } from 'components/ViewHeader'
 import { useTaskEditorContextValue } from 'context'
-import { useProjects, useTasks, useSelectedProject } from 'hooks'
+import { useProjects, useTasks } from 'hooks'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'

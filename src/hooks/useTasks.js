@@ -1,5 +1,5 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
-import { useAuth, useProjects } from 'hooks'
+import { useAuth } from 'hooks'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -11,7 +11,6 @@ export const useTasks = () => {
   const selectedProject = projectId || defaultGroup
 
   const { currentUser } = useAuth()
-  const { projects } = useProjects()
 
   const [tasks, setTasks] = useState([])
 
@@ -76,6 +75,6 @@ export const useTasks = () => {
       setLoading(false)
     })
     return unsubscribe
-  }, [selectedProject, currentUser, projects])
+  }, [selectedProject, currentUser])
   return { setTasks, tasks, loading }
 }
