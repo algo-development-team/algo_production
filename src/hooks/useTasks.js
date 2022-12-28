@@ -1,4 +1,10 @@
-import { collection, onSnapshot, query, where } from 'firebase/firestore'
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore'
 import { useAuth } from 'hooks'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
@@ -21,27 +27,32 @@ export const useTasks = () => {
 
     let q = query(
       collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+      orderBy('index', 'asc'),
     )
     if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', selectedProject),
+        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', ''),
+        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Scheduled') {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('date', '!=', ''),
         where('completed', '==', false),
+        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Important') {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('important', '==', true),
+        orderBy('index', 'asc'),
       )
     }
 
@@ -53,18 +64,7 @@ export const useTasks = () => {
         }
       })
 
-      if (selectedProject === 'Inbox' || selectedProject === 'Important') {
-        let resultSortedByIndex = result.sort((a, b) => {
-          if (a.index > b.index) {
-            return 1
-          }
-          if (a.index < b.index) {
-            return -1
-          }
-          return 0
-        })
-        setTasks(resultSortedByIndex)
-      } else if (selectedProject === 'Scheduled') {
+      if (selectedProject === 'Scheduled') {
         let resultSortedByDate = result.sort((a, b) => {
           return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'))
         })

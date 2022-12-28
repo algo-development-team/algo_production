@@ -8,21 +8,8 @@ export const useBoardData = (selectedProject) => {
   const data = {}
   const [boardData, setBoardData] = useState(null)
 
-  const getColumnTasksInOrder = (columnId) => {
-    // UPDATE THIS TO SORT BY TASK INDEX (COMPLETED)
-    const currentColumnTasks = tasks.filter(
-      (task) => task.boardStatus === columnId,
-    )
-    const currentColumnSortedTasks = currentColumnTasks.sort((a, b) => {
-      if (a.index > b.index) {
-        return 1
-      }
-      if (a.index < b.index) {
-        return -1
-      }
-      return 0
-    })
-    return currentColumnSortedTasks
+  const getColumnTasks = (columnId) => {
+    return tasks.filter((task) => task.boardStatus === columnId)
   }
 
   useEffect(() => {
@@ -33,14 +20,14 @@ export const useBoardData = (selectedProject) => {
       for (const column of selectedProject.columns) {
         if (
           column.id === 'NOSECTION' &&
-          getColumnTasksInOrder(column.id).length === 0
+          getColumnTasks(column.id).length === 0
         ) {
           continue
         }
         data.columns[column.id] = {
           id: column.id,
           title: column.title,
-          columnTasks: getColumnTasksInOrder(column.id),
+          columnTasks: getColumnTasks(column.id),
         }
         data.columnOrder.push(column.id)
       }
