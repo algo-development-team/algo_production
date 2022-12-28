@@ -1,8 +1,11 @@
-import { collection, getDocs, query } from 'firebase/firestore'
+import { collection, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '_firebase'
 
 export const getAllUserTasks = async (userId) => {
-  const taskQuery = await query(collection(db, 'user', `${userId}/tasks`))
+  const taskQuery = await query(
+    collection(db, 'user', `${userId}/tasks`),
+    orderBy('index', 'asc'),
+  )
   const taskDocs = await getDocs(taskQuery)
   const nonCompletedTasks = []
   const completedTasks = []

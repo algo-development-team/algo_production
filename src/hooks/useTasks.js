@@ -1,4 +1,10 @@
-import { collection, onSnapshot, query, where } from 'firebase/firestore'
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from 'firebase/firestore'
 import { useAuth } from 'hooks'
 import moment from 'moment'
 import { useEffect, useState } from 'react'
@@ -11,6 +17,7 @@ export const useTasks = () => {
   const selectedProject = projectId || defaultGroup
 
   const { currentUser } = useAuth()
+
   const [tasks, setTasks] = useState([])
 
   const [loading, setLoading] = useState(true)
@@ -20,29 +27,32 @@ export const useTasks = () => {
 
     let q = query(
       collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+      orderBy('index', 'asc'),
     )
     if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', selectedProject),
+        orderBy('index', 'asc'),
       )
-    } else if (selectedProject === 'Checklist') {
-      // NO CHANGES TO q HERE
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', ''),
+        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Scheduled') {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('date', '!=', ''),
         where('completed', '==', false),
+        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Important') {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('important', '==', true),
+        orderBy('index', 'asc'),
       )
     }
 
@@ -59,10 +69,10 @@ export const useTasks = () => {
           return moment(a.date, 'DD-MM-YYYY').diff(moment(b.date, 'DD-MM-YYYY'))
         })
         setTasks(resultSortedByDate)
-        setLoading(false)
       } else {
         setTasks(result)
       }
+      setLoading(false)
     })
     return unsubscribe
   }, [selectedProject, currentUser])

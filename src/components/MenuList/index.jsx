@@ -77,6 +77,7 @@ export const MenuList = ({
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
+      // UPDATE TASK INDEX HERE
     } catch (error) {
       console.log(error)
     }
@@ -102,6 +103,7 @@ export const MenuList = ({
       docs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
+      // UPDATE TASK INDEX HERE
       targetIsProject && navigate('/app/Checklist')
     } catch (error) {
       console.log(error)
@@ -118,6 +120,7 @@ export const MenuList = ({
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
+      // UPDATE TASK INDEX HERE
     } catch (error) {
       console.log(error)
     }
