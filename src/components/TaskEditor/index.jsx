@@ -154,6 +154,16 @@ export const TaskEditor = ({
     }
   }
 
+  const getTaskDocsInProjectColumn = async (projectId, boardStatus) => {
+    const projectColumnTaskQuery = await query(
+      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+      where('projectId', '==', projectId),
+      where('boardStatus', '==', boardStatus),
+    )
+    const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
+    return projectColumnTaskDocs
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
     try {
@@ -164,17 +174,81 @@ export const TaskEditor = ({
       const taskDocs = await getDocs(taskQuery)
       const newProjectId = getNewProjectId()
 
-      // UPDATE BOARDSTATUS HERE (IN PROGRESS)
+      // UPDATE BOARDSTATUS HERE (COMPLETED)
+
+      let newBoardStatus = task.boardStatus
+      let newIndex = task.index
+
+      if (task.projectId !== newProjectId) {
+        const newProjectIsInbox = newProjectId === ''
+
+        if (newProjectIsInbox) {
+          newBoardStatus = 'NOSECTION'
+        } else {
+          const currentProject = projects.find(
+            (project) => project.projectId === task.projectId,
+          )
+          const newProject = projects.find(
+            (project) => project.projectId === newProjectId,
+          )
+          let currentColumnTitle = '(No Section)'
+          if (task.projectId !== '') {
+            currentColumnTitle = currentProject.columns.find(
+              (column) => column.id === task.boardStatus,
+            ).title
+          }
+          const columnTitleInNewProject = newProject.columns
+            .map((column) => column.title)
+            .includes(currentColumnTitle)
+          if (!columnTitleInNewProject) {
+            newBoardStatus = 'NOSECTION'
+          } else {
+            newBoardStatus = newProject.columns.find(
+              (column) => column.title === currentColumnTitle,
+            ).id
+          }
+        }
+
+        const newProjectTaskDocs = await getTaskDocsInProjectColumn(
+          newProjectId,
+          newBoardStatus,
+        )
+
+        const newProjectTasks = []
+        newProjectTaskDocs.forEach((taskDoc) => {
+          newProjectTasks.push(taskDoc.data())
+        })
+
+        if (newProjectTasks.length === 0) {
+          newIndex = 0
+        } else {
+          newIndex = newProjectTasks[newProjectTasks.length - 1].index + 1
+        }
+
+        const currentProjectTaskDocs = await getTaskDocsInProjectColumn(
+          task.projectId,
+          task.boardStatus,
+        )
+
+        currentProjectTaskDocs.forEach(async (taskDoc) => {
+          if (taskDoc.data().index > task.index) {
+            await updateDoc(taskDoc.ref, {
+              index: taskDoc.data().index - 1,
+            })
+          }
+        })
+      }
 
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
           name: taskName,
           date: schedule.date,
           projectId: newProjectId,
-          // new fields
           description: taskDescription, // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
+          boardStatus: newBoardStatus,
+          index: newIndex,
         })
       })
     } catch (error) {
@@ -285,15 +359,16 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                {defaultGroup !== 'Checklist' && (
-                  <SetNewTaskProject
-                    isQuickAdd={isQuickAdd}
-                    isPopup={isPopup}
-                    project={project}
-                    setProject={setProject}
-                    task={task}
-                  />
-                )}
+                {defaultGroup !== 'Checklist' &&
+                  defaultGroup !== 'Scheduled' && (
+                    <SetNewTaskProject
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      project={project}
+                      setProject={setProject}
+                      task={task}
+                    />
+                  )}
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
