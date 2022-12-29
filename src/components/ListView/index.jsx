@@ -28,7 +28,7 @@ export const TaskList = () => {
   const [tasklist, setTasklist] = useState([])
   const [checklist, setChecklist] = useState([])
 
-  const sortTasksByColumnOrderAndIndex = (tasks) => {
+  const sortTasksByColumnOrder = (tasks) => {
     if (
       selectedProject === 'Checklist' ||
       selectedProject === 'Inbox' ||
@@ -52,17 +52,6 @@ export const TaskList = () => {
       for (const task of tasks) {
         projectColumnTasks[task.boardStatus].push(task)
       }
-      for (const columnId of projectColumnIds) {
-        projectColumnTasks[columnId].sort((a, b) => {
-          if (a.index > b.index) {
-            return 1
-          }
-          if (a.index < b.index) {
-            return -1
-          }
-          return 0
-        })
-      }
       const sortedColumnTasks = []
       for (const columnId of projectColumnIds) {
         sortedColumnTasks.push(...projectColumnTasks[columnId])
@@ -83,7 +72,7 @@ export const TaskList = () => {
     }
 
     if (tasks.length > 0) {
-      const sortedTasks = sortTasksByColumnOrderAndIndex(tasks)
+      const sortedTasks = sortTasksByColumnOrder(tasks)
       setTasklist(sortedTasks)
       if (currentUser && defaultGroup === 'Checklist') {
         getChecklist(currentUser.id).catch(console.error)
