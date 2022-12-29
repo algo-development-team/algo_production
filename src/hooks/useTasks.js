@@ -46,7 +46,6 @@ export const useTasks = () => {
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('date', '!=', ''),
         where('completed', '==', false),
-        orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Important') {
       q = query(
