@@ -2,9 +2,7 @@ import { useTasks } from 'hooks'
 import { useEffect, useState } from 'react'
 
 export const useBoardData = (selectedProject) => {
-  const { tasks } = useTasks(
-    selectedProject.selectedProjectId ?? selectedProject.selectedProjectName,
-  )
+  const { tasks } = useTasks()
   const data = {}
   const [boardData, setBoardData] = useState(null)
 

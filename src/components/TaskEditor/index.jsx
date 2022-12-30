@@ -71,9 +71,7 @@ export const TaskEditor = ({
   const [disabled, setDisabled] = useState(true)
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
-  const { tasks } = useTasks(
-    selectedProject.selectedProjectId ?? selectedProject.selectedProjectName,
-  )
+  const { tasks } = useTasks()
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -98,7 +96,28 @@ export const TaskEditor = ({
     event.preventDefault()
     const taskId = generatePushId()
     const boardStatus = getBoardStatus()
-    const index = getMaxIndex(tasks, boardStatus) + 1
+
+    console.log('boardStatus: ', boardStatus) // DEBUGGING
+    let index = 0
+    if (defaultGroup === 'Scheduled') {
+      const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        '',
+        'NOSECTION',
+      )
+      const newProjectTasks = []
+      inboxTaskDocs.forEach((taskDoc) => {
+        newProjectTasks.push(taskDoc.data())
+      })
+
+      if (newProjectTasks.length > 0) {
+        const maxIndex = Math.max(...newProjectTasks.map((task) => task.index))
+        index = maxIndex + 1
+      }
+    } else {
+      index = getMaxIndex(tasks, boardStatus) + 1
+    }
+
     try {
       resetForm()
 
@@ -210,8 +229,8 @@ export const TaskEditor = ({
           newProjectTasks.push(taskDoc.data())
         })
 
+        newIndex = 0
         if (newProjectTasks.length > 0) {
-          // find the max index in newProjectTasks
           const maxIndex = Math.max(
             ...newProjectTasks.map((task) => task.index),
           )
