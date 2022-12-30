@@ -210,10 +210,12 @@ export const TaskEditor = ({
           newProjectTasks.push(taskDoc.data())
         })
 
-        if (newProjectTasks.length === 0) {
-          newIndex = 0
-        } else {
-          newIndex = newProjectTasks[newProjectTasks.length - 1].index + 1
+        if (newProjectTasks.length > 0) {
+          // find the max index in newProjectTasks
+          const maxIndex = Math.max(
+            ...newProjectTasks.map((task) => task.index),
+          )
+          newIndex = maxIndex + 1
         }
 
         const currentProjectTaskDocs =
