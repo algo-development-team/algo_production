@@ -73,29 +73,27 @@ export const TaskEditor = ({
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
-    try {
-      resetForm()
-      await addDoc(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        {
-          projectId: project.selectedProjectId || '',
-          date: schedule.date,
-          name: taskName,
-          taskId: taskId,
-          completed: false,
-          boardStatus: 'TODO',
-          important: defaultGroup === 'Important' ? true : false,
-          ...(!projectIsList && column && { boardStatus: column?.id }),
-          // new fields
-          description: taskDescription, // string
-          priority: taskPriority, // number (int) (range: 1-3)
-          timeLength: taskTimeLength, // number (int) (range: 15-480)
-        },
-      )
-    } catch (error) {
-      console.log(error)
-    }
-  }
+    if (defaultGroup === 'Checklist') {
+      try {
+        const userInfoQuery = await query(
+          collection(db, 'user', `${currentUser && currentUser.id}/userInfo`),
+        )
+        const userInfoDocs = await getDocs(userInfoQuery)
+    
+        // userInfoDocs.checklist
+        const newChecklist = [...userInfoDocs[0].checklist].push(taskId)
+    
+        const updatedUserInfo = {
+          checklist: newChecklist,
+        }
+    
+        userInfoDocs.forEach(async (userInfoDoc) => {
+          await updateDoc(userInfoDoc.ref, updatedUserInfo)
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    }}
   const resetForm = (event) => {
     event?.preventDefault()
     setProject({ ...selectedProject })
