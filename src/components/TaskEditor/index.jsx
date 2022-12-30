@@ -97,7 +97,6 @@ export const TaskEditor = ({
     const taskId = generatePushId()
     const boardStatus = getBoardStatus()
 
-    console.log('boardStatus: ', boardStatus) // DEBUGGING
     let index = 0
     if (defaultGroup === 'Scheduled') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
@@ -143,6 +142,7 @@ export const TaskEditor = ({
       console.log(error)
     }
   }
+  
   const resetForm = (event) => {
     event?.preventDefault()
     setProject({ ...selectedProject })
