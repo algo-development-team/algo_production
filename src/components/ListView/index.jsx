@@ -14,6 +14,8 @@ import { useAuth } from 'hooks'
 import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from 'handleUserInfo'
+import { updateDoc } from 'firebase/firestore'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 
 // UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)
 
@@ -137,6 +139,47 @@ export const TaskList = () => {
       const [removed] = newTasklist.splice(source.index, 1)
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
+      if (defaultGroup === 'Inbox') {
+        console.log('Inbox task reordering code reached...') // DEBUGGING
+        const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+          currentUser && currentUser.id,
+          '',
+          'NOSECTION',
+        )
+
+        if (source.index > destination.index) {
+          inboxTaskDocs.forEach(async (taskDoc) => {
+            if (taskDoc.data().index === source.index) {
+              await updateDoc(taskDoc.ref, {
+                index: destination.index,
+              })
+            } else if (
+              taskDoc.data().index >= destination.index &&
+              taskDoc.data().index < source.index
+            ) {
+              await updateDoc(taskDoc.ref, {
+                index: taskDoc.data().index + 1,
+              })
+            }
+          })
+        } else {
+          inboxTaskDocs.forEach(async (taskDoc) => {
+            if (taskDoc.data().index === source.index) {
+              await updateDoc(taskDoc.ref, {
+                index: destination.index,
+              })
+            } else if (
+              taskDoc.data().index > source.index &&
+              taskDoc.data().index <= destination.index
+            ) {
+              await updateDoc(taskDoc.ref, {
+                index: taskDoc.data().index - 1,
+              })
+            }
+          })
+        }
+      }
+      // UPDATE TASK INDEX HERE (COMPLETED)
     } else {
       const filteredTasklist = filterAndIndexMapTasks(tasklist)
       const mappedSourceIndex = filteredTasklist[source.index][1]

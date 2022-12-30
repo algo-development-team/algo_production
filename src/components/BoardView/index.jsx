@@ -16,6 +16,7 @@ import { BoardColumn } from './column'
 import './styles/light.scss'
 import './styles/main.scss'
 import { generatePushId } from 'utils'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 
 export const Board = () => {
   const params = useParams()
@@ -112,12 +113,10 @@ export const Board = () => {
       return
     }
 
-    const column = boardState.columns[source.droppableId]
-    const newColumnTasks = [...column.columnTasks]
     const start = boardState.columns[source.droppableId]
     const finish = boardState.columns[destination.droppableId]
     const taskWithDraggableId = Object.values(boardState.tasks).find(
-      (task) => task.taskId == draggableId,
+      (task) => task.taskId === draggableId,
     )
 
     if (start === finish) {
@@ -140,8 +139,49 @@ export const Board = () => {
       }
 
       setBoardState(newState)
+
+      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        selectedProject.selectedProjectId,
+        destination.droppableId,
+      )
+
+      if (source.index > destination.index) {
+        columnTaskDocs.forEach(async (taskDoc) => {
+          if (taskDoc.data().index === source.index) {
+            await updateDoc(taskDoc.ref, {
+              index: destination.index,
+            })
+          } else if (
+            taskDoc.data().index >= destination.index &&
+            taskDoc.data().index < source.index
+          ) {
+            await updateDoc(taskDoc.ref, {
+              index: taskDoc.data().index + 1,
+            })
+          }
+        })
+      } else {
+        columnTaskDocs.forEach(async (taskDoc) => {
+          if (taskDoc.data().index === source.index) {
+            await updateDoc(taskDoc.ref, {
+              index: destination.index,
+            })
+          } else if (
+            taskDoc.data().index > source.index &&
+            taskDoc.data().index <= destination.index
+          ) {
+            await updateDoc(taskDoc.ref, {
+              index: taskDoc.data().index - 1,
+            })
+          }
+        })
+      }
+      // UPDATE TASK INDEX HERE (COMPLETED)
+
       return
     }
+
     const startTaskIds = Array.from(start.columnTasks)
     startTaskIds.splice(source.index, 1)
     const newStart = {
@@ -170,6 +210,34 @@ export const Board = () => {
     try {
       setBoardState(newState)
 
+      const oldColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        selectedProject.selectedProjectId,
+        source.droppableId,
+      )
+
+      oldColumnTaskDocs.forEach(async (taskDoc) => {
+        if (taskDoc.data().index > source.index) {
+          await updateDoc(taskDoc.ref, {
+            index: taskDoc.data().index - 1,
+          })
+        }
+      })
+
+      const newColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        selectedProject.selectedProjectId,
+        destination.droppableId,
+      )
+
+      newColumnTaskDocs.forEach(async (taskDoc) => {
+        if (taskDoc.data().index >= destination.index) {
+          await updateDoc(taskDoc.ref, {
+            index: taskDoc.data().index + 1,
+          })
+        }
+      })
+
       const taskQuery = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('taskId', '==', draggableId),
@@ -178,9 +246,11 @@ export const Board = () => {
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
           boardStatus: destination.droppableId,
+          index: destination.index,
         })
       })
-      // UPDATE TASK INDEX HERE
+
+      // UPDATE TASK INDEX HERE (COMPLETED)
     } catch (error) {
       console.log(error)
       setBoardState(oldState)

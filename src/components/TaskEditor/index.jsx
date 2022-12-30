@@ -19,9 +19,9 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
-import { TaskList } from 'components/ListView'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -154,16 +154,6 @@ export const TaskEditor = ({
     }
   }
 
-  const getTaskDocsInProjectColumn = async (projectId, boardStatus) => {
-    const projectColumnTaskQuery = await query(
-      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-      where('projectId', '==', projectId),
-      where('boardStatus', '==', boardStatus),
-    )
-    const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
-    return projectColumnTaskDocs
-  }
-
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
     try {
@@ -209,7 +199,8 @@ export const TaskEditor = ({
           }
         }
 
-        const newProjectTaskDocs = await getTaskDocsInProjectColumn(
+        const newProjectTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+          currentUser && currentUser.id,
           newProjectId,
           newBoardStatus,
         )
@@ -225,10 +216,12 @@ export const TaskEditor = ({
           newIndex = newProjectTasks[newProjectTasks.length - 1].index + 1
         }
 
-        const currentProjectTaskDocs = await getTaskDocsInProjectColumn(
-          task.projectId,
-          task.boardStatus,
-        )
+        const currentProjectTaskDocs =
+          await getTaskDocsInProjectColumnNotCompleted(
+            currentUser && currentUser.id,
+            task.projectId,
+            task.boardStatus,
+          )
 
         currentProjectTaskDocs.forEach(async (taskDoc) => {
           if (taskDoc.data().index > task.index) {
@@ -237,6 +230,7 @@ export const TaskEditor = ({
             })
           }
         })
+        // UPDATE OPTIMIZE USING BATCH OPERATION
       }
 
       taskDocs.forEach(async (taskDoc) => {

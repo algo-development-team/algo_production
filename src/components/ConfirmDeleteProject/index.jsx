@@ -16,10 +16,8 @@ import './main.scss'
 export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
-  const deleteHandler = async (e) => {
-    //   setSelectedProject({ selectedProjectName: "Inbox", defaultProject: true });
-    e.stopPropagation()
-    e.preventDefault()
+
+  const handleProjectDelete = async () => {
     try {
       const q = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/projects`),
@@ -32,6 +30,9 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
     } catch (error) {
       console.log(error)
     }
+  }
+
+  const handleProjectTasksDelete = async () => {
     try {
       const taskQuery = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
@@ -41,10 +42,17 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
+      // UPDATE OPTIMIZE USING BATCH OPERATION
     } catch (error) {
       console.log(error)
     }
-    // UPDATE TASK INDEX HERE
+  }
+
+  const deleteHandler = async (e) => {
+    e.stopPropagation()
+    e.preventDefault()
+    await handleProjectDelete()
+    await handleProjectTasksDelete()
     navigate('/app/Checklist')
 
     closeOverlay()

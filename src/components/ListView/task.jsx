@@ -13,14 +13,10 @@ export const Task = ({ name, task, index, projects }) => {
   moment.defaultFormat = 'DD-MM-YYYY'
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
-  const { defaultGroup, projectId } = useParams()
+  const { defaultGroup } = useParams()
 
   const params = useParams()
-  //const { projects } = useProjects();
-  const { setSelectedProject, selectedProject } = useSelectedProject(
-    params,
-    projects,
-  )
+  const { selectedProject } = useSelectedProject(params, projects)
   const { selectedProjectName } = selectedProject
   let taskProjectName = ''
   let taskProject = {}
@@ -29,21 +25,6 @@ export const Task = ({ name, task, index, projects }) => {
     taskProject = getProjectInfo(projects, task.projectId)
   } else {
     taskProjectName = selectedProjectName
-  }
-
-  const menuTriggerHandler = (event, elementPosition) => {
-    event.stopPropagation()
-    event.preventDefault()
-    if (window.innerWidth > 900) {
-      return
-    }
-    setDialogProps(
-      Object.assign(
-        { elementPosition, taskIsImportant: task.taskIsImportant },
-        { taskId: task.taskId, targetIsTask: true },
-      ),
-    )
-    setShowDialog('MENU_LIST')
   }
 
   return (
@@ -59,7 +40,12 @@ export const Task = ({ name, task, index, projects }) => {
             setShowDialog('TASK_POPUP')
           }}
         >
-          <TaskCheckbox taskId={task?.taskId} />
+          <TaskCheckbox
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+          />
 
           <div className='task__details'>
             <p className='task__text'>{name}</p>
@@ -79,7 +65,10 @@ export const Task = ({ name, task, index, projects }) => {
             </div>
           </div>
           <OptionsButton
+            projectId={task.projectId}
+            columnId={task.boardStatus}
             taskId={task.taskId}
+            taskIndex={task.index}
             taskIsImportant={task.important}
             targetIsTask
           />

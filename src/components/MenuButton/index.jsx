@@ -8,6 +8,7 @@ export const OptionsButton = ({
   taskId,
   projectId,
   columnId,
+  taskIndex,
   targetIsProject,
   targetIsColumn,
   targetIsTask,
@@ -25,7 +26,13 @@ export const OptionsButton = ({
     setDialogProps(
       Object.assign(
         { elementPosition, taskIsImportant },
-        targetIsTask && { taskId: taskId, targetIsTask: targetIsTask },
+        targetIsTask && {
+          projectId: projectId,
+          columnId: columnId,
+          taskId: taskId,
+          taskIndex: taskIndex,
+          targetIsTask: targetIsTask,
+        },
         targetIsColumn && {
           projectId: projectId,
           columnId: columnId,
