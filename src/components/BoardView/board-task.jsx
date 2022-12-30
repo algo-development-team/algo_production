@@ -27,7 +27,12 @@ export const BoardTask = ({ task, index }) => {
             setShowDialog('TASK_POPUP')
           }}
         >
-          <TaskCheckbox taskId={task.taskId} />
+          <TaskCheckbox
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+          />
           <div className='board-task__content'>
             <p className='board-task__name'>{task.name}</p>
             <div className='board-task__info'>
@@ -42,8 +47,14 @@ export const BoardTask = ({ task, index }) => {
               </div>
             </div>
           </div>
-
-          <OptionsButton taskId={task.taskId} targetIsTask />
+          <OptionsButton
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+            taskIsImportant={task.important}
+            targetIsTask
+          />
         </div>
       )}
     </Draggable>

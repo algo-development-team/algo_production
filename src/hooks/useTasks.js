@@ -25,10 +25,7 @@ export const useTasks = () => {
   useEffect(() => {
     setLoading(true)
 
-    let q = query(
-      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-      orderBy('index', 'asc'),
-    )
+    let q = null
     if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
@@ -51,6 +48,11 @@ export const useTasks = () => {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('important', '==', true),
+        orderBy('index', 'asc'),
+      )
+    } else {
+      q = query(
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         orderBy('index', 'asc'),
       )
     }

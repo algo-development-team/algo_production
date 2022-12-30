@@ -16,8 +16,7 @@ import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
 export const Overlay = () => {
-  const { showDialog, setShowDialog, dialogProps, setDialogProps } =
-    useOverlayContextValue()
+  const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
   const closeOverlay = () => {
     setShowDialog('')
   }
@@ -67,6 +66,7 @@ export const Overlay = () => {
             taskId={dialogProps.taskId}
             columnId={dialogProps.columnId}
             projectId={dialogProps.projectId}
+            taskIndex={dialogProps.taskIndex}
             columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}

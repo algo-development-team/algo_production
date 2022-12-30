@@ -1,7 +1,5 @@
-import { ReactComponent as ArchiveIcon } from 'assets/svg/archive.svg'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
-import featherIcon from 'assets/svg/feather-sprite.svg'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
@@ -16,17 +14,17 @@ import {
   where,
 } from 'firebase/firestore'
 import { useAuth } from 'hooks'
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { db } from '_firebase'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 
 export const MenuList = ({
   closeOverlay,
-  taskId,
   projectId,
   columnId,
+  taskId,
+  taskIndex,
   columns,
   xPosition,
   yPosition,
@@ -37,10 +35,9 @@ export const MenuList = ({
   targetIsBoardTask,
 }) => {
   const { currentUser } = useAuth()
-  const navigate = useNavigate()
   const { setTaskEditorToShow } = useTaskEditorContextValue()
   const { setColumnEditorToShow } = useColumnEditorContextValue()
-  const { setShowDialog, showDialog, setDialogProps } = useOverlayContextValue()
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
@@ -77,50 +74,39 @@ export const MenuList = ({
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
-      // UPDATE TASK INDEX HERE
+      // UPDATE OPTIMIZE USING BATCH OPERATION
     } catch (error) {
       console.log(error)
     }
   }
 
-  const handleProjectOrTaskDelete = async () => {
+  const handleTaskDelete = async () => {
     try {
-      const q = await query(
-        collection(
-          db,
-          'user',
-          `${currentUser && currentUser.id}/${
-            targetIsProject ? 'projects' : 'tasks'
-          }`,
-        ),
-        where(
-          `${targetIsProject ? 'projectId' : 'taskId'}`,
-          '==',
-          targetIsProject ? projectId : taskId,
-        ),
+      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        projectId,
+        columnId,
       )
-      const docs = await getDocs(q)
-      docs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
+
+      columnTaskDocs.forEach(async (taskDoc) => {
+        if (taskDoc.data().index > taskIndex) {
+          await updateDoc(taskDoc.ref, {
+            index: taskDoc.data().index - 1,
+          })
+        }
       })
-      // UPDATE TASK INDEX HERE
-      targetIsProject && navigate('/app/Checklist')
-    } catch (error) {
-      console.log(error)
-    }
-  }
 
-  const handleProjectTasksDelete = async () => {
-    try {
-      const taskQuery = await query(
+      // UPDATE TASK INDEX HERE (COMPLETED)
+      // UPDATE OPTIMIZE USING BATCH OPERATION
+
+      const q = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('projectId', '==', projectId),
+        where('taskId', '==', taskId),
       )
-      const taskDocs = await getDocs(taskQuery)
+      const taskDocs = await getDocs(q)
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
-      // UPDATE TASK INDEX HERE
     } catch (error) {
       console.log(error)
     }
@@ -131,15 +117,12 @@ export const MenuList = ({
     closeOverlay()
     if (targetIsProject) {
       handleProjectDeleteConfirmation()
-      return
     } else if (targetIsColumn) {
       await handleColumnDelete()
       await handleColumnTasksDelete()
-      return
+    } else {
+      await handleTaskDelete()
     }
-
-    await handleProjectOrTaskDelete()
-    await handleProjectTasksDelete()
   }
 
   const editHandler = (e) => {
