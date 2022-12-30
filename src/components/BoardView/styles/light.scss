@@ -1,4 +1,5 @@
-.light .board-task {
+.light {
+  .board-task {
     background-color: #fff;
     box-shadow: unset;
     border: 1px solid #0000001f;
@@ -8,3 +9,8 @@
       box-shadow: 0 2px 8px 0 #0000001a;
     }
   }
+
+  .board-column__container {
+    background-color: rgb(244, 244, 244);
+  }
+}

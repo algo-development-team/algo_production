@@ -117,6 +117,7 @@ export const TaskEditor = ({
     } else {
       index = getMaxIndex(tasks, boardStatus) + 1
     }
+    // UPDATE TASK INDEX HERE (COMPLETED)
 
     try {
       resetForm()
