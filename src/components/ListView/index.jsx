@@ -14,17 +14,54 @@ import { useAuth } from 'hooks'
 import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from 'handleUserInfo'
+import { updateDoc } from 'firebase/firestore'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+
+// UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)
 
 export const TaskList = () => {
   const { projectId, defaultGroup } = useParams()
+  const selectedProject = projectId || defaultGroup
 
-  const { tasks } = useTasks(defaultGroup || projectId)
-  // const { tasks } = useTasks(selectedProject.selectedProjectId ? selectedProject.selectedProjectId : selectedProject.selectedProjectName);
+  const { tasks } = useTasks()
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
   const { currentUser } = useAuth()
   const [tasklist, setTasklist] = useState([])
   const [checklist, setChecklist] = useState([])
+
+  const sortTasksByColumnOrder = (tasks) => {
+    if (
+      selectedProject === 'Checklist' ||
+      selectedProject === 'Inbox' ||
+      selectedProject === 'Scheduled'
+    ) {
+      return tasks
+    }
+
+    const projectMap = {}
+    for (const project of projects) {
+      projectMap[project.projectId] = project
+    }
+    if (projectMap[selectedProject]) {
+      const projectColumnIds = projectMap[selectedProject].columns.map(
+        (column) => column.id,
+      )
+      const projectColumnTasks = {}
+      for (const columnId of projectColumnIds) {
+        projectColumnTasks[columnId] = []
+      }
+      for (const task of tasks) {
+        projectColumnTasks[task.boardStatus].push(task)
+      }
+      const sortedColumnTasks = []
+      for (const columnId of projectColumnIds) {
+        sortedColumnTasks.push(...projectColumnTasks[columnId])
+      }
+      return sortedColumnTasks
+    }
+    return tasks
+  }
 
   useEffect(() => {
     const getChecklist = async (userId) => {
@@ -37,7 +74,8 @@ export const TaskList = () => {
     }
 
     if (tasks.length > 0) {
-      setTasklist(tasks)
+      const sortedTasks = sortTasksByColumnOrder(tasks)
+      setTasklist(sortedTasks)
       if (currentUser && defaultGroup === 'Checklist') {
         getChecklist(currentUser.id).catch(console.error)
       }
@@ -101,6 +139,46 @@ export const TaskList = () => {
       const [removed] = newTasklist.splice(source.index, 1)
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
+      if (defaultGroup === 'Inbox') {
+        const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+          currentUser && currentUser.id,
+          '',
+          'NOSECTION',
+        )
+
+        if (source.index > destination.index) {
+          inboxTaskDocs.forEach(async (taskDoc) => {
+            if (taskDoc.data().index === source.index) {
+              await updateDoc(taskDoc.ref, {
+                index: destination.index,
+              })
+            } else if (
+              taskDoc.data().index >= destination.index &&
+              taskDoc.data().index < source.index
+            ) {
+              await updateDoc(taskDoc.ref, {
+                index: taskDoc.data().index + 1,
+              })
+            }
+          })
+        } else {
+          inboxTaskDocs.forEach(async (taskDoc) => {
+            if (taskDoc.data().index === source.index) {
+              await updateDoc(taskDoc.ref, {
+                index: destination.index,
+              })
+            } else if (
+              taskDoc.data().index > source.index &&
+              taskDoc.data().index <= destination.index
+            ) {
+              await updateDoc(taskDoc.ref, {
+                index: taskDoc.data().index - 1,
+              })
+            }
+          })
+        }
+      }
+      // UPDATE TASK INDEX HERE (COMPLETED)
     } else {
       const filteredTasklist = filterAndIndexMapTasks(tasklist)
       const mappedSourceIndex = filteredTasklist[source.index][1]
@@ -117,7 +195,7 @@ export const TaskList = () => {
     <div className='task-list__wrapper'>
       <ViewHeader />
       <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-        <Droppable droppableId={1}>
+        <Droppable droppableId='list'>
           {(provided) => (
             <div ref={provided.innerRef} {...provided.droppableProps}>
               {showTaskEditor() &&
@@ -147,7 +225,7 @@ export const TaskList = () => {
           )}
         </Droppable>
       </DragDropContext>
-      <TaskEditor projects={projects} />
+      <TaskEditor />
       {tasks.length ? null : <EmptyState />}
     </div>
   )
