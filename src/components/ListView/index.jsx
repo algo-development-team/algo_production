@@ -23,7 +23,7 @@ export const TaskList = () => {
   const { projectId, defaultGroup } = useParams()
   const selectedProject = projectId || defaultGroup
 
-  const { tasks } = useTasks(defaultGroup || projectId)
+  const { tasks } = useTasks()
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
   const { currentUser } = useAuth()
