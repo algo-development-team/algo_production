@@ -47,13 +47,10 @@ export const TaskCheckbox = ({ projectId, columnId, taskId, taskIndex }) => {
       })
 
       let newIndex = 0
-      let maxIndex = 0
       if (columnTasksCompleted.length > 0) {
-        for (const task of columnTasksCompleted) {
-          if (task.index > maxIndex) {
-            maxIndex = task.index
-          }
-        }
+        const maxIndex = Math.max(
+          ...columnTasksCompleted.map((task) => task.index),
+        )
         newIndex = maxIndex + 1
       }
 

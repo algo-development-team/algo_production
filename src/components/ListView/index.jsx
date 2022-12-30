@@ -140,7 +140,6 @@ export const TaskList = () => {
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
       if (defaultGroup === 'Inbox') {
-        console.log('Inbox task reordering code reached...') // DEBUGGING
         const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
           currentUser && currentUser.id,
           '',

@@ -38,9 +38,6 @@ export const getTaskDocsInProjectColumnNotCompleted = async (
   projectId,
   boardStatus,
 ) => {
-  console.log('userId: ', userId) // DEBUGGING
-  console.log('projectId: ', projectId) // DEBUGGING
-  console.log('boardStatus: ', boardStatus) // DEBUGGING
   const projectColumnTaskQuery = await query(
     collection(db, 'user', `${userId}/tasks`),
     where('projectId', '==', projectId),
