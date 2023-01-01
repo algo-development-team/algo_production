@@ -15,6 +15,8 @@ import { QuickAddTaskDialog } from './quick-add-task-dialog'
 import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
+import { ScheduleCreated } from './schedule-created'
+
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
   const closeOverlay = () => {
@@ -42,6 +44,8 @@ export const Overlay = () => {
         return <GoogleCalendarAuth closeOverlay={closeOverlay} />
       case 'SETTING':
         return <Setting closeOverlay={closeOverlay} />
+      case 'SCHEDULE_CREATED':
+        return <ScheduleCreated closeOverlay={closeOverlay} /> // CHANGE THIS CODE
       case 'USER_OPTIONS':
         return (
           <UserOptions
