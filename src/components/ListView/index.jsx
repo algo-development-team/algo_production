@@ -1,7 +1,7 @@
 import { TaskEditor } from 'components/TaskEditor'
 import { ViewHeader } from 'components/ViewHeader'
 import { useTaskEditorContextValue } from 'context'
-import { useProjects, useTasks } from 'hooks'
+import { useAuth, useChecklist, useProjects, useTasks } from 'hooks'
 import React, { useState } from 'react'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
@@ -9,8 +9,6 @@ import { EmptyState } from './empty-state'
 import './styles/light.scss'
 import './styles/listview.scss'
 import { Task } from './task'
-import { getUserInfo } from 'handleUserInfo'
-import { useAuth } from 'hooks'
 import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from 'handleUserInfo'
@@ -27,8 +25,8 @@ export const TaskList = () => {
   const { projects } = useProjects()
   const { taskEditorToShow } = useTaskEditorContextValue()
   const { currentUser } = useAuth()
+  const { checklist } = useChecklist()
   const [tasklist, setTasklist] = useState([])
-  const [checklist, setChecklist] = useState([])
 
   const sortTasksByColumnOrder = (tasks) => {
     if (
@@ -64,24 +62,11 @@ export const TaskList = () => {
   }
 
   useEffect(() => {
-    const getChecklist = async (userId) => {
-      const userInfo = await getUserInfo(userId)
-      if (userInfo.empty === true || userInfo.failed === true) {
-        return []
-      }
-      const userData = userInfo.userInfoDoc.data()
-      setChecklist(userData.checklist)
-    }
-
     if (tasks.length > 0) {
       const sortedTasks = sortTasksByColumnOrder(tasks)
       setTasklist(sortedTasks)
-      if (currentUser && defaultGroup === 'Checklist') {
-        getChecklist(currentUser.id).catch(console.error)
-      }
     } else {
       setTasklist([])
-      setChecklist([])
     }
   }, [currentUser, defaultGroup, tasks])
 
@@ -186,7 +171,6 @@ export const TaskList = () => {
       const newChecklist = Array.from(checklist)
       const [removed] = newChecklist.splice(mappedSourceIndex, 1)
       newChecklist.splice(mappedDestinationIndex, 0, removed)
-      setChecklist(newChecklist)
       await updateUserInfo(currentUser.id, { checklist: newChecklist })
     }
   }

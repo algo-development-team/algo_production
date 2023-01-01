@@ -9,7 +9,13 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { useAuth, useProjects, useSelectedProject, useTasks } from 'hooks'
+import {
+  useAuth,
+  useProjects,
+  useScheduleCreated,
+  useSelectedProject,
+  useTasks,
+} from 'hooks'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -22,6 +28,7 @@ import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
+import { updateUserInfo } from 'handleUserInfo'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -72,6 +79,7 @@ export const TaskEditor = ({
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
+  const { scheduleCreated } = useScheduleCreated()
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -138,11 +146,17 @@ export const TaskEditor = ({
         },
       )
       // UPDATE TASK INDEX HERE (COMPLETED)
+      // UPDATE scheduleCreated HERE (COMPLETED)
+      if (scheduleCreated) {
+        updateUserInfo(currentUser && currentUser.id, {
+          scheduleCreated: false,
+        })
+      }
     } catch (error) {
       console.log(error)
     }
   }
-  
+
   const resetForm = (event) => {
     event?.preventDefault()
     setProject({ ...selectedProject })
@@ -267,6 +281,13 @@ export const TaskEditor = ({
           index: newIndex,
         })
       })
+
+      // UPDATE scheduleCreated HERE (COMPLETED)
+      if (scheduleCreated) {
+        updateUserInfo(currentUser && currentUser.id, {
+          scheduleCreated: false,
+        })
+      }
     } catch (error) {
       console.log(error)
     }
