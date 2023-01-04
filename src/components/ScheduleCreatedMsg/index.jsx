@@ -21,6 +21,10 @@ export const ScheduleCreatedMsg = ({ closeOverlay }) => {
           <GoogleCalendarIcon strokeWidth='.1' /> in the Naviation to view your
           schedule.
         </h4>
+        <h4>
+          If you don't see the schedule immediately, please refresh the Google
+          Calendar page.
+        </h4>
         <button
           className={` action  ${
             isLight ? 'action__cancel' : 'action__cancel--dark'
