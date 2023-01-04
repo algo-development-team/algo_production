@@ -228,6 +228,7 @@ export const scheduleToday = async (userId) => {
     let updatableAlgoCalendarEvents = []
     if (userData.calendarId === null) {
       const result = await insertCalendar('Algo')
+      userData.calendarId = result.id
       await updateUserInfo(userId, { calendarId: result.id })
     } else {
       const eventsInAlgoCalendar = await getEventsByTypeForToday(
@@ -291,6 +292,7 @@ export const scheduleToday = async (userId) => {
       filteredUpdatableAlgoCalendarEvents,
     ) // DEBUGGING
 
+    console.log('userData.calendarId: ', userData.calendarId) // DEBUGGING
     changeAlgoCalendarSchedule(
       filteredTimeBlocks,
       filteredUpdatableAlgoCalendarEvents,
@@ -443,7 +445,7 @@ const changeAlgoCalendarSchedule = async (
         getColorId(timeBlock.preference),
       )
 
-      console.log('inserted item:', item.id) // DEBUGGING
+      console.log('inserted item:', item?.id) // DEBUGGING
     }
   }
 }
