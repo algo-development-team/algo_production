@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
 import { Avatar } from './avatar'
-import { Info } from './github'
+import { Info } from './info'
 import { HamburgerButton } from './hamburger'
 import { HomeButton } from './home'
 import './light.scss'

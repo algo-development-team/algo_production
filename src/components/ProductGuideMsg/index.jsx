@@ -1,12 +1,18 @@
 import { useThemeContextValue } from 'context'
-import { ReactComponent as GoogleCalendarIcon } from 'assets/svg/google-calendar.svg'
 import { useState } from 'react'
+import { Page1 } from './page1'
 import './styles/main.scss'
 import './styles/light.scss'
 
+const LAST_PAGE = 3
+
 export const ProductGuideMsg = ({ closeOverlay }) => {
   const { isLight } = useThemeContextValue()
-  const [page, setPage] = useState(0) // 0: first page, 1: second page, ..., n: last page
+  const [page, setPage] = useState(0) // 0: first page, 1: second page, ..., LAST_PAGE: last page
+
+  const handleNext = () => {
+    setPage(page + 1)
+  }
 
   return (
     <div
@@ -16,11 +22,16 @@ export const ProductGuideMsg = ({ closeOverlay }) => {
       }}
     >
       <div className={'add-task__actions quick-add__actions'}>
-        <h1>Welcome to Algo!</h1>
-        <p>This is page 1</p>
-        <button className=' action add-task__actions--add-task' type='button'>
-          Next
-        </button>
+        {page === 0 && <Page1 />}
+        {page !== LAST_PAGE && (
+          <button
+            className=' action add-task__actions--add-task'
+            type='button'
+            onClick={() => handleNext()}
+          >
+            Next
+          </button>
+        )}
         <button
           className={` action  ${
             isLight ? 'action__cancel' : 'action__cancel--dark'
