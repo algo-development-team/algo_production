@@ -9,8 +9,11 @@ import { QuickAddTask } from './quick-add-task'
 import { AddChecklist } from './add-checklist'
 import { GoogleCalendarButton } from './google-calendar'
 import { SettingButton } from './setting'
+import useScreenType from 'react-screentype-hook'
 
 export const Header = (props) => {
+  const screenType = useScreenType()
+
   return (
     <div className='header'>
       <div className='header__left'>
@@ -22,7 +25,7 @@ export const Header = (props) => {
         <QuickAddTask />
         <GoogleCalendarButton />
         <SettingButton />
-        <Info />
+        {!screenType.isMobile && <Info />}
         <span style={{ marginLeft: '5px' }}>
           <Avatar />
         </span>
