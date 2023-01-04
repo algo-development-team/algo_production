@@ -36,11 +36,11 @@ export const AddChecklist = () => {
         // Calling Scheduler Algorithm for Today
         setIsScheduleBeingGenerated(true)
         await scheduleToday(currentUser.id)
+        setIsScheduleBeingGenerated(false)
         if (!scheduleCreated) {
           await updateUserInfo(currentUser.id, { scheduleCreated: true })
           setShowDialog('SCHEDULE_CREATED')
         }
-        setIsScheduleBeingGenerated(false)
       }
     } else if (signInStatus === 2) {
       console.log('Not Signed In (Google OAuth2 - Google Calendar API Access)')

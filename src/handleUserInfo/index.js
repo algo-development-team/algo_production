@@ -37,6 +37,7 @@ export const getDefaultUserInfo = () => {
     isSetup: false,
     calendarId: null,
     checklist: [],
+    scheduleCreated: false,
   }
   return defaultUserInfo
 }
