@@ -45,7 +45,9 @@ export const Overlay = () => {
       case 'SETTING':
         return <Setting closeOverlay={closeOverlay} />
       case 'SCHEDULE_CREATED':
-        return <ScheduleCreated closeOverlay={closeOverlay} /> // CHANGE THIS CODE
+        return <ScheduleCreated closeOverlay={closeOverlay} />
+      case 'SETUP_GUIDE':
+        return <ScheduleCreated closeOverlay={closeOverlay} />
       case 'USER_OPTIONS':
         return (
           <UserOptions
