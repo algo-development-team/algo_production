@@ -31,7 +31,7 @@ export const Task = ({ name, task, index, projects }) => {
     <Draggable draggableId={task.taskId} index={index}>
       {(provided) => (
         <div
-          className='task'
+          className='board-task'
           {...provided.dragHandleProps}
           {...provided.draggableProps}
           ref={provided.innerRef}
