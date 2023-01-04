@@ -9,6 +9,9 @@ import { useProjects } from 'hooks'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 
+import { useIsSetup } from 'hooks'
+import { useOverlayContextValue } from 'context'
+
 export const Layout = () => {
   const { isLight } = useThemeContextValue()
   const [showSidebar, setShowSidebar] = useState(true)
@@ -19,6 +22,21 @@ export const Layout = () => {
     width < 900 && setShowSidebar(false)
   }, [params])
   const { loading } = useProjects()
+
+  const { isSetup } = useIsSetup()
+  const { setShowDialog } = useOverlayContextValue()
+
+  useEffect(() => {
+    const showProductGuide = async () => {
+      const timer = setTimeout(() => {
+        setShowDialog('PRODUCT_GUIDE')
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+    if (!loading && !isSetup) {
+      showProductGuide()
+    }
+  }, [loading, isSetup])
 
   return (
     <>

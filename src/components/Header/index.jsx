@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Avatar } from './avatar'
 import { Info } from './github'
 import { HamburgerButton } from './hamburger'
@@ -9,6 +10,7 @@ import { QuickAddTask } from './quick-add-task'
 import { AddChecklist } from './add-checklist'
 import { GoogleCalendarButton } from './google-calendar'
 import { SettingButton } from './setting'
+
 export const Header = (props) => {
   return (
     <div className='header'>
@@ -21,8 +23,7 @@ export const Header = (props) => {
         <QuickAddTask />
         <GoogleCalendarButton />
         <SettingButton />
-        {/* <Info />
-        <Notifications /> */}
+        <Info />
         <span style={{ marginLeft: '5px' }}>
           <Avatar />
         </span>

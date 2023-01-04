@@ -48,7 +48,9 @@ export const Task = ({ name, task, index, projects }) => {
           />
 
           <div className='task__details'>
-            <p className='task__text'>{name}</p>
+            <p className='board-task__name' style={{ paddingBottom: '0.3rem' }}>
+              {name}
+            </p>
 
             <div className='task__info'>
               <div>{task.date && <TaskDate date={task.date} />} </div>
