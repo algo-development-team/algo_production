@@ -8,8 +8,8 @@ import { ColumnEditorContextProvider } from 'context/board-column-editor-context
 import { useProjects } from 'hooks'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
-
-import { useIsSetup } from 'hooks'
+import { updateUserInfo } from '../../handleUserInfo'
+import { useIsSetup, useAuth } from 'hooks'
 import { useOverlayContextValue } from 'context'
 
 export const Layout = () => {
@@ -22,21 +22,25 @@ export const Layout = () => {
     width < 900 && setShowSidebar(false)
   }, [params])
   const { loading } = useProjects()
-
+  const { currentUser } = useAuth()
   const { isSetup } = useIsSetup()
   const { setShowDialog } = useOverlayContextValue()
 
   useEffect(() => {
     const showProductGuide = async () => {
-      const timer = setTimeout(() => {
+      const timer = setTimeout(async () => {
         setShowDialog('PRODUCT_GUIDE')
       }, 2000)
       return () => clearTimeout(timer)
     }
-    if (!loading && !isSetup) {
-      showProductGuide()
+    const updateIsSetup = async () => {
+      await updateUserInfo(currentUser.id, { isSetup: true })
     }
-  }, [loading, isSetup])
+    if (currentUser && !loading && !isSetup) {
+      showProductGuide()
+      updateIsSetup()
+    }
+  }, [currentUser, loading, isSetup])
 
   return (
     <>
