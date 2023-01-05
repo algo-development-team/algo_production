@@ -16,6 +16,7 @@ import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
 import { ScheduleCreated } from './schedule-created'
+import { ProductGuide } from './product-guide'
 
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
@@ -46,6 +47,8 @@ export const Overlay = () => {
         return <Setting closeOverlay={closeOverlay} />
       case 'SCHEDULE_CREATED':
         return <ScheduleCreated closeOverlay={closeOverlay} />
+      case 'PRODUCT_GUIDE':
+        return <ProductGuide closeOverlay={closeOverlay} />
       case 'SETUP_GUIDE':
         return <ScheduleCreated closeOverlay={closeOverlay} />
       case 'USER_OPTIONS':
