@@ -1,4 +1,4 @@
-export const Page1 = () => {
+export const Intro = () => {
   return (
     <div>
       <h2>Welcome to Algo! 🚀</h2>

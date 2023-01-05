@@ -1,12 +1,12 @@
 import { useThemeContextValue } from 'context'
 import { useState } from 'react'
-import { Page1 } from './page1'
-import { Page2 } from './page2'
-import { Page3 } from './page3'
-import { Page4 } from './page4'
-import { Page5 } from './page5'
-import { Page6 } from './page6'
-import { Page7 } from './page7'
+import { Intro } from './intro'
+import { Navigation } from './navigation'
+import { Project } from './project'
+import { Task } from './task'
+import { GoogleCalendarIntegration } from './google-calendar-integration'
+import { Checklist } from './checklist'
+import { Setting } from './setting'
 import './styles/main.scss'
 import './styles/light.scss'
 
@@ -22,21 +22,21 @@ export const ProductGuideMsg = ({ closeOverlay }) => {
   const getPageComponent = () => {
     switch (page) {
       case 0:
-        return <Page1 />
+        return <Intro />
       case 1:
-        return <Page2 />
+        return <Navigation />
       case 2:
-        return <Page3 />
+        return <Project />
       case 3:
-        return <Page4 />
+        return <Task />
       case 4:
-        return <Page5 />
+        return <GoogleCalendarIntegration />
       case 5:
-        return <Page6 />
+        return <Checklist />
       case 6:
-        return <Page7 />
+        return <Setting />
       default:
-        return <Page1 />
+        return <Intro />
     }
   }
 

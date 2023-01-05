@@ -219,7 +219,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
               </div>
             </div>
             <div className='add-project__form-group'>
-              <label>View</label>
+              <label>Work or Personal</label>
               <div className='add-project__set-view-type'>
                 <div
                   className={`${
