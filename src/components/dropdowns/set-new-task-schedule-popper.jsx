@@ -132,7 +132,7 @@ export const SetNewTaskSchedulePopper = ({
           </li>
           <li className='set-schedule__popper--option'>
             <div className=''></div>
-            <NextWeekIcon fill={'grey'} />
+            <NextWeekIcon fill={'grey'} onClick={() => setCustom()} />
             <p
               className='set-new-task__schedule--name'
               onClick={() => setCustom()}
