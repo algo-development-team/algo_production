@@ -100,8 +100,6 @@ export const Board = () => {
     setColumnEditorToShow(null)
   }
 
-  // columnOrder: string[] (may or may not contain NOSECTION)
-  // columns: { title: string, id: string }[]
   const getNewColumns = (columnOrder, columns) => {
     const newColumns = []
     for (const columnId of columnOrder) {
@@ -227,7 +225,6 @@ export const Board = () => {
         })
       }
       // UPDATE TASK INDEX HERE (COMPLETED)
-
       return
     }
 
@@ -298,7 +295,6 @@ export const Board = () => {
           index: destination.index,
         })
       })
-
       // UPDATE TASK INDEX HERE (COMPLETED)
     } catch (error) {
       console.log(error)

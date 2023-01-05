@@ -42,7 +42,6 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
-      // UPDATE OPTIMIZE USING BATCH OPERATION
     } catch (error) {
       console.log(error)
     }

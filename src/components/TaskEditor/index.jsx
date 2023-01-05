@@ -125,7 +125,6 @@ export const TaskEditor = ({
       index = getMaxIndex(tasks, boardStatus) + 1
     }
     // UPDATE TASK INDEX HERE (COMPLETED)
-
     try {
       resetForm()
 
@@ -146,7 +145,6 @@ export const TaskEditor = ({
         },
       )
       // UPDATE TASK INDEX HERE (COMPLETED)
-      // UPDATE scheduleCreated HERE (COMPLETED)
       if (scheduleCreated) {
         updateUserInfo(currentUser && currentUser.id, {
           scheduleCreated: false,
@@ -197,9 +195,7 @@ export const TaskEditor = ({
       )
       const taskDocs = await getDocs(taskQuery)
       const newProjectId = getNewProjectId()
-
       // UPDATE BOARDSTATUS HERE (COMPLETED)
-
       let newBoardStatus = task.boardStatus
       let newIndex = task.index
 
@@ -266,7 +262,6 @@ export const TaskEditor = ({
             })
           }
         })
-        // UPDATE OPTIMIZE USING BATCH OPERATION
       }
 
       taskDocs.forEach(async (taskDoc) => {
@@ -282,7 +277,6 @@ export const TaskEditor = ({
         })
       })
 
-      // UPDATE scheduleCreated HERE (COMPLETED)
       if (scheduleCreated) {
         updateUserInfo(currentUser && currentUser.id, {
           scheduleCreated: false,
