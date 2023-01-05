@@ -318,7 +318,7 @@ export const Board = () => {
           >
             {(provided) => (
               <div
-                style={{ display: 'flex' }}
+                style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
@@ -343,46 +343,49 @@ export const Board = () => {
                     )
                   })}
                 {provided.placeholder}
+                <div className='board-column__container'>
+                  {!addingColumn ? (
+                    <div className='board-column__header'>
+                      <p
+                        className='board-column__add-column'
+                        onClick={() => setAddingColumn(true)}
+                      >
+                        Add Column
+                      </p>
+                    </div>
+                  ) : (
+                    <form onSubmit={(e) => handleCreateNewColumn(e)}>
+                      <input
+                        className='add-project__project-name'
+                        value={newColumnName}
+                        onChange={(e) => {
+                          setNewColumnName(e.target.value)
+                        }}
+                        type='text'
+                        required
+                      />
+                      <div>
+                        <button
+                          className='action action__add-project'
+                          type='submit'
+                        >
+                          Add
+                        </button>
+                        <button
+                          className='action action__cancel'
+                          type='button'
+                          onClick={() => setAddingColumn(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
               </div>
             )}
           </Droppable>
         </DragDropContext>
-        <div className='board-column__container'>
-          {!addingColumn ? (
-            <div className='board-column__header'>
-              <p
-                className='board-column__add-column'
-                onClick={() => setAddingColumn(true)}
-              >
-                Add Column
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={(e) => handleCreateNewColumn(e)}>
-              <input
-                className='add-project__project-name'
-                value={newColumnName}
-                onChange={(e) => {
-                  setNewColumnName(e.target.value)
-                }}
-                type='text'
-                required
-              />
-              <div>
-                <button className='action action__add-project' type='submit'>
-                  Add
-                </button>
-                <button
-                  className='action action__cancel'
-                  type='button'
-                  onClick={() => setAddingColumn(false)}
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
       </div>
     </>
   )
