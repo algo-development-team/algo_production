@@ -11,6 +11,11 @@
   &__wrapper::-webkit-scrollbar {
     display: none;
   }
+  &__container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+  }
   &-column {
     &__title {
       font-size: 13px;

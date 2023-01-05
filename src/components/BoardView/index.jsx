@@ -314,7 +314,7 @@ export const Board = () => {
           >
             {(provided) => (
               <div
-                style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}
+                className='board__container'
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >

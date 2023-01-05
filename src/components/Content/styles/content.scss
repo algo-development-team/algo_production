@@ -1,4 +1,4 @@
-@import "scss/mixins.scss";
+@import 'scss/mixins.scss';
 .content {
   background-color: #1f1f1f;
   width: 100%;
@@ -8,7 +8,12 @@
   padding-top: 4rem;
   margin-left: 284px;
   transition: margin linear 0.1s;
-  
+
+  /* NEW CSS CODE STARTS */
+  overflow-x: scroll;
+  white-space: nowrap;
+  /* NEW CSS CODE ENDS */
+
   @include respond(tab-port) {
     margin-left: 0;
   }
