@@ -8,7 +8,7 @@ import {
 import { useColumnEditorContextValue } from 'context'
 import { useAuth, useBoardData, useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
-import { DragDropContext } from 'react-beautiful-dnd'
+import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { useParams } from 'react-router-dom'
 import { db } from '_firebase'
 import { ViewHeader } from '../ViewHeader'
@@ -100,8 +100,23 @@ export const Board = () => {
     setColumnEditorToShow(null)
   }
 
+  // columnOrder: string[] (may or may not contain NOSECTION)
+  // columns: { title: string, id: string }[]
+  const getNewColumns = (columnOrder, columns) => {
+    const newColumns = []
+    for (const columnId of columnOrder) {
+      if (columnId === 'NOSECTION') {
+        newColumns.push({ id: 'NOSECTION', title: '(No Section)' })
+      } else {
+        const column = columns.find((column) => column.id === columnId)
+        newColumns.push(column)
+      }
+    }
+    return newColumns
+  }
+
   const onDragEnd = async (result) => {
-    const { destination, source, draggableId } = result
+    const { destination, source, draggableId, type } = result
     if (!destination) {
       return
     }
@@ -110,6 +125,40 @@ export const Board = () => {
       destination.droppableId === source.droppableId &&
       destination.index === source.index
     ) {
+      return
+    }
+
+    if (type === 'column') {
+      const newColumnOrder = Array.from(boardState.columnOrder)
+      newColumnOrder.splice(source.index, 1)
+      newColumnOrder.splice(destination.index, 0, draggableId)
+
+      const newState = {
+        ...boardState,
+        columnOrder: newColumnOrder,
+      }
+
+      setBoardState(newState)
+
+      try {
+        const projectQuery = await query(
+          collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+          where('projectId', '==', selectedProject.selectedProjectId),
+        )
+        const projectDocs = await getDocs(projectQuery)
+        projectDocs.forEach(async (projectDoc) => {
+          const newColumns = getNewColumns(
+            newColumnOrder,
+            projectDoc.data().columns,
+          )
+          await updateDoc(projectDoc.ref, {
+            columns: newColumns,
+          })
+        })
+      } catch (error) {
+        console.log(error)
+      }
+
       return
     }
 
@@ -262,25 +311,41 @@ export const Board = () => {
       <ViewHeader />
       <div className='board__wrapper'>
         <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-          {boardState &&
-            boardState.columnOrder.map((columnId) => {
-              const column = boardState.columns[columnId]
+          <Droppable
+            droppableId='all-columns'
+            direction='horizontal'
+            type='column'
+          >
+            {(provided) => (
+              <div
+                style={{ display: 'flex' }}
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+              >
+                {boardState &&
+                  boardState.columnOrder.map((columnId, index) => {
+                    const column = boardState.columns[columnId]
 
-              const tasks = column.columnTasks
+                    const tasks = column.columnTasks
 
-              return (
-                <BoardColumn
-                  key={column.id}
-                  tasks={tasks}
-                  column={column}
-                  columns={selectedProject.columns}
-                  projectId={selectedProject.selectedProjectId}
-                  modifiedColumnName={modifiedColumnName}
-                  setModifiedColumnName={setModifiedColumnName}
-                  handleUpdateColumn={handleUpdateColumn}
-                />
-              )
-            })}
+                    return (
+                      <BoardColumn
+                        key={column.id}
+                        tasks={tasks}
+                        column={column}
+                        columns={selectedProject.columns}
+                        projectId={selectedProject.selectedProjectId}
+                        modifiedColumnName={modifiedColumnName}
+                        setModifiedColumnName={setModifiedColumnName}
+                        handleUpdateColumn={handleUpdateColumn}
+                        index={index}
+                      />
+                    )
+                  })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
         </DragDropContext>
         <div className='board-column__container'>
           {!addingColumn ? (
