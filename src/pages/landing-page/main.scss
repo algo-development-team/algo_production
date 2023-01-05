@@ -10,11 +10,11 @@
 @import 'scss/mixins.scss';
 .landing-page {
   overflow: hidden;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   color: #575757;
   font-family: 'Graphik', sans-serif;
   width: 100%;
-  position: relative;
   .intro__header {
     width: 100%;
     height: 4rem;

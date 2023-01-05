@@ -9,11 +9,6 @@
   margin-left: 284px;
   transition: margin linear 0.1s;
 
-  /* NEW CSS CODE STARTS */
-  overflow-x: scroll;
-  white-space: nowrap;
-  /* NEW CSS CODE ENDS */
-
   @include respond(tab-port) {
     margin-left: 0;
   }
