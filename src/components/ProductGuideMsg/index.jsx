@@ -47,25 +47,35 @@ export const ProductGuideMsg = ({ closeOverlay }) => {
         event.stopPropagation()
       }}
     >
-      <div className={'add-task__actions quick-add__actions'}>
+      <div
+        className={'add-task__actions quick-add__actions'}
+        style={{
+          height: '24rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
         {getPageComponent()}
-        {page !== LAST_PAGE && (
+        <div style={{ display: 'flex', flexDirection: 'row' }}>
+          {page !== LAST_PAGE && (
+            <button
+              className=' action add-task__actions--add-task'
+              type='button'
+              onClick={() => handleNext()}
+            >
+              Next
+            </button>
+          )}
           <button
-            className=' action add-task__actions--add-task'
-            type='button'
-            onClick={() => handleNext()}
+            className={` action  ${
+              isLight ? 'action__cancel' : 'action__cancel--dark'
+            }`}
+            onClick={(event) => closeOverlay()}
           >
-            Next
+            {page === LAST_PAGE ? 'Close' : 'Skip'}
           </button>
-        )}
-        <button
-          className={` action  ${
-            isLight ? 'action__cancel' : 'action__cancel--dark'
-          }`}
-          onClick={(event) => closeOverlay()}
-        >
-          {page === LAST_PAGE ? 'Close' : 'Skip'}
-        </button>
+        </div>
       </div>
     </div>
   )

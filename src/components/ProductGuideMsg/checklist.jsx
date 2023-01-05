@@ -1,15 +1,22 @@
+import { ReactComponent as HomeIcon } from 'assets/svg/home.svg'
+
+const ScheduleButton = ({ label }) => {
+  return <button className='schedule__btn'>{label}</button>
+}
+
 export const Checklist = () => {
   return (
     <div>
       <h2>Checklist</h2>
       <h4>
-        You can navigate to your Checklist by clicking on (Home) at the top or
-        (Checklist) at the sidebar.
+        You can navigate to your Checklist by clicking on{' '}
+        <HomeIcon strokeWidth='.1' /> at the top or using the sidebar.
       </h4>
       <h4>
-        Once you click the Create Daily Schedule button, your Checklist will
-        automatically generated according to your schedule.
+        Your checklist will be automatically generated based on your schedule
+        when you click on
       </h4>
+      <ScheduleButton label='Create Daily Schedule' />
     </div>
   )
 }

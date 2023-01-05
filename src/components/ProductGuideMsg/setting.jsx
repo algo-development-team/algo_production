@@ -22,7 +22,7 @@ export const Setting = () => {
       <h2>Setting</h2>
       <h4>
         You can click on{' '}
-        <SettingIcon strokeWidth={0.1} width={22} height={22} fill='white' /> to
+        <SettingIcon strokeWidth={0.1} width={22} height={22} fill='grey' /> to
         view and modify your preferences.
       </h4>
       <h4>
