@@ -1,11 +1,15 @@
 import { ReactComponent as SettingIcon } from 'assets/svg/setting.svg'
+import { useAuth } from 'hooks'
 
 const Avatar = () => {
+  const { currentUser } = useAuth()
+  const userDisplayName = currentUser?.displayName?.replace(' ', '+')
+
   return (
     <span className='avatar'>
       <img
         className='avatar__img'
-        src={`https://ui-avatars.com/api/?name=ME&rounded=true&size=24&background=ffffff`}
+        src={`https://ui-avatars.com/api/?name=${userDisplayName}&rounded=true&size=24&background=ffffff`}
         alt='displayName'
       />
     </span>
