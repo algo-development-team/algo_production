@@ -10,7 +10,6 @@
 
     /* NEW CSS CODE STARTS */
     overflow-x: scroll;
-    display: inline-block;
     padding-bottom: 10rem;
     /* NEW CSS CODE ENDS */
   }
@@ -43,6 +42,7 @@
       background-color: #282828;
       padding: 0.75rem 0.25rem;
       border-radius: 0.5rem;
+
       &:not(:last-of-type) {
         margin-right: 1rem;
       }
@@ -50,6 +50,14 @@
       .tasklist {
         min-height: 1px;
       }
+    }
+    &__add-container {
+      min-width: 250px;
+      display: inline-block;
+      background-color: #282828;
+      padding: 0.75rem 0.25rem;
+      border-radius: 0.5rem;
+      margin-right: 1rem;
     }
     &__header {
       display: flex;

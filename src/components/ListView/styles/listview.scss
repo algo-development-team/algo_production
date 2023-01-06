@@ -27,6 +27,11 @@
     padding-right: 55px;
     max-width: 800px;
     margin: 0 auto;
+
+    /* NEW CSS CODE STARTS */
+    overflow-x: scroll;
+    padding-bottom: 10rem;
+    /* NEW CSS CODE ENDS */
   }
   &__checkbox {
     width: 18px;

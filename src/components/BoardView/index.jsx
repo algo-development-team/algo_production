@@ -339,7 +339,10 @@ export const Board = () => {
                     )
                   })}
                 {provided.placeholder}
-                <div className='board-column__container'>
+                <div
+                  className='board-column__add-container'
+                  style={{ height: addingColumn ? '63px' : '20px' }}
+                >
                   {!addingColumn ? (
                     <div className='board-column__header'>
                       <p
@@ -369,6 +372,10 @@ export const Board = () => {
                         </button>
                         <button
                           className='action action__cancel'
+                          style={{
+                            backgroundColor: 'inherit',
+                            color: 'inherit',
+                          }}
                           type='button'
                           onClick={() => setAddingColumn(false)}
                         >
