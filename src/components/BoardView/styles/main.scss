@@ -4,15 +4,10 @@
   &__wrapper {
     margin-left: 47px;
     margin-right: 47px;
-    // overflow-x: auto;
-    // display: flex;
-    // flex-direction: row;
-    // padding-bottom: 4rem;
-
-    /* NEW CSS CODE STARTS */
-    overflow-x: scroll;
+    overflow-x: auto;
+    display: flex;
+    flex-direction: row;
     padding-bottom: 10rem;
-    /* NEW CSS CODE ENDS */
   }
   &__wrapper::-webkit-scrollbar {
     display: none;
