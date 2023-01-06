@@ -5,6 +5,7 @@ import { TaskEditor } from '../TaskEditor'
 import { BoardTask } from './board-task'
 import { OptionsButton } from '../MenuButton'
 import { useEffect } from 'react'
+import { cropLabel } from 'handleLabel'
 
 export const BoardColumn = ({
   column,
@@ -60,6 +61,10 @@ export const BoardColumn = ({
                       </button>
                       <button
                         className='action action__cancel'
+                        style={{
+                          backgroundColor: 'inherit',
+                          color: 'inherit',
+                        }}
                         type='button'
                         onClick={() => setColumnEditorToShow(null)}
                       >
@@ -70,7 +75,9 @@ export const BoardColumn = ({
                 </>
               ) : (
                 <>
-                  <p className='board-column__title'>{column.title}</p>
+                  <p className='board-column__title'>
+                    {cropLabel(column.title, 24)}
+                  </p>
                 </>
               )}
               {column.id !== 'NOSECTION' && (
