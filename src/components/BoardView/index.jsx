@@ -100,8 +100,6 @@ export const Board = () => {
     setColumnEditorToShow(null)
   }
 
-  // columnOrder: string[] (may or may not contain NOSECTION)
-  // columns: { title: string, id: string }[]
   const getNewColumns = (columnOrder, columns) => {
     const newColumns = []
     for (const columnId of columnOrder) {
@@ -227,7 +225,6 @@ export const Board = () => {
         })
       }
       // UPDATE TASK INDEX HERE (COMPLETED)
-
       return
     }
 
@@ -298,7 +295,6 @@ export const Board = () => {
           index: destination.index,
         })
       })
-
       // UPDATE TASK INDEX HERE (COMPLETED)
     } catch (error) {
       console.log(error)
@@ -318,7 +314,7 @@ export const Board = () => {
           >
             {(provided) => (
               <div
-                style={{ display: 'flex', flexDirection: 'row', gap: '10px' }}
+                className='board__container'
                 {...provided.droppableProps}
                 ref={provided.innerRef}
               >
@@ -343,7 +339,10 @@ export const Board = () => {
                     )
                   })}
                 {provided.placeholder}
-                <div className='board-column__container'>
+                <div
+                  className='board-column__add-container'
+                  style={{ height: addingColumn ? '63px' : '20px' }}
+                >
                   {!addingColumn ? (
                     <div className='board-column__header'>
                       <p
@@ -373,6 +372,10 @@ export const Board = () => {
                         </button>
                         <button
                           className='action action__cancel'
+                          style={{
+                            backgroundColor: 'inherit',
+                            color: 'inherit',
+                          }}
                           type='button'
                           onClick={() => setAddingColumn(false)}
                         >

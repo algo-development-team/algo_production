@@ -3,13 +3,19 @@
 .board {
   &__wrapper {
     margin-left: 47px;
+    margin-right: 47px;
     overflow-x: auto;
     display: flex;
     flex-direction: row;
-    padding-bottom: 4rem;
+    padding-bottom: 10rem;
   }
   &__wrapper::-webkit-scrollbar {
     display: none;
+  }
+  &__container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
   }
   &-column {
     &__title {
@@ -32,6 +38,7 @@
       background-color: #282828;
       padding: 0.75rem 0.25rem;
       border-radius: 0.5rem;
+
       &:not(:last-of-type) {
         margin-right: 1rem;
       }
@@ -39,6 +46,14 @@
       .tasklist {
         min-height: 1px;
       }
+    }
+    &__add-container {
+      min-width: 250px;
+      display: inline-block;
+      background-color: #282828;
+      padding: 0.75rem 0.25rem;
+      border-radius: 0.5rem;
+      margin-right: 1rem;
     }
     &__header {
       display: flex;

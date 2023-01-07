@@ -74,7 +74,6 @@ export const MenuList = ({
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
-      // UPDATE OPTIMIZE USING BATCH OPERATION
     } catch (error) {
       console.log(error)
     }
@@ -95,10 +94,7 @@ export const MenuList = ({
           })
         }
       })
-
       // UPDATE TASK INDEX HERE (COMPLETED)
-      // UPDATE OPTIMIZE USING BATCH OPERATION
-
       const q = await query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('taskId', '==', taskId),
