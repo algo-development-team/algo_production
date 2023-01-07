@@ -9,8 +9,10 @@
 
 @import 'scss/mixins.scss';
 .landing-page {
-  overflow: hidden;
-  position: relative;
+  overflow-y: scroll !important;
+  height: 100vh;
+  position: fixed;
+
   -webkit-font-smoothing: antialiased;
   color: #575757;
   font-family: 'Graphik', sans-serif;
