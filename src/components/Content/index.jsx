@@ -2,8 +2,10 @@ import { Board } from 'components/BoardView/index'
 import { TaskList } from 'components/ListView'
 import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
+import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
+
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
   const projectInfo = useSelectedProjectInfo(projectId)
@@ -18,7 +20,7 @@ export const Content = () => {
       ) {
         return <TaskList />
       } else if (defaultGroup === 'Calendar') {
-        return <TaskList />
+        return <Calendar />
       } else {
         return null
       }
