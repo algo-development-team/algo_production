@@ -11,7 +11,7 @@ export const Calendar = () => {
           title='calendar'
           src={`https://calendar.google.com/calendar/embed?
 src=${calendarId.replace('@', '%40')}&
-ctz=America%2FWinnipeg`}
+ctz=America%2FToronto`}
           style={{
             border: 0,
             width: 800,
