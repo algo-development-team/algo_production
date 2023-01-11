@@ -322,6 +322,7 @@ export const SettingEditor = ({ closeOverlay }) => {
     }
   }
 
+  /*The is the Handle of the AM & PM */
   const handleAmPm = (hour) => {
     if (hour > 12) {
       return hour - 12
@@ -360,10 +361,15 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.sleepStart}
             />
-            {sleepStartTimeHour >= 12 ? 'pm' : 'am'}
+            
+            {/*JS within HTML */}
+            <span style = {{color: 'black', paddingleft: '200px'}}> 
+              {sleepStartTimeHour >= 12 ? 'pm' : 'am'} 
+            </span>
+
             <h3 className='reg-left-margin'>to</h3>
             <TimeToggler
-              time={sleepEndTimeHour}
+              time={handleAmPm(sleepEndTimeHour)}
               changeTime={changeTime}
               isHour={true}
               timeRangeTypeVal={timeRangeType.sleepEnd}
@@ -374,6 +380,7 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.sleepEnd}
             />
+            {sleepEndTimeHour >= 12 ? 'pm' : 'am'}
           </div>
           <h4>Work Hours</h4>
           <div
@@ -384,7 +391,7 @@ export const SettingEditor = ({ closeOverlay }) => {
             }}
           >
             <TimeToggler
-              time={workStartTimeHour}
+              time={handleAmPm(workStartTimeHour)}
               changeTime={changeTime}
               isHour={true}
               timeRangeTypeVal={timeRangeType.workStart}
@@ -395,9 +402,10 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.workStart}
             />
+            {workStartTimeHour >= 12 ? 'pm' : 'am'}
             <h3 className='reg-left-margin'>to</h3>
             <TimeToggler
-              time={workEndTimeHour}
+              time={handleAmPm(workEndTimeHour)}
               changeTime={changeTime}
               isHour={true}
               timeRangeTypeVal={timeRangeType.workEnd}
@@ -408,6 +416,7 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.workEnd}
             />
+            {workEndTimeHour >= 12 ? 'pm' : 'am'}
           </div>
           <h4>Select Working Days</h4>
           <div>

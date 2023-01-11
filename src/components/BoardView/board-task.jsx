@@ -1,6 +1,7 @@
 import { TaskCheckbox } from 'components/Checkbox'
 import { OptionsButton } from 'components/MenuButton'
 import { TaskDate } from 'components/task-date'
+import { TaskScheduleTime } from 'components/task-timelength'
 import { TaskProject } from 'components/TaskProject'
 import { useProjects } from 'hooks'
 import { Draggable } from 'react-beautiful-dnd'
@@ -25,6 +26,7 @@ export const BoardTask = ({ task, index }) => {
             <p className='board-task__name'>{task.name}</p>
             <div className='board-task__info'>
               <div> {task.date && <TaskDate date={task.date} />}</div>
+              <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
               <div>
                 {defaultGroup && (
                   <TaskProject

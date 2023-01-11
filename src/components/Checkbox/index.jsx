@@ -28,6 +28,7 @@ export const TaskCheckbox = ({ taskId }) => {
         width="12"
         height="12"
         fill="none"
+        /* <if statements></if> */
         stroke="#fff"
         strokeWidth="1.2"
         strokeLinecap="round"

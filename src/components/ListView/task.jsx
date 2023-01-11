@@ -1,12 +1,15 @@
 import { TaskCheckbox } from 'components/Checkbox'
 import { OptionsButton } from 'components/MenuButton'
 import { TaskDate } from 'components/task-date'
+import { TaskScheduleTime } from 'components/task-timelength'
 import { TaskProject } from 'components/TaskProject'
 import { useOverlayContextValue } from 'context'
 import { useSelectedProject } from 'hooks'
 import moment from 'moment'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo, getProjectTitle } from '../../utils'
+
+
 export const Task = ({ name, task, index, moveTask, projects }) => {
   moment.defaultFormat = 'DD-MM-YYYY'
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
@@ -50,14 +53,15 @@ export const Task = ({ name, task, index, moveTask, projects }) => {
         menuTriggerHandler(event, event.currentTarget.getBoundingClientRect())
       }
     >
-      <TaskCheckbox taskId={task?.taskId} />
+      <TaskCheckbox taskId={task?.taskId} />      
 
       <div className='task__details'>
         <p className='task__text'>{name}</p>
 
         <div className='task__info'>
           <div>{task.date && <TaskDate date={task.date} />} </div>
-
+          <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+    
           <div>
             {' '}
             {defaultGroup && (
