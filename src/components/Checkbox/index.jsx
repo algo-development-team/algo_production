@@ -77,14 +77,15 @@ export const TaskCheckbox = ({ projectId, columnId, taskId, taskIndex }) => {
       onClick={(event) => completeTaskHandler(event)}
     >
       <svg
-        className='task__checkbox--icon'
-        width='12'
-        height='12'
-        fill='none'
-        stroke='#fff'
-        strokeWidth='1.2'
-        strokeLinecap='round'
-        strokeLinejoin='round'
+        className="task__checkbox--icon"
+        width="12"
+        height="12"
+        fill="none"
+        /* <if statements></if> */
+        stroke="#fff"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       >
         <use xlinkHref={`${featherIcon}#check`}></use>
       </svg>

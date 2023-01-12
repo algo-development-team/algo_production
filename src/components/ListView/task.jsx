@@ -1,6 +1,7 @@
 import { TaskCheckbox } from 'components/Checkbox'
 import { OptionsButton } from 'components/MenuButton'
 import { TaskDate } from 'components/task-date'
+import { TaskScheduleTime } from 'components/task-timelength'
 import { TaskProject } from 'components/TaskProject'
 import { useOverlayContextValue } from 'context'
 import { useSelectedProject } from 'hooks'

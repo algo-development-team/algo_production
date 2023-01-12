@@ -16,6 +16,7 @@ export const TaskProject = ({ projectHexColour, projectName }) => {
           <InboxIcon width={13} height={13} fill='#5297ff' />
         </>
       )}
+      
     </div>
   )
 }

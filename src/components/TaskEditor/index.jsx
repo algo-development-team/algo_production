@@ -163,7 +163,12 @@ export const TaskEditor = ({
     setTaskDescription('')
     setTaskPriority(2)
     setTaskTimeLength(60)
-    setSchedule({ day: '', date: '' })
+    /*The default day is 'Today' only for the Scheduled*/
+    if (defaultGroup === 'Scheduled') {
+      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY')})
+    } else {
+      setSchedule({ day: '', date: '' })
+    }
     setTaskEditorToShow('')
   }
 
@@ -311,7 +316,12 @@ export const TaskEditor = ({
         date: task.date,
       })
     }
-    if (!taskPriority) setTaskPriority(1)
+    /*if (!taskPriority) setTaskPriority(1)*/
+    if (!taskPriority) {
+      setTaskPriority(1)
+    } else {
+      setTaskPriority(taskPriority)
+    }
     if (!taskTimeLength) setTaskTimeLength(15)
   }, [defaultGroup])
 
@@ -369,7 +379,7 @@ export const TaskEditor = ({
               }}
               required
               type='text'
-              maxLength='30'
+              /*maxLength='30'*/
               placeholder={'Some Title...'}
             />
 
