@@ -9,6 +9,7 @@ import moment from 'moment'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo, getProjectTitle } from '../../utils'
 import { Draggable } from 'react-beautiful-dnd'
+import { cropLabel } from 'handleLabel'
 
 export const Task = ({ name, task, index, projects }) => {
   moment.defaultFormat = 'DD-MM-YYYY'
@@ -46,16 +47,19 @@ export const Task = ({ name, task, index, projects }) => {
             columnId={task.boardStatus}
             taskId={task.taskId}
             taskIndex={task.index}
+            taskPriority={task.priority}
           />
 
           <div className='task__details'>
             <p className='board-task__name' style={{ paddingBottom: '0.3rem' }}>
-              {name}
+              {cropLabel(name, 30)}
             </p>
 
             <div className='task__info'>
-              <div>{task.date && <TaskDate date={task.date} />} </div>
-
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <div style={{ paddingRight: '10px' }}>{task.date && <TaskDate date={task.date} />} </div>
+                <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+              </div>
               <div>
                 {' '}
                 {defaultGroup && (

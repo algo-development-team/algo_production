@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { useProjects, useSelectedProject, useTasks } from '../../hooks'
 import { ProjectTasksCounts } from './project-tasks-count'
+import { cropLabel } from 'handleLabel'
 export const CustomProject = ({ project }) => {
   const params = useParams()
   const { projects } = useProjects()
@@ -36,7 +37,7 @@ export const CustomProject = ({ project }) => {
           <Dot color={`${project?.projectColour?.hex}`} />
         </div>
         <p className='project-group__name'>
-          {currentTaskProp.name} (
+          {cropLabel(currentTaskProp.name ? currentTaskProp.name : '', 12)} (
           {currentTaskProp.projectIsWork ? 'work' : 'personal'})
         </p>
       </div>

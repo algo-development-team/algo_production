@@ -1,6 +1,7 @@
 import { useProjects, useSelectedProject } from 'hooks'
 import { useParams } from 'react-router-dom'
 import { getProjectTitle } from 'utils'
+import { cropLabel } from 'handleLabel'
 import './styles/project-name.scss'
 export const ProjectName = () => {
   const params = useParams()
@@ -17,7 +18,7 @@ export const ProjectName = () => {
 
   return (
     <h1 className='project__name'>
-      {customProjectTitle || defaultGroup}{' '}
+      {cropLabel(customProjectTitle ? customProjectTitle : '', 12) || defaultGroup}{' '}
       {!selectedProject.defaultProject && (
         <>({selectedProject.projectIsWork ? 'work' : 'personal'})</>
       )}

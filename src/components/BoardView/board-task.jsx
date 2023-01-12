@@ -8,6 +8,7 @@ import { Draggable } from 'react-beautiful-dnd'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo } from 'utils'
 import { useOverlayContextValue } from 'context'
+import { cropLabel } from 'handleLabel'
 
 export const BoardTask = ({ task, index }) => {
   const { defaultGroup } = useParams()
@@ -33,12 +34,15 @@ export const BoardTask = ({ task, index }) => {
             columnId={task.boardStatus}
             taskId={task.taskId}
             taskIndex={task.index}
+            taskPriority={task.priority}
           />
           <div className='board-task__content'>
-            <p className='board-task__name'>{task.name}</p>
+            <p className='board-task__name'>{cropLabel(task.name, 20)}</p>
             <div className='board-task__info'>
-              <div> {task.date && <TaskDate date={task.date} />}</div>
-              <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+              <div style={{ display: 'flex', flexDirection: 'row' }}>
+                <div style={{ paddingRight: '10px' }}> {task.date && <TaskDate date={task.date} />}</div>
+                <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+              </div>
               <div>
                 {defaultGroup && (
                   <TaskProject
