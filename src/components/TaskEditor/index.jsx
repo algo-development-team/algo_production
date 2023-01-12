@@ -9,7 +9,13 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { useAuth, useProjects, useSelectedProject } from 'hooks'
+import {
+  useAuth,
+  useProjects,
+  useScheduleCreated,
+  useSelectedProject,
+  useTasks,
+} from 'hooks'
 import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
@@ -19,8 +25,10 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
+import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
+import { updateUserInfo } from 'handleUserInfo'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -42,6 +50,7 @@ export const TaskEditor = ({
   column,
   isQuickAdd,
   isEdit,
+  isPopup,
   task,
   closeOverlay,
 }) => {
@@ -69,12 +78,56 @@ export const TaskEditor = ({
   const [disabled, setDisabled] = useState(true)
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
+  const { tasks } = useTasks()
+  const { scheduleCreated } = useScheduleCreated()
+
+  const getBoardStatus = () => {
+    if (!projectIsList && column) {
+      return column.id
+    } else {
+      return 'NOSECTION'
+    }
+  }
+
+  const getMaxIndex = (tasks, boardStatus) => {
+    const currentColumnTaskIds = tasks
+      .filter((task) => task.boardStatus === boardStatus)
+      .map((task) => task.index)
+    if (currentColumnTaskIds.length === 0) {
+      return -1
+    } else {
+      return Math.max(...currentColumnTaskIds)
+    }
+  }
 
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
+    const boardStatus = getBoardStatus()
+
+    let index = 0
+    if (defaultGroup === 'Scheduled') {
+      const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+        currentUser && currentUser.id,
+        '',
+        'NOSECTION',
+      )
+      const newProjectTasks = []
+      inboxTaskDocs.forEach((taskDoc) => {
+        newProjectTasks.push(taskDoc.data())
+      })
+
+      if (newProjectTasks.length > 0) {
+        const maxIndex = Math.max(...newProjectTasks.map((task) => task.index))
+        index = maxIndex + 1
+      }
+    } else {
+      index = getMaxIndex(tasks, boardStatus) + 1
+    }
+    // UPDATE TASK INDEX HERE (COMPLETED)
     try {
       resetForm()
+
       await addDoc(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         {
@@ -83,27 +136,33 @@ export const TaskEditor = ({
           name: taskName,
           taskId: taskId,
           completed: false,
-          boardStatus: 'TODO',
+          boardStatus: boardStatus,
           important: defaultGroup === 'Important' ? true : false,
-          ...(!projectIsList && column && { boardStatus: column?.id }),
-          // new fields
-          description: taskDescription, // string
+          description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
+          index: index, // ADD THE CORRECT INDEX HERE
         },
       )
+      // UPDATE TASK INDEX HERE (COMPLETED)
+      if (scheduleCreated) {
+        updateUserInfo(currentUser && currentUser.id, {
+          scheduleCreated: false,
+        })
+      }
     } catch (error) {
       console.log(error)
     }
   }
+
   const resetForm = (event) => {
     event?.preventDefault()
     setProject({ ...selectedProject })
     isQuickAdd && closeOverlay()
     setTaskName('')
     setTaskDescription('')
-    setTaskPriority(1)
-    setTaskTimeLength(15)
+    setTaskPriority(2)
+    setTaskTimeLength(60)
     /*The default day is 'Today' only for the Scheduled*/
     if (defaultGroup === 'Scheduled') {
       setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY')})
@@ -122,25 +181,117 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const getNewProjectId = () => {
+    if (defaultGroup === 'Checklist') {
+      return task.projectId
+    } else if (project.selectedProjectName !== task.projectId) {
+      return project.selectedProjectId
+    } else {
+      return task.projectId
+    }
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    const taskQuery = await query(
-      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-      where('taskId', '==', task.taskId),
-    )
-    const taskDocs = await getDocs(taskQuery)
-    taskDocs.forEach(async (taskDoc) => {
-      await updateDoc(taskDoc.ref, {
-        name: taskName,
-        date: schedule.date,
-        projectId: project.selectedProjectId || task.projectId,
-        // new fields
-        description: taskDescription, // string
-        priority: taskPriority, // number (int) (range: 1-3)
-        timeLength: taskTimeLength, // number (int) (range: 15-480)
+    try {
+      const taskQuery = await query(
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        where('taskId', '==', task.taskId),
+      )
+      const taskDocs = await getDocs(taskQuery)
+      const newProjectId = getNewProjectId()
+      // UPDATE BOARDSTATUS HERE (COMPLETED)
+      let newBoardStatus = task.boardStatus
+      let newIndex = task.index
+
+      if (task.projectId !== newProjectId) {
+        const newProjectIsInbox = newProjectId === ''
+
+        if (newProjectIsInbox) {
+          newBoardStatus = 'NOSECTION'
+        } else {
+          const currentProject = projects.find(
+            (project) => project.projectId === task.projectId,
+          )
+          const newProject = projects.find(
+            (project) => project.projectId === newProjectId,
+          )
+          let currentColumnTitle = '(No Section)'
+          if (task.projectId !== '') {
+            currentColumnTitle = currentProject.columns.find(
+              (column) => column.id === task.boardStatus,
+            ).title
+          }
+          const columnTitleInNewProject = newProject.columns
+            .map((column) => column.title)
+            .includes(currentColumnTitle)
+          if (!columnTitleInNewProject) {
+            newBoardStatus = 'NOSECTION'
+          } else {
+            newBoardStatus = newProject.columns.find(
+              (column) => column.title === currentColumnTitle,
+            ).id
+          }
+        }
+
+        const newProjectTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
+          currentUser && currentUser.id,
+          newProjectId,
+          newBoardStatus,
+        )
+
+        const newProjectTasks = []
+        newProjectTaskDocs.forEach((taskDoc) => {
+          newProjectTasks.push(taskDoc.data())
+        })
+
+        newIndex = 0
+        if (newProjectTasks.length > 0) {
+          const maxIndex = Math.max(
+            ...newProjectTasks.map((task) => task.index),
+          )
+          newIndex = maxIndex + 1
+        }
+
+        const currentProjectTaskDocs =
+          await getTaskDocsInProjectColumnNotCompleted(
+            currentUser && currentUser.id,
+            task.projectId,
+            task.boardStatus,
+          )
+
+        currentProjectTaskDocs.forEach(async (taskDoc) => {
+          if (taskDoc.data().index > task.index) {
+            await updateDoc(taskDoc.ref, {
+              index: taskDoc.data().index - 1,
+            })
+          }
+        })
+      }
+
+      taskDocs.forEach(async (taskDoc) => {
+        await updateDoc(taskDoc.ref, {
+          name: taskName,
+          date: schedule.date,
+          projectId: newProjectId,
+          description: taskDescription, // string
+          priority: taskPriority, // number (int) (range: 1-3)
+          timeLength: taskTimeLength, // number (int) (range: 15-480)
+          boardStatus: newBoardStatus,
+          index: newIndex,
+        })
       })
-    })
+
+      if (scheduleCreated) {
+        updateUserInfo(currentUser && currentUser.id, {
+          scheduleCreated: false,
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
     setTaskEditorToShow('')
+    isPopup && closeOverlay()
   }
 
   const { defaultProject } = selectedProject
@@ -155,9 +306,7 @@ export const TaskEditor = ({
     } else {
       setProject({ ...selectedProject })
     }
-    if (defaultGroup === 'Checklist') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
-    } else if (isEdit) {
+    if (isEdit) {
       moment.defaultFormat = 'DD-MM-YYYY'
       setSchedule({
         day:
@@ -251,12 +400,16 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                <SetNewTaskProject
-                  isQuickAdd={isQuickAdd}
-                  project={project}
-                  projects={projects}
-                  setProject={setProject}
-                />
+                {defaultGroup !== 'Checklist' &&
+                  defaultGroup !== 'Scheduled' && (
+                    <SetNewTaskProject
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      project={project}
+                      setProject={setProject}
+                      task={task}
+                    />
+                  )}
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
@@ -264,18 +417,24 @@ export const TaskEditor = ({
               <div className='add-task__attributes--left'>
                 <SetNewTaskSchedule
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   schedule={schedule}
                   setSchedule={setSchedule}
+                  task={task}
                 />
                 <SetNewTaskPriority
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskPriority={taskPriority}
                   setTaskPriority={setTaskPriority}
+                  task={task}
                 />
                 <SetNewTaskTimeLength
                   isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
                   taskTimeLength={taskTimeLength}
                   setTaskTimeLength={setTaskTimeLength}
+                  task={task}
                 />
               </div>
               <div className='add-task__attributes--right'></div>
@@ -284,7 +443,7 @@ export const TaskEditor = ({
 
           <div
             className={`add-task__actions ${
-              isQuickAdd ? 'quick-add__actions' : ''
+              isQuickAdd || isPopup ? 'quick-add__actions' : ''
             }`}
           >
             <button
@@ -298,9 +457,13 @@ export const TaskEditor = ({
               className={` action  ${
                 isLight ? 'action__cancel' : 'action__cancel--dark'
               }`}
-              onClick={(event) =>
-                isQuickAdd ? closeOverlay() : showAddTaskFormHandler(event)
-              }
+              onClick={(event) => {
+                if (isQuickAdd || isPopup) {
+                  closeOverlay()
+                } else {
+                  showAddTaskFormHandler(event)
+                }
+              }}
             >
               Cancel
             </button>

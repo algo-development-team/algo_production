@@ -7,10 +7,13 @@ import { useProjects } from 'hooks'
 import { Draggable } from 'react-beautiful-dnd'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo } from 'utils'
+import { useOverlayContextValue } from 'context'
+
 export const BoardTask = ({ task, index }) => {
   const { defaultGroup } = useParams()
   const { projects } = useProjects()
   const taskProject = getProjectInfo(projects, task.projectId)
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
   return (
     <Draggable draggableId={task.taskId} index={index}>
@@ -20,8 +23,17 @@ export const BoardTask = ({ task, index }) => {
           {...provided.dragHandleProps}
           {...provided.draggableProps}
           ref={provided.innerRef}
+          onClick={() => {
+            setDialogProps({ task, projects })
+            setShowDialog('TASK_POPUP')
+          }}
         >
-          <TaskCheckbox taskId={task.taskId} />
+          <TaskCheckbox
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+          />
           <div className='board-task__content'>
             <p className='board-task__name'>{task.name}</p>
             <div className='board-task__info'>
@@ -37,8 +49,14 @@ export const BoardTask = ({ task, index }) => {
               </div>
             </div>
           </div>
-
-          <OptionsButton taskId={task.taskId} targetIsTask />
+          <OptionsButton
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+            taskIsImportant={task.important}
+            targetIsTask
+          />
         </div>
       )}
     </Draggable>

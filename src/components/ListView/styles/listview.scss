@@ -8,6 +8,7 @@
   padding: 0.5rem 0;
   align-items: flex-start;
   border-bottom: 1px solid #ffffff1a;
+  background-color: #202020;
 
   &:first-of-type {
     border-top: 1px solid #ffffff1a;
@@ -26,6 +27,7 @@
     padding-right: 55px;
     max-width: 800px;
     margin: 0 auto;
+    padding-bottom: 10rem;
   }
   &__checkbox {
     width: 18px;

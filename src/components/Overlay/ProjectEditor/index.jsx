@@ -45,13 +45,13 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
 
   const updateProjectHandler = async (e) => {
     e.preventDefault()
-    const taskQuery = await query(
+    const projectQuery = await query(
       collection(db, 'user', `${currentUser && currentUser.id}/projects`),
       where('projectId', '==', projectToEdit.projectId),
     )
-    const taskDocs = await getDocs(taskQuery)
-    taskDocs.forEach(async (taskDoc) => {
-      await updateDoc(taskDoc.ref, {
+    const projectDocs = await getDocs(projectQuery)
+    projectDocs.forEach(async (projectDoc) => {
+      await updateDoc(projectDoc.ref, {
         name: projectName,
         projectColour: projectColour,
         projectIsList: projectIsList,
@@ -76,6 +76,24 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectColour: projectColour,
       projectIsList: projectIsList,
       projectIsWork: projectIsWork,
+      columns: [
+        {
+          id: 'NOSECTION',
+          title: '(No Section)',
+        },
+        {
+          id: 'TODO',
+          title: 'To do',
+        },
+        {
+          id: 'INPROGRESS',
+          title: 'In Progress',
+        },
+        {
+          id: 'COMPLETE',
+          title: 'Complete',
+        },
+      ],
     }
     const projectsDocRef = doc(
       collection(db, 'user', `${currentUser && currentUser.id}/projects`),
@@ -202,7 +220,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
               </div>
             </div>
             <div className='add-project__form-group'>
-              <label>View</label>
+              <label>Work or Personal</label>
               <div className='add-project__set-view-type'>
                 <div
                   className={`${

@@ -1,27 +1,42 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from 'react'
 
-export const ThemeContext = createContext();
+export const ThemeContext = createContext()
 
 export const ThemeContextProvider = ({ children }) => {
-  const theme = localStorage.getItem("todoish_theme");
-  const [isLight, setIsLight] = useState(theme === "DARK" ? false : true);
+  const theme = localStorage.getItem('algo_theme')
+  const [isLight, setIsLight] = useState(theme === 'LIGHT' ? true : false)
 
-  const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+  /* Source Code for Setting Dark Theme Based on System Preference */
+  /* 
+  const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
 
   useEffect(() => {
     if (darkThemeMq.matches) {
-      setIsLight(false);
-      localStorage.setItem("todoish_theme", "DARK");
+      setIsLight(false)
+      localStorage.setItem('algo_theme', 'DARK')
     } else {
-      setIsLight(true);
-      localStorage.setItem("todoish_theme", "LIGHT");
+      setIsLight(true)
+      localStorage.setItem('algo_theme', 'LIGHT')
     }
-  }, []);
+  }, [])
+  */
 
   useEffect(() => {
-    localStorage.setItem("todoish_theme", isLight ? "LIGHT" : "DARK");
-  }, [isLight]);
-  return <ThemeContext.Provider value={{ isLight, setIsLight }}>{children}</ThemeContext.Provider>;
-};
+    if (theme !== 'LIGHT') {
+      setIsLight(false)
+      localStorage.setItem('algo_theme', 'DARK')
+    }
+  }, [])
 
-export const useThemeContextValue = () => useContext(ThemeContext);
+  useEffect(() => {
+    localStorage.setItem('algo_theme', isLight ? 'LIGHT' : 'DARK')
+  }, [isLight])
+
+  return (
+    <ThemeContext.Provider value={{ isLight, setIsLight }}>
+      {children}
+    </ThemeContext.Provider>
+  )
+}
+
+export const useThemeContextValue = () => useContext(ThemeContext)

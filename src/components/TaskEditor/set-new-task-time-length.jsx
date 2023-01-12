@@ -4,8 +4,10 @@ import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const SetNewTaskTimeLength = ({
   isQuickAdd,
+  isPopup,
   setTaskTimeLength,
   taskTimeLength,
+  task,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -41,9 +43,14 @@ export const SetNewTaskTimeLength = ({
               { setTaskTimeLength },
             ),
           )
-          isQuickAdd
-            ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-            : setShowDialog('SET_TASK_TIME_LENGTH')
+          if (isPopup) {
+            setDialogProps({ task })
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else if (isQuickAdd) {
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else {
+            setShowDialog('SET_TASK_TIME_LENGTH')
+          }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
@@ -53,6 +60,7 @@ export const SetNewTaskTimeLength = ({
       {showPopup && (
         <SetNewTaskTimeLengthPopper
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           setShowPopup={setShowPopup}
           setTaskTimeLength={setTaskTimeLength}
           parentPosition={parentPosition}

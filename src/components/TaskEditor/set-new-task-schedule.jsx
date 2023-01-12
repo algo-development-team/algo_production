@@ -1,8 +1,15 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
 import { useOverlayContextValue } from 'context'
+import { useEffect } from 'react'
 import { useState } from 'react'
-export const SetNewTaskSchedule = ({ isQuickAdd, setSchedule, schedule }) => {
+export const SetNewTaskSchedule = ({
+  isQuickAdd,
+  isPopup,
+  setSchedule,
+  schedule,
+  task,
+}) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
   const [parentPosition, setParentPosition] = useState({})
@@ -41,9 +48,14 @@ export const SetNewTaskSchedule = ({ isQuickAdd, setSchedule, schedule }) => {
               { setSchedule },
             ),
           )
-          isQuickAdd
-            ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-            : setShowDialog('SET_SCHEDULE')
+          if (isPopup) {
+            setDialogProps({ task })
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else if (isQuickAdd) {
+            showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+          } else {
+            setShowDialog('SET_SCHEDULE')
+          }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
@@ -53,6 +65,7 @@ export const SetNewTaskSchedule = ({ isQuickAdd, setSchedule, schedule }) => {
       {showPopup && (
         <SetNewTaskSchedulePopper
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           setShowPopup={setShowPopup}
           setSchedule={setSchedule}
           parentPosition={parentPosition}

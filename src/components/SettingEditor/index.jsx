@@ -350,7 +350,7 @@ export const SettingEditor = ({ closeOverlay }) => {
           <h4>Sleep Hours</h4>
           <div className='display-row'>
             <TimeToggler
-              time={handleAmPm(sleepStartTimeHour)}
+              time={sleepStartTimeHour}
               changeTime={changeTime}
               isHour={true}
               timeRangeTypeVal={timeRangeType.sleepStart}
@@ -363,7 +363,7 @@ export const SettingEditor = ({ closeOverlay }) => {
             />
             
             {/*JS within HTML */}
-            <span style = {{color: 'black', paddingleft: '200px'}}> 
+            <span style = {{color: 'black', paddingLeft: '200px'}}> 
               {sleepStartTimeHour >= 12 ? 'pm' : 'am'} 
             </span>
 

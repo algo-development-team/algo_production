@@ -8,6 +8,7 @@ import './main.scss'
 
 export const SetNewTaskTimeLengthPopper = ({
   isQuickAdd,
+  isPopup,
   setShowPopup,
   setTaskTimeLength,
   closeOverlay,
@@ -17,27 +18,27 @@ export const SetNewTaskTimeLengthPopper = ({
 }) => {
   const set15Min = () => {
     setTaskTimeLength(15)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const set30Min = () => {
     setTaskTimeLength(30)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const set1Hour = () => {
     setTaskTimeLength(60)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const set2Hour = () => {
     setTaskTimeLength(120)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const set4Hour = () => {
     setTaskTimeLength(240)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const set8Hour = () => {
     setTaskTimeLength(480)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
   const targetedposition = parentPosition
@@ -49,7 +50,7 @@ export const SetNewTaskTimeLengthPopper = ({
       className='option__overlay'
       onClick={(event) => {
         event.stopPropagation()
-        isQuickAdd ? setShowPopup(false) : closeOverlay(event)
+        isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay(event)
       }}
     >
       <div

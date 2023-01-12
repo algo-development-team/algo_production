@@ -8,20 +8,16 @@ import { useSelectedProject } from 'hooks'
 import moment from 'moment'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo, getProjectTitle } from '../../utils'
+import { Draggable } from 'react-beautiful-dnd'
 
-
-export const Task = ({ name, task, index, moveTask, projects }) => {
+export const Task = ({ name, task, index, projects }) => {
   moment.defaultFormat = 'DD-MM-YYYY'
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
-  const { defaultGroup, projectId } = useParams()
+  const { defaultGroup } = useParams()
 
   const params = useParams()
-  //const { projects } = useProjects();
-  const { setSelectedProject, selectedProject } = useSelectedProject(
-    params,
-    projects,
-  )
+  const { selectedProject } = useSelectedProject(params, projects)
   const { selectedProjectName } = selectedProject
   let taskProjectName = ''
   let taskProject = {}
@@ -32,52 +28,55 @@ export const Task = ({ name, task, index, moveTask, projects }) => {
     taskProjectName = selectedProjectName
   }
 
-  const menuTriggerHandler = (event, elementPosition) => {
-    event.stopPropagation()
-    event.preventDefault()
-    if (window.innerWidth > 900) {
-      return
-    }
-    setDialogProps(
-      Object.assign(
-        { elementPosition, taskIsImportant: task.taskIsImportant },
-        { taskId: task.taskId, targetIsTask: true },
-      ),
-    )
-    setShowDialog('MENU_LIST')
-  }
   return (
-    <div
-      className='task'
-      onClick={(event) =>
-        menuTriggerHandler(event, event.currentTarget.getBoundingClientRect())
-      }
-    >
-      <TaskCheckbox taskId={task?.taskId} />      
+    <Draggable draggableId={task.taskId} index={index}>
+      {(provided) => (
+        <div
+          className='board-task'
+          {...provided.dragHandleProps}
+          {...provided.draggableProps}
+          ref={provided.innerRef}
+          onClick={() => {
+            setDialogProps({ task, projects })
+            setShowDialog('TASK_POPUP')
+          }}
+        >
+          <TaskCheckbox
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+          />
 
-      <div className='task__details'>
-        <p className='task__text'>{name}</p>
+          <div className='task__details'>
+            <p className='board-task__name' style={{ paddingBottom: '0.3rem' }}>
+              {name}
+            </p>
 
-        <div className='task__info'>
-          <div>{task.date && <TaskDate date={task.date} />} </div>
-          <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
-    
-          <div>
-            {' '}
-            {defaultGroup && (
-              <TaskProject
-                projectHexColour={taskProject?.projectColour?.hex}
-                projectName={taskProject?.name}
-              />
-            )}
+            <div className='task__info'>
+              <div>{task.date && <TaskDate date={task.date} />} </div>
+
+              <div>
+                {' '}
+                {defaultGroup && (
+                  <TaskProject
+                    projectHexColour={taskProject?.projectColour?.hex}
+                    projectName={taskProject?.name}
+                  />
+                )}
+              </div>
+            </div>
           </div>
+          <OptionsButton
+            projectId={task.projectId}
+            columnId={task.boardStatus}
+            taskId={task.taskId}
+            taskIndex={task.index}
+            taskIsImportant={task.important}
+            targetIsTask
+          />
         </div>
-      </div>
-      <OptionsButton
-        taskId={task.taskId}
-        taskIsImportant={task.important}
-        targetIsTask
-      />
-    </div>
+      )}
+    </Draggable>
   )
 }

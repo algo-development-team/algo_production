@@ -1,24 +1,33 @@
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
 import axios from 'axios'
+import { useSignInStatusValue } from 'context'
 
 export const GoogleCalendarAuth = ({ closeOverlay }) => {
+  const { setSignInStatus } = useSignInStatusValue() // 0: Not Loaded, 1: Signed In, 2: Not Signed In
+
   const responseGoogle = (response) => {
-    // console.log(response) // contains access token
-    // Request to Server-side
-    // Not used in current implementation
-    // axios
-    //   .patch(
-    //     `${process.env.REACT_APP_SERVER_URL}/some-endpoint`,
-    //     {
-    //       code,
-    //     },
-    //   )
-    //   .then((response) => {
-    //     console.log(response.data)
-    //   })
-    //   .catch((error) => {
-    //     console.log(error.message)
-    //   })
+    console.log('Google Login Success')
+    setSignInStatus(1)
+
+    /* Code for sending the Google OAuth2 Login Data to Server */
+    /*
+    console.log(response) // contains access token
+    Request to Server-side
+    Not used in current implementation
+    axios
+      .patch(
+        `${process.env.REACT_APP_SERVER_URL}/some-endpoint`,
+        {
+          code,
+        },
+      )
+      .then((response) => {
+        console.log(response.data)
+      })
+      .catch((error) => {
+        console.log(error.message)
+      })
+    */
   }
 
   const responseError = (error) => {

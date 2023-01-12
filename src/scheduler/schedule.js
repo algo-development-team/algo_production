@@ -44,7 +44,7 @@ const RELATIVE_PRIORITY_RANGE = Object.freeze([0, TOTAL_WEIGHTS_SUM])
  * ***/
 export const scheduleToday = async (userId) => {
   try {
-    const t1 = new Date()
+    // const t1 = new Date() // DEBUGGING
     //*** GETTING AVAILABLE TIME RANGES START ***//
     const userInfo = await getUserInfo(userId)
     if (userInfo.empty === true || userInfo.failed === true) {
@@ -80,7 +80,7 @@ export const scheduleToday = async (userId) => {
     // condition: now is before the start of sleep range (i.e. before 11pm of night before)
     // action: adjusts to schedule for the current day
     if (now.isBefore(dayRange[1].clone().subtract(1, 'day'))) {
-      console.log('now is before the start of sleep range') // DEBUGGING
+      // console.log('now is before the start of sleep range') // DEBUGGING
       today.subtract(1, 'day')
       dayRange[0].subtract(1, 'day')
       dayRange[1].subtract(1, 'day')
@@ -94,9 +94,9 @@ export const scheduleToday = async (userId) => {
       now.isAfter(dayRange[1]) &&
       now.isBefore(dayRange[0].clone().add(1, 'day'))
     ) {
-      console.log(
-        'now is between the start of sleep range and the end of sleep range',
-      ) // DEBUGGING
+      // console.log(
+      //   'now is between the start of sleep range and the end of sleep range',
+      // ) // DEBUGGING
       today.add(1, 'day')
       dayRange[0].add(1, 'day')
       dayRange[1].add(1, 'day')
@@ -152,8 +152,8 @@ export const scheduleToday = async (userId) => {
       hasWorkTime,
     )
 
-    printBlocks(blocks.work, 'work') // DEBUGGING
-    printBlocks(blocks.personal, 'personal') // DEBUGGING
+    // printBlocks(blocks.work, 'work') // DEBUGGING
+    // printBlocks(blocks.personal, 'personal') // DEBUGGING
 
     const blocksOfChunksWithRankingAndTaskId = {
       work: rankBlocksOfChunks(blocks.work, userData.rankingPreferences),
@@ -177,7 +177,7 @@ export const scheduleToday = async (userId) => {
       ...getTaskMap(formattedTasks.personal),
     }
 
-    console.log('formattedTasks:', formattedTasks) // DEBUGGING
+    // console.log('formattedTasks:', formattedTasks) // DEBUGGING
     //*** FIND TIME BLOCKS FOR USER'S TASKS END ***/
 
     //*** CALCULATE THE RELATIVE PRIORITY OF EACH TASK AND ASSIGN TIME BLOCKS START ***/
@@ -208,7 +208,7 @@ export const scheduleToday = async (userId) => {
       taskMap,
     )
 
-    console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
+    // console.log('timeBlocksWithTaskInfo:', timeBlocksWithTaskInfo) // DEBUGGING
     //*** TIME BLOCK FORMATTING END ***/
 
     // *** STORE ALLOCATED TASKS IN USER CHECKLIST START ***/
@@ -228,6 +228,7 @@ export const scheduleToday = async (userId) => {
     let updatableAlgoCalendarEvents = []
     if (userData.calendarId === null) {
       const result = await insertCalendar('Algo')
+      userData.calendarId = result.id
       await updateUserInfo(userId, { calendarId: result.id })
     } else {
       const eventsInAlgoCalendar = await getEventsByTypeForToday(
@@ -245,19 +246,19 @@ export const scheduleToday = async (userId) => {
       )
 
       for (const event of eventsInAlgoCalendarWithinDayRange.startOuter) {
-        console.log('event (startOuter):', event) // DEBUGGING
+        // console.log('event (startOuter):', event) // DEBUGGING
         event.end.dateTime = yesterdayEndTime.toISOString()
         await updateEvent(userData.calendarId, event.id, event)
       }
 
       for (const event of eventsInAlgoCalendarWithinDayRange.endOuter) {
-        console.log('event (endOuter):', event) // DEBUGGING
+        // console.log('event (endOuter):', event) // DEBUGGING
         event.start.dateTime = tomorrowStartTime.toISOString()
         await updateEvent(userData.calendarId, event.id, event)
       }
 
       for (const event of eventsInAlgoCalendarWithinDayRange.bothOuter) {
-        console.log('event (bothOuter):', event) // DEBUGGING
+        // console.log('event (bothOuter):', event) // DEBUGGING
         await insertEvent(
           userData.calendarId,
           tomorrowStartTime.toISOString(),
@@ -274,7 +275,7 @@ export const scheduleToday = async (userId) => {
       updatableAlgoCalendarEvents = eventsInAlgoCalendarWithinDayRange.between
     }
 
-    console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
+    // console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
 
     const userTimeZone = await getUserTimeZone(userId)
 
@@ -285,12 +286,13 @@ export const scheduleToday = async (userId) => {
         userTimeZone,
       )
 
-    console.log('filteredTimeBlocks:', filteredTimeBlocks) // DEBUGGING
-    console.log(
-      'filteredUpdatableAlgoCalendarEvents:',
-      filteredUpdatableAlgoCalendarEvents,
-    ) // DEBUGGING
+    // console.log('filteredTimeBlocks:', filteredTimeBlocks) // DEBUGGING
+    // console.log(
+    //   'filteredUpdatableAlgoCalendarEvents:',
+    //   filteredUpdatableAlgoCalendarEvents,
+    // ) // DEBUGGING
 
+    // console.log('userData.calendarId: ', userData.calendarId) // DEBUGGING
     changeAlgoCalendarSchedule(
       filteredTimeBlocks,
       filteredUpdatableAlgoCalendarEvents,
@@ -298,9 +300,11 @@ export const scheduleToday = async (userId) => {
       userTimeZone,
     )
     // *** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR END ***/
-    const t2 = new Date()
+    // const t2 = new Date() // DEBUGGING
 
-    console.log("Run time of today's scheduler (ms):", t2 - t1) // DEBUGGING
+    // console.log("Run time of today's scheduler (ms):", t2 - t1) // DEBUGGING
+
+    console.log('Schedule Created') // DEBUGGING
   } catch (error) {
     console.log(error)
   }
@@ -420,14 +424,14 @@ const changeAlgoCalendarSchedule = async (
     event.colorId = getColorId(timeBlock.preference)
     const item = await updateEvent(calendarId, event.id, event)
 
-    console.log('updated item:', item.id) // DEBUGGING
+    // console.log('updated item:', item?.id) // DEBUGGING
   }
   if (events.length > timeBlocks.length) {
     for (let i = timeBlocks.length; i < events.length; i++) {
       const event = events[i]
       const result = await deleteEvent(calendarId, event.id)
 
-      console.log('is item deleted?:', result) // DEBUGGING
+      // console.log('is item deleted?:', result) // DEBUGGING
     }
   }
   if (events.length < timeBlocks.length) {
@@ -443,7 +447,7 @@ const changeAlgoCalendarSchedule = async (
         getColorId(timeBlock.preference),
       )
 
-      console.log('inserted item:', item.id) // DEBUGGING
+      // console.log('inserted item:', item?.id) // DEBUGGING
     }
   }
 }

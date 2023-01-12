@@ -1,16 +1,21 @@
-@import "scss/mixins.scss";
+@import 'scss/mixins.scss';
 
 .board {
   &__wrapper {
     margin-left: 47px;
+    margin-right: 47px;
     overflow-x: auto;
     display: flex;
     flex-direction: row;
-    padding-bottom: 4rem;
-    scrollbar-width: none;
+    padding-bottom: 10rem;
   }
   &__wrapper::-webkit-scrollbar {
     display: none;
+  }
+  &__container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
   }
   &-column {
     &__title {
@@ -18,8 +23,22 @@
       font-weight: 600;
       margin-bottom: 1rem;
     }
+    &__add-column {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      &:hover {
+        color: rgb(144, 144, 144);
+        cursor: pointer;
+      }
+    }
     &__container {
       min-width: 250px;
+      display: inline-block;
+      background-color: #282828;
+      padding: 0.75rem 0.25rem;
+      border-radius: 0.5rem;
+
       &:not(:last-of-type) {
         margin-right: 1rem;
       }
@@ -27,6 +46,21 @@
       .tasklist {
         min-height: 1px;
       }
+    }
+    &__add-container {
+      min-width: 250px;
+      display: inline-block;
+      background-color: #282828;
+      padding: 0.75rem 0.25rem;
+      border-radius: 0.5rem;
+      margin-right: 1rem;
+    }
+    &__header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
     }
   }
 

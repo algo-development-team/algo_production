@@ -8,6 +8,7 @@ import './main.scss'
 
 export const SetNewTaskPriorityPopper = ({
   isQuickAdd,
+  isPopup,
   setShowPopup,
   setTaskPriority,
   closeOverlay,
@@ -17,15 +18,15 @@ export const SetNewTaskPriorityPopper = ({
 }) => {
   const setOne = () => {
     setTaskPriority(1)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setTwo = () => {
     setTaskPriority(2)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
   const setThree = () => {
     setTaskPriority(3)
-    isQuickAdd ? setShowPopup(false) : closeOverlay()
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
   const targetedposition = parentPosition
@@ -37,7 +38,7 @@ export const SetNewTaskPriorityPopper = ({
       className='option__overlay'
       onClick={(event) => {
         event.stopPropagation()
-        isQuickAdd ? setShowPopup(false) : closeOverlay(event)
+        isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay(event)
       }}
     >
       <div

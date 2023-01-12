@@ -12,11 +12,14 @@ import { useEffect } from 'react'
 import './main.scss'
 import { ProjectEditor } from './ProjectEditor'
 import { QuickAddTaskDialog } from './quick-add-task-dialog'
+import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
+import { ScheduleCreated } from './schedule-created'
+import { ProductGuide } from './product-guide'
+
 export const Overlay = () => {
-  const { showDialog, setShowDialog, dialogProps, setDialogProps } =
-    useOverlayContextValue()
+  const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
   const closeOverlay = () => {
     setShowDialog('')
   }
@@ -29,10 +32,25 @@ export const Overlay = () => {
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
         return <QuickAddTaskDialog closeOverlay={closeOverlay} />
+      case 'TASK_POPUP':
+        return (
+          <TaskPopup
+            closeOverlay={closeOverlay}
+            taskId={dialogProps.task.taskId}
+            task={dialogProps.task}
+            isEdit
+          />
+        )
       case 'GOOGLE_CALENDAR_AUTH':
         return <GoogleCalendarAuth closeOverlay={closeOverlay} />
       case 'SETTING':
         return <Setting closeOverlay={closeOverlay} />
+      case 'SCHEDULE_CREATED':
+        return <ScheduleCreated closeOverlay={closeOverlay} />
+      case 'PRODUCT_GUIDE':
+        return <ProductGuide closeOverlay={closeOverlay} />
+      case 'SETUP_GUIDE':
+        return <ScheduleCreated closeOverlay={closeOverlay} />
       case 'USER_OPTIONS':
         return (
           <UserOptions
@@ -55,10 +73,14 @@ export const Overlay = () => {
           <MenuList
             closeOverlay={closeOverlay}
             taskId={dialogProps.taskId}
+            columnId={dialogProps.columnId}
             projectId={dialogProps.projectId}
+            taskIndex={dialogProps.taskIndex}
+            columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             targetIsProject={dialogProps.targetIsProject}
+            targetIsColumn={dialogProps.targetIsColumn}
             targetIsTask={dialogProps.targetIsTask}
             taskIsImportant={dialogProps.taskIsImportant}
           />

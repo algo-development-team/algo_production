@@ -5,7 +5,26 @@ import { useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
-export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
+
+/*
+ * project schema: (selectedProjectId automatically set by useEffect)
+ * { selectedProjectName, defaultProject } ->
+ * { selectedProjectName, selectedProjectId, defaultProject }
+ */
+
+/*
+ * popupSelectedProject schema: (selectedProjectId automatically set by useEffect)
+ * { selectedProjectName, defaultProject } ->
+ * { selectedProjectName, selectedProjectId, defaultProject, projectColour (optional) }
+ */
+
+export const SetNewTaskProject = ({
+  isQuickAdd,
+  isPopup,
+  project,
+  setProject,
+  task,
+}) => {
   const params = useParams()
   // const { selectedProject } = useSelectedProjectValue(params);
   const { projects } = useProjects()
@@ -21,6 +40,7 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
     selectedProjectId: '',
     defaultProject: true,
   }
+
   useEffect(() => {
     if (!project.defaultProject) {
       setPopupSelectedProject(project)
@@ -28,6 +48,7 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
       setPopupSelectedProject(defaultProjectValue)
     }
   }, [project])
+
   useEffect(() => {
     if (!selectedProject.defaultProject) {
       setProject(selectedProject)
@@ -40,6 +61,7 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
     setParentPosition(parentPosition)
     setShowPopup(true)
   }
+
   return (
     <div
       className='set-new-task__project'
@@ -51,9 +73,14 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
             { setProject, setPopupSelectedProject },
           ),
         )
-        isQuickAdd
-          ? showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
-          : setShowDialog('SET_PROJECT')
+        if (isPopup) {
+          setDialogProps({ task })
+          showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+        } else if (isQuickAdd) {
+          showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
+        } else {
+          setShowDialog('SET_PROJECT')
+        }
       }}
     >
       {popupSelectedProject?.selectedProjectName === 'Inbox' ? (
@@ -76,6 +103,7 @@ export const SetNewTaskProject = ({ isQuickAdd, project, setProject }) => {
           setPopupSelectedProject={setPopupSelectedProject}
           parentPosition={parentPosition}
           isQuickAdd={isQuickAdd}
+          isPopup={isPopup}
           showPopup={showPopup}
         />
       )}
