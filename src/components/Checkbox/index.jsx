@@ -12,9 +12,14 @@ import {
   getTaskDocsInProjectColumnNotCompleted,
   getTaskDocsInProjectColumnCompleted,
 } from '../../handleUserTasks'
+import { useEffect } from 'react'
 
-export const TaskCheckbox = ({ projectId, columnId, taskId, taskIndex }) => {
+export const TaskCheckbox = ({ projectId, columnId, taskId, taskIndex, taskPriority }) => {
   const { currentUser } = useAuth()
+
+  useEffect(() => {
+    console.log('taskPriority: ', taskPriority)
+  }, [taskPriority])
 
   const completeTaskHandler = async (event) => {
     event.preventDefault()
@@ -71,17 +76,30 @@ export const TaskCheckbox = ({ projectId, columnId, taskId, taskIndex }) => {
     }
   }
 
+  const getBorderColor = (priority) => {
+    switch(priority) {
+      case 3 : 
+        return "orange"
+      case 2: 
+        return "blue"
+      case 1: 
+        return "inherit"
+      default: 
+        return "inherit"
+    }
+  }
+
   return (
     <div
       className='task__checkbox'
       onClick={(event) => completeTaskHandler(event)}
+      style={{ borderColor: getBorderColor(taskPriority), borderWidth: "2px" }}
     >
       <svg
         className="task__checkbox--icon"
         width="12"
         height="12"
         fill="none"
-        /* <if statements></if> */
         stroke="#fff"
         strokeWidth="1.2"
         strokeLinecap="round"

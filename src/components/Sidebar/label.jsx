@@ -1,5 +1,4 @@
-
-export const Label = ( {name}) => {
+export const Label = ({name}) => {
     return(
         <div className="label">
             <div className="label__dot"/>

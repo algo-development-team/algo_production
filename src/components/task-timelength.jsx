@@ -26,7 +26,7 @@ export const TaskScheduleTime = ({ timeLength }) => {
   return (
     <>
       <span
-        className={`set-new-task__schedule `}>
+        className={`task__date date__no-date`}>
         <ScheduleIcon width='14px' height='14px' />
         {getTimeLengthText()}
       </span>
