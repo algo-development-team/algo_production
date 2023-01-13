@@ -1,11 +1,10 @@
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
-import axios from 'axios'
 import { useSignInStatusValue } from 'context'
 
 export const GoogleCalendarAuth = ({ closeOverlay }) => {
   const { setSignInStatus } = useSignInStatusValue() // 0: Not Loaded, 1: Signed In, 2: Not Signed In
 
-  const responseGoogle = (response) => {
+  const responseGoogle = async (response) => {
     console.log('Google Login Success')
     setSignInStatus(1)
 
