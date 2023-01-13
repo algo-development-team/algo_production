@@ -35,7 +35,7 @@ export const SettingEditor = ({ closeOverlay }) => {
   const { isLight } = useThemeContextValue()
 
   useEffect(() => {
-    const initializeUserInfo = (userInfo) => {
+    const initializeUserSettingInfo = (userInfo) => {
       const sleepTimesData = userInfo.sleepTimeRange
         .split('-')
         .map((time) => time.split(':'))
@@ -61,7 +61,7 @@ export const SettingEditor = ({ closeOverlay }) => {
         const userInfoData = await getUserInfo(currentUser.id)
         const userInfo = userInfoData.userInfoDoc.data()
         setDefaultUserInfo(userInfo)
-        initializeUserInfo(userInfo)
+        initializeUserSettingInfo(userInfo)
         setErrorMsg('')
       } else {
         setErrorMsg('Cannot load user info, please try again later.')
@@ -349,10 +349,10 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.sleepStart}
             />
-            
+
             {/*JS within HTML */}
-            <span style = {{color: 'inherit', paddingLeft: '10px'}}> 
-              {sleepStartTimeHour >= 12 ? 'pm' : 'am'} 
+            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+              {sleepStartTimeHour >= 12 ? 'pm' : 'am'}
             </span>
             <h3 className='reg-left-margin'>to</h3>
             <TimeToggler
@@ -368,9 +368,9 @@ export const SettingEditor = ({ closeOverlay }) => {
               timeRangeTypeVal={timeRangeType.sleepEnd}
             />
 
-          <span style = {{color: 'inherit', paddingLeft: '10px'}}> 
-            {sleepEndTimeHour >= 12 ? 'pm' : 'am'} 
-          </span>
+            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+              {sleepEndTimeHour >= 12 ? 'pm' : 'am'}
+            </span>
           </div>
           <h4>Work Hours</h4>
           <div
@@ -392,8 +392,8 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.workStart}
             />
-            <span style = {{color: 'inherit', paddingLeft: '10px'}}> 
-              {workStartTimeHour >= 12 ? 'pm' : 'am'} 
+            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+              {workStartTimeHour >= 12 ? 'pm' : 'am'}
             </span>
             <h3 className='reg-left-margin'>to</h3>
             <TimeToggler
@@ -408,8 +408,8 @@ export const SettingEditor = ({ closeOverlay }) => {
               isHour={false}
               timeRangeTypeVal={timeRangeType.workEnd}
             />
-            <span style = {{color: 'inherit', paddingLeft: '10px'}}> 
-              {workEndTimeHour >= 12 ? 'pm' : 'am'} 
+            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+              {workEndTimeHour >= 12 ? 'pm' : 'am'}
             </span>
           </div>
           <h4>Select Working Days</h4>

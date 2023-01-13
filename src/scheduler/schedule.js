@@ -215,14 +215,20 @@ export const scheduleToday = async (userId) => {
     const newChecklist = timeBlocksWithTaskInfo.map(
       (timeBlock) => timeBlock.taskId,
     )
+
     const newChecklistWithoutDuplicates = [...new Set(newChecklist)]
-    const isSameChecklist = areTwoArraysEqual(
-      userData.checklist,
-      newChecklistWithoutDuplicates,
-    )
-    if (!isSameChecklist)
-      await updateUserInfo(userId, { checklist: newChecklistWithoutDuplicates })
+
     // *** STORE ALLOCATED TASKS IN USER CHECKLIST END ***/
+
+    // *** UPDATES USERINFO DOC IN FIREBASE START *** //
+    const userTimeZone = await getUserTimeZone(userId)
+
+    await updateUserInfo(userId, {
+      checklist: newChecklistWithoutDuplicates,
+      calendarIds: calendarIds,
+      timeZone: userTimeZone,
+    })
+    // *** UPDATES USERINFO DOC IN FIREBASE END *** //
 
     //*** ALLOCATE TIME BLOCKS TO GOOGLE CALENDAR START ***/
     let updatableAlgoCalendarEvents = []
@@ -277,8 +283,6 @@ export const scheduleToday = async (userId) => {
 
     // console.log('updatableAlgoCalendarEvents:', updatableAlgoCalendarEvents) // DEBUGGING
 
-    const userTimeZone = await getUserTimeZone(userId)
-
     const [filteredTimeBlocks, filteredUpdatableAlgoCalendarEvents] =
       filterExistingTimeBlocksAndEvents(
         timeBlocksWithTaskInfo,
@@ -308,17 +312,6 @@ export const scheduleToday = async (userId) => {
   } catch (error) {
     console.log(error)
   }
-}
-
-/***
- * note: takes order into consideration
- * ***/
-const areTwoArraysEqual = (arr1, arr2) => {
-  if (arr1.length !== arr2.length) return false
-  for (let i = 0; i < arr1.length; i++) {
-    if (arr1[i] !== arr2[i]) return false
-  }
-  return true
 }
 
 const filterExistingTimeBlocksAndEvents = (

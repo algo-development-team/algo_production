@@ -1,12 +1,7 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
 
 /* This Function makes sures that the scheduled time of the Task is listed in each 'Task'*/
-
 export const TaskScheduleTime = ({ timeLength }) => {
-
-  /*taskTimeLength = 15*/
-  console.log(timeLength)
-
   const getTimeLengthText = () => {
     const min = timeLength % 60
     const hour = (timeLength - min) / 60
@@ -25,8 +20,7 @@ export const TaskScheduleTime = ({ timeLength }) => {
 
   return (
     <>
-      <span
-        className={`task__date date__no-date`}>
+      <span className={`task__date date__no-date`}>
         <ScheduleIcon width='14px' height='14px' />
         {getTimeLengthText()}
       </span>

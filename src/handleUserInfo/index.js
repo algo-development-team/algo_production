@@ -27,7 +27,7 @@ export const getUserInfo = async (userId) => {
   }
 }
 
-export const getDefaultUserInfo = () => {
+export const getDefaultUserInfo = (email) => {
   const defaultRankingPreferences = new Array(6).fill(0) // all preferences are urgent
   const defaultUserInfo = {
     workTimeRange: '9:00-17:00',
@@ -36,6 +36,8 @@ export const getDefaultUserInfo = () => {
     workDays: [false, true, true, true, true, true, false],
     isSetup: false,
     calendarId: null,
+    calendarIds: [email],
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     checklist: [],
     scheduleCreated: false,
   }

@@ -1,7 +1,22 @@
-import { useCalendarId } from 'hooks'
+import { useCalendarInfo } from 'hooks'
 
 export const Calendar = () => {
-  const { calendarId, loading } = useCalendarId()
+  const { calendarId, calendarIds, timeZone, loading } = useCalendarInfo()
+
+  const getSrcString = () => {
+    let srcString =
+      'https://calendar.google.com/calendar/embed?src=techandy42%40gmail.com'
+    if (calendarId) {
+      srcString += `&src=${calendarId}`
+    }
+    if (calendarIds.length > 0) {
+      calendarIds.forEach((id) => {
+        srcString += `&src=${id}`
+      })
+    }
+    srcString += `&ctz=${timeZone}`
+    return srcString
+  }
 
   return (
     <div className='task-list__wrapper'>
@@ -9,12 +24,10 @@ export const Calendar = () => {
       {calendarId ? (
         <iframe
           title='calendar'
-          src={`https://calendar.google.com/calendar/embed?
-src=${calendarId.replace('@', '%40')}&
-ctz=America%2FToronto`}
+          src={getSrcString()}
           style={{
             border: 0,
-            width: 800,
+            width: 900,
             height: 600,
           }}
         ></iframe>

@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }) => {
           const snapshotData = snapshot.data()
           const userInfo = await getUserInfo(snapshot.id)
           if (userInfo.empty === true && userInfo.failed === false) {
-            const defaultUserInfo = getDefaultUserInfo()
+            const defaultUserInfo = getDefaultUserInfo(snapshotData.email)
             await initializeUserInfo(snapshot.id, defaultUserInfo)
           } else if (userInfo.failed === true) {
             console.log('error getting user info')
