@@ -21,7 +21,6 @@ export const Calendar = () => {
 
   return (
     <div className='calendar-view'>
-      {/* <h1>My Calendar</h1> */}
       {calendarId ? (
         <iframe
           className='embedded-calendar'
