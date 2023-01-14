@@ -1,4 +1,5 @@
 import { useCalendarInfo } from 'hooks'
+import './light.scss'
 import './main.scss'
 
 export const Calendar = () => {
