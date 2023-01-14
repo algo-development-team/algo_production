@@ -129,6 +129,10 @@ export const scheduleToday = async (userId) => {
     const calendars = await fetchAllCalendars()
     const calendarIds = calendars
       .filter((calendar) => calendar.id !== userData.calendarId)
+      .filter(
+        (calendar) =>
+          calendar.id.split('@')[1] !== 'group.v.calendar.google.com',
+      )
       .map((calendar) => calendar.id) // excluding the Algo calendar
     const eventsByTypeForToday = await getEventsByTypeForToday(
       timeMin,
