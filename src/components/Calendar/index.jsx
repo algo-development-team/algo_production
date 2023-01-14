@@ -1,4 +1,5 @@
 import { useCalendarInfo } from 'hooks'
+import './main.scss'
 
 export const Calendar = () => {
   const { calendarId, calendarIds, timeZone, loading } = useCalendarInfo()
@@ -23,6 +24,7 @@ export const Calendar = () => {
       <h1>My Calendar</h1>
       {calendarId ? (
         <iframe
+          className='calendar'
           title='calendar'
           src={getSrcString()}
           style={{
