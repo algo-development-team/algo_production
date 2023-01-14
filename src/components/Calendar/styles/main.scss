@@ -1,0 +1,20 @@
+@import 'scss/mixins.scss';
+.calendar-view {
+  margin-left: 25px;
+  transition: margin linear 0.1s;
+
+  .hide-sidebar & {
+    margin-left: 65px;
+  }
+}
+
+.embedded-calendar {
+  filter: invert(0.9) saturate(0.75) hue-rotate(145deg);
+  border: none;
+  width: 1200px;
+  height: 670px;
+
+  .hide-sidebar & {
+    width: 1400px !important;
+  }
+}
