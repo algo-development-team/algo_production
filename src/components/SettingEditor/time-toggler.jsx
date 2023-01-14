@@ -2,17 +2,16 @@ import './styles/main.scss'
 import './styles/light.scss'
 
 export const TimeToggler = ({ time, changeTime, isHour, timeRangeTypeVal }) => {
-
-    /*The is the Handle of the AM & PM */
-    const handleAmPm = (hour) => {
-      if (hour > 12) {
-        return hour - 12
-      } else if (hour === 0) {
-        return 12
-      } else {
-        return hour
-      }
+  /*The is the Handle of the AM & PM */
+  const handleAmPm = (hour) => {
+    if (hour > 12) {
+      return hour - 12
+    } else if (hour === 0) {
+      return 12
+    } else {
+      return hour
     }
+  }
 
   return (
     <div className='display-row'>
@@ -21,8 +20,7 @@ export const TimeToggler = ({ time, changeTime, isHour, timeRangeTypeVal }) => {
           isHour ? '__hour' : '__minute'
         }`}
       >
-        
-        {!isHour && ':'} {handleAmPm(time)}
+        {!isHour && ':'} {isHour ? handleAmPm(time) : time}
       </h3>
       <div className='display-col'>
         <i

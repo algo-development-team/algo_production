@@ -1,12 +1,12 @@
 import { useCalendarInfo } from 'hooks'
-import './main.scss'
+import './styles/light.scss'
+import './styles/main.scss'
 
 export const Calendar = () => {
   const { calendarId, calendarIds, timeZone, loading } = useCalendarInfo()
 
   const getSrcString = () => {
-    let srcString =
-      'https://calendar.google.com/calendar/embed?src=techandy42%40gmail.com'
+    let srcString = 'https://calendar.google.com/calendar/embed?'
     if (calendarId) {
       srcString += `&src=${calendarId}`
     }
@@ -20,17 +20,16 @@ export const Calendar = () => {
   }
 
   return (
-    <div className='task-list__wrapper'>
-      <h1>My Calendar</h1>
+    <div className='calendar-view'>
       {calendarId ? (
         <iframe
-          className='calendar'
+          className='embedded-calendar'
           title='calendar'
           src={getSrcString()}
           style={{
             border: 0,
-            width: 900,
-            height: 600,
+            width: 1205,
+            height: 670,
           }}
         ></iframe>
       ) : loading ? (
