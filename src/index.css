@@ -117,6 +117,10 @@ body {
 li {
   list-style: none;
 }
+textarea {
+  resize: none;
+  font-family: 'SegoeUI';
+}
 
 * ~ input:focus {
   outline: none !important;
