@@ -108,7 +108,6 @@ export const LandingPage = () => {
         <h2 class="box4" text-align="centre">✅ Generate your daily schedule in 2 seconds using "Schedule Generator".</h2>
         <h2 class="box5" text-align="centre">✅ Personalize the Schedule Generator using "Setting".</h2>
         <h2 class="box6" text-align="centre">✅ Add tasks with two clicks using "Quick Task Add".</h2>
-        <h1 class="box7" style={{ textAlign: "center", fontSize: "250%" }}>Upcoming Features</h1>
         <h2 class="box8" text-align="centre">🔜 Add team members to your projects.</h2>
         <h2 class="box9" text-align="centre">🔜 Optimize meeting booking.</h2>
         <h2 class="box10" text-align="centre">🔜 Automatically assign tasks to team-members.</h2>
