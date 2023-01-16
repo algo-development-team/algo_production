@@ -1,14 +1,10 @@
 .add-task {
   margin: 0.4rem 0;
 
-  // & .quick-add__wrapper {
-  //   background-color: ;
-  // }
   background-color: inherit;
   &__container {
-    //width: 100%;
     border: 1px solid #383838;
-    padding: 10px;
+    padding: 24px !important;
     margin-bottom: 1rem;
     border-radius: 10px;
     cursor: text;
@@ -16,13 +12,24 @@
   &__input {
     width: -webkit-fill-available;
     margin-bottom: 1rem;
-    font-size: 12px;
+    font-size: 16px;
     height: 1.6rem;
     border: none;
     font-weight: 400;
     background-color: transparent;
     color: #ffffde;
     border-radius: 5px;
+
+    &.title {
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    &.textarea {
+      max-height: 200px !important;
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
     &:focus {
       outline: unset;

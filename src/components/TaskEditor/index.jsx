@@ -17,7 +17,7 @@ import {
   useTasks,
 } from 'hooks'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { generatePushId } from 'utils'
 import { db } from '_firebase'
@@ -29,6 +29,7 @@ import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
+import { useAutosizeTextArea } from 'hooks'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -80,6 +81,9 @@ export const TaskEditor = ({
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
+  const textAreaRef = useRef(null)
+
+  useAutosizeTextArea(textAreaRef.current, taskDescription)
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -165,7 +169,7 @@ export const TaskEditor = ({
     setTaskTimeLength(60)
     /*The default day is 'Today' only for the Scheduled*/
     if (defaultGroup === 'Scheduled') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY')})
+      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
     } else {
       setSchedule({ day: '', date: '' })
     }
@@ -370,28 +374,24 @@ export const TaskEditor = ({
             }`}
           >
             <input
-              className='add-task__input'
+              className='add-task__input title'
               value={taskName}
-              style={{ fontWeight: 600 }}
               onChange={(event) => {
                 handleChange(event)
                 setTaskName(event.target.value)
               }}
               required
               type='text'
-              /*maxLength='30'*/
               placeholder={'Some Title...'}
             />
 
-            <input
-              className='add-task__input'
+            <textarea
+              className='add-task__input textarea'
               value={taskDescription}
-              onChange={(event) => {
-                handleChange(event)
-                setTaskDescription(event.target.value)
-              }}
+              onChange={(e) => setTaskDescription(e.target.value)}
+              ref={textAreaRef}
+              rows={1}
               type='text'
-              maxLength='10000'
               placeholder='Some description...'
             />
 
