@@ -374,9 +374,8 @@ export const TaskEditor = ({
             }`}
           >
             <input
-              className='add-task__input'
+              className='add-task__input title'
               value={taskName}
-              style={{ fontWeight: 600 }}
               onChange={(event) => {
                 handleChange(event)
                 setTaskName(event.target.value)
@@ -387,7 +386,7 @@ export const TaskEditor = ({
             />
 
             <textarea
-              className='add-task__input'
+              className='add-task__input textarea'
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
               ref={textAreaRef}
