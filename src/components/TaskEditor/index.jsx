@@ -411,6 +411,19 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
+                <label class='toggle'>
+                  <input type='checkbox' />
+                  <span class='slider'></span>
+                  <span class='labels' data-on='TASK' data-off='NOTE'></span>
+                </label>
+              </div>
+              <div className='add-task__attributes--right'></div>
+            </div>
+            <div
+              className='add-task__attributes'
+              style={{ marginBottom: '10px' }}
+            >
+              <div className='add-task__attributes--left'>
                 {defaultGroup !== 'Checklist' &&
                   defaultGroup !== 'Scheduled' && (
                     <SetNewTaskProject
