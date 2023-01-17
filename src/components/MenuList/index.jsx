@@ -142,9 +142,11 @@ export const MenuList = ({
       setShowDialog('EDIT_PROJECT')
     }
   }
-
+ 
   const addtochecklistHandler = async (e) => { 
-
+      if(checklist.includes(taskId)) {
+        return
+        }
       try {
         const newChecklist = Array.from(checklist)
         newChecklist.push(taskId)
@@ -164,8 +166,6 @@ export const MenuList = ({
         await updateUserInfo(currentUser && currentUser.id, {
           checklist: newChecklist,
         })
-        console.log(newChecklist)
-        console.log(e.target.value)
         
       } catch (error) {
         console.log(error)
