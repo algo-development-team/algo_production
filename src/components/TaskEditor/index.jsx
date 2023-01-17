@@ -430,52 +430,55 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
-            <div
-              className='add-task__attributes'
-              style={{ marginBottom: '10px' }}
-            >
-              <div className='add-task__attributes--left'>
-                {defaultGroup !== 'Checklist' &&
-                  defaultGroup !== 'Scheduled' && (
-                    <SetNewTaskProject
+            {isTask && (
+              <>
+                <div
+                  className='add-task__attributes'
+                  style={{ marginBottom: '10px' }}
+                >
+                  <div className='add-task__attributes--left'>
+                    {defaultGroup !== 'Checklist' &&
+                      defaultGroup !== 'Scheduled' && (
+                        <SetNewTaskProject
+                          isQuickAdd={isQuickAdd}
+                          isPopup={isPopup}
+                          project={project}
+                          setProject={setProject}
+                          task={task}
+                        />
+                      )}
+                  </div>
+                  <div className='add-task__attributes--right'></div>
+                </div>
+                <div className='add-task__attributes'>
+                  <div className='add-task__attributes--left'>
+                    <SetNewTaskSchedule
                       isQuickAdd={isQuickAdd}
                       isPopup={isPopup}
-                      project={project}
-                      setProject={setProject}
+                      schedule={schedule}
+                      setSchedule={setSchedule}
                       task={task}
                     />
-                  )}
-              </div>
-              <div className='add-task__attributes--right'></div>
-            </div>
-            <div className='add-task__attributes'>
-              <div className='add-task__attributes--left'>
-                <SetNewTaskSchedule
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  schedule={schedule}
-                  setSchedule={setSchedule}
-                  task={task}
-                />
-                <SetNewTaskPriority
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskPriority={taskPriority}
-                  setTaskPriority={setTaskPriority}
-                  task={task}
-                />
-                <SetNewTaskTimeLength
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskTimeLength={taskTimeLength}
-                  setTaskTimeLength={setTaskTimeLength}
-                  task={task}
-                />
-              </div>
-              <div className='add-task__attributes--right'></div>
-            </div>
+                    <SetNewTaskPriority
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      taskPriority={taskPriority}
+                      setTaskPriority={setTaskPriority}
+                      task={task}
+                    />
+                    <SetNewTaskTimeLength
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      taskTimeLength={taskTimeLength}
+                      setTaskTimeLength={setTaskTimeLength}
+                      task={task}
+                    />
+                  </div>
+                  <div className='add-task__attributes--right'></div>
+                </div>
+              </>
+            )}
           </div>
-
           <div
             className={`add-task__actions ${
               isQuickAdd || isPopup ? 'quick-add__actions' : ''
