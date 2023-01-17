@@ -29,7 +29,7 @@ import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
-import { useAutosizeTextArea } from 'hooks'
+import { useAutosizeTextArea, useChecklist } from 'hooks'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -81,6 +81,7 @@ export const TaskEditor = ({
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
+  const { checklist } = useChecklist()
   const textAreaRef = useRef(null)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -110,7 +111,17 @@ export const TaskEditor = ({
     const boardStatus = getBoardStatus()
 
     let index = 0
-    if (defaultGroup === 'Scheduled') {
+    if (defaultGroup === 'Checklist') {
+      try {
+        const newChecklist = Array.from(checklist)
+        newChecklist.push(taskId)
+        await updateUserInfo(currentUser && currentUser.id, {
+          checklist: newChecklist,
+        })
+      } catch (error) {
+        console.log(error)
+      }
+    } else if (defaultGroup === 'Scheduled') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
         currentUser && currentUser.id,
         '',
