@@ -30,6 +30,7 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
+import Switch from 'react-switch'
 
 const taskEditorPlaceholders = [
   'Prepare for family lunch',
@@ -75,6 +76,7 @@ export const TaskEditor = ({
   const [taskTimeLength, setTaskTimeLength] = useState(
     isEdit && task.timeLength,
   )
+  const [isTask, setIsTask] = useState(true)
   const { currentUser } = useAuth()
   const [disabled, setDisabled] = useState(true)
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
@@ -331,7 +333,6 @@ export const TaskEditor = ({
         date: task.date,
       })
     }
-    /*if (!taskPriority) setTaskPriority(1)*/
     if (!taskPriority) {
       setTaskPriority(1)
     } else {
@@ -411,11 +412,21 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                <label class='toggle'>
-                  <input type='checkbox' />
-                  <span class='slider'></span>
-                  <span class='labels' data-on='TASK' data-off='NOTE'></span>
-                </label>
+                <Switch
+                  checked={!isTask}
+                  onChange={() => setIsTask(!isTask)}
+                  onColor='#86d3ff'
+                  onHandleColor='#2693e6'
+                  handleDiameter={15}
+                  uncheckedIcon={'task'}
+                  checkedIcon={'note'}
+                  boxShadow='0px 1px 1px rgba(0, 0, 0, 0.6)'
+                  activeBoxShadow='0px 0px 1px 10px rgba(0, 0, 0, 0.2)'
+                  height={20}
+                  width={48}
+                  className='react-switch'
+                  id='material-switch'
+                />
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
