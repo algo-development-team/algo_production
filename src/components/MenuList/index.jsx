@@ -1,5 +1,8 @@
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
+import { ReactComponent as RemoveFromOrAddToChecklistIcon } from 'assets/svg/checklist.svg'
+import { useChecklist } from 'hooks'
+import { updateUserInfo } from 'handleUserInfo'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
@@ -18,6 +21,8 @@ import { db } from '_firebase'
 import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
+import { useParams } from 'react-router-dom'
+
 
 export const MenuList = ({
   closeOverlay,
@@ -38,11 +43,14 @@ export const MenuList = ({
   const { setTaskEditorToShow } = useTaskEditorContextValue()
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
+  const { defaultGroup } = useParams()
 
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
     setShowDialog('CONFIRM_DELETE')
   }
+  
+  const { checklist } = useChecklist()
 
   const handleColumnDelete = async () => {
     const newColumns = columns.filter((column) => column.id !== columnId)
@@ -134,6 +142,37 @@ export const MenuList = ({
       setShowDialog('EDIT_PROJECT')
     }
   }
+ 
+  const addtochecklistHandler = async (e) => { 
+      if(checklist.includes(taskId)) {
+        return
+        }
+      try {
+        const newChecklist = Array.from(checklist)
+        newChecklist.push(taskId)
+        await updateUserInfo(currentUser && currentUser.id, {
+          checklist: newChecklist,
+        })
+      } catch (error) {
+        console.log(error)
+      }
+
+   }
+
+  const removefromchecklistHandler = async (e) => { 
+
+      try {
+        const newChecklist = checklist.filter(existingtaskId => existingtaskId !== taskId)
+        await updateUserInfo(currentUser && currentUser.id, {
+          checklist: newChecklist,
+        })
+        
+      } catch (error) {
+        console.log(error)
+      }
+
+   }
+
 
   const computeXPosition = () => {
     let computedXPosition
@@ -154,6 +193,8 @@ export const MenuList = ({
 
     return computedXPosition
   }
+
+  
 
   return (
     <div
@@ -186,6 +227,16 @@ export const MenuList = ({
             <span className='menu__list--content'>
               Delete{' '}
               {targetIsProject ? 'Project' : targetIsColumn ? 'Column' : 'Task'}
+            </span>
+          </li>
+
+          <li className='menu__list--item' onClick={ (e) => {defaultGroup === 'Checklist' ? removefromchecklistHandler(e) : addtochecklistHandler(e)}}>
+            <div className='menu__list--icon'>
+              <RemoveFromOrAddToChecklistIcon />
+            </div>
+
+            <span className='menu__list--content'>
+              {defaultGroup === 'Checklist' ? 'Remove Task From Checklist' : 'Add Task To Checklist'}
             </span>
           </li>
         </ul>
