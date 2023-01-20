@@ -343,11 +343,11 @@ export const TaskEditor = ({
       })
     }
     if (!taskPriority) {
-      setTaskPriority(1)
+      setTaskPriority(2)
     } else {
       setTaskPriority(taskPriority)
     }
-    if (!taskTimeLength) setTaskTimeLength(15)
+    if (!taskTimeLength && taskTimeLength !== 0) setTaskTimeLength(60)
   }, [defaultGroup])
 
   useEffect(() => {
