@@ -56,12 +56,26 @@ export const Task = ({ name, task, index, projects }) => {
             </p>
 
             <div className='task__info'>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <div style={{ paddingRight: '10px' }}>{task.date && <TaskDate date={task.date} />} </div>
-                <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ display: 'inline-block', width: '5rem' }}>
+                  {task.startDate && <TaskDate date={task.startDate} />}{' '}
+                </div>
+                <div style={{ display: 'inline-block', width: '5rem' }}>
+                  {task.date && <TaskDate date={task.date} />}{' '}
+                </div>
+                <div style={{ display: 'inline-block' }}>
+                  {task.timeLength ? (
+                    <TaskScheduleTime timeLength={task.timeLength} />
+                  ) : null}
+                </div>
               </div>
-              <div>
-                {' '}
+              <div className='task__project-name'>
                 {defaultGroup && (
                   <TaskProject
                     projectHexColour={taskProject?.projectColour?.hex}

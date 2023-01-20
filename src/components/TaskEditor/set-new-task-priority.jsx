@@ -30,6 +30,10 @@ export const SetNewTaskPriority = ({
       let day = 'date__tomorrow'
       return day
     }
+    if (taskPriority === 4) {
+      let day = 'date__overdue'
+      return day
+    }
   }
 
   const getPriorityText = (taskPriority) => {
@@ -41,6 +45,9 @@ export const SetNewTaskPriority = ({
     }
     if (taskPriority === 3) {
       return 'High'
+    }
+    if (taskPriority === 4) {
+      return 'Very High'
     }
   }
 
@@ -67,7 +74,7 @@ export const SetNewTaskPriority = ({
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {taskPriority ? getPriorityText(taskPriority) : 'Low'}
+        {taskPriority && getPriorityText(taskPriority)}
       </div>
       {showPopup && (
         <SetNewTaskPriorityPopper

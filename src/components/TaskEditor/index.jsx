@@ -30,22 +30,7 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
-
-const taskEditorPlaceholders = [
-  'Prepare for family lunch',
-  'Call Adenike',
-  'Renew Gym membership',
-  'Pickup kids from school',
-  'Design meeting by 10:30am',
-  'Standup by 9am',
-  'Task name',
-  'Finish Art project',
-]
-
-const randomPlaceholder =
-  taskEditorPlaceholders[
-    Math.floor(Math.random() * taskEditorPlaceholders.length)
-  ]
+import useScreenType from 'react-screentype-hook'
 
 export const TaskEditor = ({
   column,
@@ -57,7 +42,8 @@ export const TaskEditor = ({
 }) => {
   const params = useParams()
   const { defaultGroup, projectId } = params
-  const [schedule, setSchedule] = useState({ day: '', date: '' })
+  const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
+  const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const { projects } = useProjects()
   const { selectedProject, defaultState } = useSelectedProject(params, projects)
   const { projectIsList } = selectedProject
@@ -82,6 +68,7 @@ export const TaskEditor = ({
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
   const { checklist } = useChecklist()
+  const screenType = useScreenType()
   const textAreaRef = useRef(null)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -102,6 +89,20 @@ export const TaskEditor = ({
       return -1
     } else {
       return Math.max(...currentColumnTaskIds)
+    }
+  }
+
+  const getValidStartDate = (startDate, endDate) => {
+    if (startDate === '') {
+      return ''
+    } else {
+      if (
+        moment(startDate, 'DD-MM-YYYY').isAfter(moment(endDate, 'DD-MM-YYYY'))
+      ) {
+        return endDate
+      } else {
+        return startDate
+      }
     }
   }
 
@@ -147,7 +148,8 @@ export const TaskEditor = ({
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         {
           projectId: project.selectedProjectId || '',
-          date: schedule.date,
+          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
+          date: endSchedule.date,
           name: taskName,
           taskId: taskId,
           completed: false,
@@ -156,7 +158,7 @@ export const TaskEditor = ({
           description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
-          index: index, // ADD THE CORRECT INDEX HERE
+          index: index,
         },
       )
       // UPDATE TASK INDEX HERE (COMPLETED)
@@ -178,11 +180,12 @@ export const TaskEditor = ({
     setTaskDescription('')
     setTaskPriority(2)
     setTaskTimeLength(60)
+    setStartSchedule({ day: '', date: '' })
     /*The default day is 'Today' only for the Scheduled*/
     if (defaultGroup === 'Scheduled') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
+      setEndSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
     } else {
-      setSchedule({ day: '', date: '' })
+      setEndSchedule({ day: '', date: '' })
     }
     setTaskEditorToShow('')
   }
@@ -197,7 +200,7 @@ export const TaskEditor = ({
   }
 
   const getNewProjectId = () => {
-    if (defaultGroup === 'Checklist') {
+    if (defaultGroup === 'Checklist' || defaultGroup === 'Scheduled') {
       return task.projectId
     } else if (project.selectedProjectName !== task.projectId) {
       return project.selectedProjectId
@@ -287,7 +290,8 @@ export const TaskEditor = ({
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
           name: taskName,
-          date: schedule.date,
+          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
+          date: endSchedule.date,
           projectId: newProjectId,
           description: taskDescription, // string
           priority: taskPriority, // number (int) (range: 1-3)
@@ -323,15 +327,21 @@ export const TaskEditor = ({
     }
     if (isEdit) {
       moment.defaultFormat = 'DD-MM-YYYY'
-      setSchedule({
+      setStartSchedule({
+        day:
+          task.startDate.length > 1
+            ? moment(task.startDate, moment.defaultFormat).format('MMM DD')
+            : '',
+        date: task.startDate,
+      })
+      setEndSchedule({
         day:
           task.date.length > 1
             ? moment(task.date, moment.defaultFormat).format('MMM DD')
-            : task.date,
+            : '',
         date: task.date,
       })
     }
-    /*if (!taskPriority) setTaskPriority(1)*/
     if (!taskPriority) {
       setTaskPriority(1)
     } else {
@@ -345,6 +355,16 @@ export const TaskEditor = ({
       setShowAddTaskForm(true)
     }
   }, [taskEditorToShow])
+
+  const splitTaskAttributes = () => {
+    if (isQuickAdd) {
+      return screenType.isMobile
+    } else if (defaultGroup) {
+      return screenType.isMobile
+    } else {
+      return !projectIsList || screenType.isMobile
+    }
+  }
 
   return (
     <div
@@ -380,12 +400,14 @@ export const TaskEditor = ({
           style={{ width: `${isQuickAdd ? '100%' : ''}` }}
         >
           <div
-            className={`add-task__container ${
+            className={`add-task__container${projectIsList ? '--list' : ''} ${
               isQuickAdd ? ' quick-add__container' : ''
             }`}
           >
             <input
-              className='add-task__input title'
+              className={`add-task__input title${
+                projectIsList ? '--list' : ''
+              }`}
               value={taskName}
               onChange={(event) => {
                 handleChange(event)
@@ -405,7 +427,6 @@ export const TaskEditor = ({
               type='text'
               placeholder='Some description...'
             />
-
             <div
               className='add-task__attributes'
               style={{ marginBottom: '10px' }}
@@ -424,34 +445,60 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
-            <div className='add-task__attributes'>
-              <div className='add-task__attributes--left'>
-                <SetNewTaskSchedule
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  schedule={schedule}
-                  setSchedule={setSchedule}
-                  task={task}
-                />
-                <SetNewTaskPriority
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskPriority={taskPriority}
-                  setTaskPriority={setTaskPriority}
-                  task={task}
-                />
-                <SetNewTaskTimeLength
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskTimeLength={taskTimeLength}
-                  setTaskTimeLength={setTaskTimeLength}
-                  task={task}
-                />
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: splitTaskAttributes() ? 'column' : 'row',
+              }}
+            >
+              <div
+                className='add-task__attributes'
+                style={{
+                  marginRight: splitTaskAttributes() ? '0px' : '6px',
+                  marginBottom: splitTaskAttributes() ? '10px' : '0px',
+                }}
+              >
+                <div className='add-task__attributes--left'>
+                  <SetNewTaskSchedule
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    schedule={startSchedule}
+                    setSchedule={setStartSchedule}
+                    task={task}
+                    defaultText='Start Date'
+                  />
+                  <SetNewTaskSchedule
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    schedule={endSchedule}
+                    setSchedule={setEndSchedule}
+                    task={task}
+                    defaultText='Due Date'
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
               </div>
-              <div className='add-task__attributes--right'></div>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  <SetNewTaskPriority
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    taskPriority={taskPriority}
+                    setTaskPriority={setTaskPriority}
+                    task={task}
+                  />
+                  <SetNewTaskTimeLength
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    taskTimeLength={taskTimeLength}
+                    setTaskTimeLength={setTaskTimeLength}
+                    task={task}
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
             </div>
           </div>
-
           <div
             className={`add-task__actions ${
               isQuickAdd || isPopup ? 'quick-add__actions' : ''

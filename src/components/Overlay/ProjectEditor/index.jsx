@@ -5,6 +5,7 @@ import {
   doc,
   getDocs,
   query,
+  addDoc,
   setDoc,
   updateDoc,
   where,
@@ -16,7 +17,6 @@ import { db } from '_firebase'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
-//import { cropLabel } from 'handleLabel'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()
@@ -95,13 +95,13 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
         },
       ],
     }
-    const projectsDocRef = doc(
-      collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-    )
     setShowDialog('')
-    await setDoc(projectsDocRef, newProject).then(() => {
-      setProjects({ ...newProject })
-    })
+
+    await addDoc(
+      collection(db, 'user', `${currentUser && currentUser.id}/projects`),
+      newProject,
+    )
+    setProjects({ ...newProject })
   }
 
   const handleChange = (e) => {
@@ -126,7 +126,9 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
           <form
             action=''
             autoComplete='off'
-            onSubmit={(e) => addProjectHandler(e)}
+            onSubmit={(e) =>
+              isEdit ? updateProjectHandler(e) : addProjectHandler(e)
+            }
           >
             <div className='add-project__form-group'>
               <label>Name</label>
@@ -135,7 +137,6 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
                 type='text'
                 name='projectName'
                 id='projectName'
-                /*maxLength={12}*/
                 minLength={2}
                 value={projectName || ''}
                 onChange={(e) => handleChange(e)}

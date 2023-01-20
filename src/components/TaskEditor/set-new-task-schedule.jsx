@@ -9,6 +9,7 @@ export const SetNewTaskSchedule = ({
   setSchedule,
   schedule,
   task,
+  defaultText,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -60,7 +61,7 @@ export const SetNewTaskSchedule = ({
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {schedule?.day === '' ? 'Due Date' : schedule?.day}
+        {schedule?.day === '' ? defaultText : schedule?.day}
       </div>
       {showPopup && (
         <SetNewTaskSchedulePopper

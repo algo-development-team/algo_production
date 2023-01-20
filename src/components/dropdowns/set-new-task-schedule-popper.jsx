@@ -130,15 +130,15 @@ export const SetNewTaskSchedulePopper = ({
               {moment().add(7, 'day').format('ddd MMM D ')}
             </p>
           </li>
-          <li className='set-schedule__popper--option'>
-            <div className=''></div>
-            <NextWeekIcon fill={'grey'} onClick={() => setCustom()} />
-            <p
-              className='set-new-task__schedule--name'
-              onClick={() => setCustom()}
-            >
-              Custom
-            </p>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setCustom()}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>Custom</p>
             <p
               className='set-new-task__schedule--weekday'
               style={{ visibility: 'hidden' }}
@@ -147,9 +147,15 @@ export const SetNewTaskSchedulePopper = ({
             </p>
             <input
               type='date'
-              style={{ color: 'grey', background: 'transparent', border: 0 }}
+              style={{
+                color: 'grey',
+                background: 'transparent',
+                border: 0,
+                zIndex: 1000,
+              }}
               value={customDate}
               onChange={(e) => setCustomDate(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
             />
           </li>
           <li
