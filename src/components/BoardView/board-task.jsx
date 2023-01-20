@@ -39,9 +39,27 @@ export const BoardTask = ({ task, index }) => {
           <div className='board-task__content'>
             <p className='board-task__name'>{cropLabel(task.name, 20)}</p>
             <div className='board-task__info'>
-              <div style={{ display: 'flex', flexDirection: 'row' }}>
-                <div style={{ paddingRight: '10px' }}> {task.date && <TaskDate date={task.date} />}</div>
-                <div>{task.timeLength && <TaskScheduleTime timeLength={task.timeLength} />} </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ paddingRight: '6px' }}>
+                  {task.startDate && <TaskDate date={task.startDate} />}{' '}
+                </div>
+                {task.startDate && task.date && (
+                  <span style={{ paddingRight: '6px' }}>-</span>
+                )}
+                <div style={{ paddingRight: '10px' }}>
+                  {task.date && <TaskDate date={task.date} />}{' '}
+                </div>
+                <div>
+                  {task.timeLength && (
+                    <TaskScheduleTime timeLength={task.timeLength} />
+                  )}
+                </div>
               </div>
               <div>
                 {defaultGroup && (
