@@ -357,7 +357,16 @@ export const TaskEditor = ({
   }, [taskEditorToShow])
 
   const splitTaskAttributes = () => {
-    return (!isQuickAdd && !projectIsList) || screenType.isMobile
+    console.log('defaultGroup:', defaultGroup)
+    console.log('isQuickAdd:', isQuickAdd)
+    console.log('projectIsList:', projectIsList)
+    if (isQuickAdd) {
+      return screenType.isMobile
+    } else if (defaultGroup) {
+      return screenType.isMobile
+    } else {
+      return !projectIsList || screenType.isMobile
+    }
   }
 
   return (
