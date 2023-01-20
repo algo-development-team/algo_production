@@ -1,5 +1,9 @@
 .add-task {
   margin: 0.4rem 0;
+  max-height: 32rem;
+  overflow-y: scroll;
+
+
 
   // & .quick-add__wrapper {
   //   background-color: ;
