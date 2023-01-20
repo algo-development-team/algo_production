@@ -46,19 +46,19 @@ export const BoardTask = ({ task, index }) => {
                   alignItems: 'center',
                 }}
               >
-                <div style={{ paddingRight: '6px' }}>
+                <div style={{ paddingRight: task.startDate ? '6px' : '0px' }}>
                   {task.startDate && <TaskDate date={task.startDate} />}{' '}
                 </div>
                 {task.startDate && task.date && (
                   <span style={{ paddingRight: '6px' }}>-</span>
                 )}
-                <div style={{ paddingRight: '10px' }}>
+                <div style={{ paddingRight: task.date ? '10px' : '0px' }}>
                   {task.date && <TaskDate date={task.date} />}{' '}
                 </div>
                 <div>
-                  {task.timeLength && (
+                  {task.timeLength ? (
                     <TaskScheduleTime timeLength={task.timeLength} />
-                  )}
+                  ) : null}
                 </div>
               </div>
               <div>

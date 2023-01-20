@@ -4,11 +4,20 @@
   background-color: inherit;
   &__container {
     border: 1px solid #383838;
-    padding: 24px !important;
+    padding: 16px !important;
     margin-bottom: 1rem;
     border-radius: 10px;
     cursor: text;
   }
+
+  &__container--list {
+    border: 1px solid #383838;
+    padding: 22px !important;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    cursor: text;
+  }
+
   &__input {
     width: -webkit-fill-available;
     margin-bottom: 1rem;
@@ -21,7 +30,12 @@
     border-radius: 5px;
 
     &.title {
-      font-size: 20px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    &.title--list {
+      font-size: 18px;
       font-weight: 500;
     }
 
@@ -44,6 +58,12 @@
       display: flex;
       flex-direction: row;
       align-items: center;
+    }
+    &--wrap {
+      display: grid;
+      grid-template-columns: auto auto;
+      grid-row-gap: 10px;
+      grid-column-gap: 2px;
     }
   }
 

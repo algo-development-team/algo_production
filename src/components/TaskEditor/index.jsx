@@ -30,6 +30,7 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
+import useScreenType from 'react-screentype-hook'
 
 export const TaskEditor = ({
   column,
@@ -67,6 +68,7 @@ export const TaskEditor = ({
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
   const { checklist } = useChecklist()
+  const screenType = useScreenType()
   const textAreaRef = useRef(null)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -354,6 +356,10 @@ export const TaskEditor = ({
     }
   }, [taskEditorToShow])
 
+  const splitTaskAttributes = () => {
+    return (!isQuickAdd && !projectIsList) || screenType.isMobile
+  }
+
   return (
     <div
       className={`add-task__wrapper ${isQuickAdd && 'quick-add__wrapper'}`}
@@ -388,12 +394,14 @@ export const TaskEditor = ({
           style={{ width: `${isQuickAdd ? '100%' : ''}` }}
         >
           <div
-            className={`add-task__container ${
+            className={`add-task__container${projectIsList ? '--list' : ''} ${
               isQuickAdd ? ' quick-add__container' : ''
             }`}
           >
             <input
-              className='add-task__input title'
+              className={`add-task__input title${
+                projectIsList ? '--list' : ''
+              }`}
               value={taskName}
               onChange={(event) => {
                 handleChange(event)
@@ -431,40 +439,58 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
-            <div className='add-task__attributes'>
-              <div className='add-task__attributes--left'>
-                <SetNewTaskSchedule
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  schedule={startSchedule}
-                  setSchedule={setStartSchedule}
-                  task={task}
-                  defaultText='Start Date'
-                />
-                <SetNewTaskSchedule
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  schedule={endSchedule}
-                  setSchedule={setEndSchedule}
-                  task={task}
-                  defaultText='Due Date'
-                />
-                <SetNewTaskPriority
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskPriority={taskPriority}
-                  setTaskPriority={setTaskPriority}
-                  task={task}
-                />
-                <SetNewTaskTimeLength
-                  isQuickAdd={isQuickAdd}
-                  isPopup={isPopup}
-                  taskTimeLength={taskTimeLength}
-                  setTaskTimeLength={setTaskTimeLength}
-                  task={task}
-                />
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: splitTaskAttributes() ? 'column' : 'row',
+              }}
+            >
+              <div
+                className='add-task__attributes'
+                style={{
+                  marginRight: splitTaskAttributes() ? '0px' : '6px',
+                  marginBottom: splitTaskAttributes() ? '10px' : '0px',
+                }}
+              >
+                <div className='add-task__attributes--left'>
+                  <SetNewTaskSchedule
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    schedule={startSchedule}
+                    setSchedule={setStartSchedule}
+                    task={task}
+                    defaultText='Start Date'
+                  />
+                  <SetNewTaskSchedule
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    schedule={endSchedule}
+                    setSchedule={setEndSchedule}
+                    task={task}
+                    defaultText='Due Date'
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
               </div>
-              <div className='add-task__attributes--right'></div>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  <SetNewTaskPriority
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    taskPriority={taskPriority}
+                    setTaskPriority={setTaskPriority}
+                    task={task}
+                  />
+                  <SetNewTaskTimeLength
+                    isQuickAdd={isQuickAdd}
+                    isPopup={isPopup}
+                    taskTimeLength={taskTimeLength}
+                    setTaskTimeLength={setTaskTimeLength}
+                    task={task}
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
             </div>
           </div>
           <div
