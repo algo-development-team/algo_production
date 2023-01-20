@@ -80,10 +80,12 @@ export const TaskCheckbox = ({
 
   const getBorderColor = (priority) => {
     switch (priority) {
+      case 4:
+        return '#ff7066'
       case 3:
-        return 'orange'
+        return '#ff9a14'
       case 2:
-        return 'blue'
+        return '#5297ff'
       case 1:
         return 'inherit'
       default:

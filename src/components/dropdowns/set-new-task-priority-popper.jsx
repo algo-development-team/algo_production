@@ -28,6 +28,10 @@ export const SetNewTaskPriorityPopper = ({
     setTaskPriority(3)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
+  const setFour = () => {
+    setTaskPriority(4)
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
+  }
 
   const targetedposition = parentPosition
     ? parentPosition
@@ -73,6 +77,16 @@ export const SetNewTaskPriorityPopper = ({
             </div>
 
             <p className='set-new-task__schedule--name'>High</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setFour()}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'#ff7066'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>Very High</p>
           </li>
         </ul>
       </div>
