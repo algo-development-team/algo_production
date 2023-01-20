@@ -76,7 +76,10 @@ export const BoardColumn = ({
               ) : (
                 <>
                   <p className='board-column__title'>
-                    {cropLabel(column.title, 24)}
+                    {cropLabel(
+                      column.id === 'NOSECTION' ? 'New Tasks' : column.title,
+                      24,
+                    )}
                   </p>
                 </>
               )}
