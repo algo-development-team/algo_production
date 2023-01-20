@@ -9,24 +9,12 @@ export const useTasksCount = (isDefaultGroup, projectId, name) => {
   const [taskCount, setTaskCount] = useState()
 
   useEffect(() => {
-    let q = query(
-      collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-    )
+    let q = null
     if (!isDefaultGroup) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', projectId),
         where('completed', '==', false),
-      )
-    } else if (isDefaultGroup && name == 'Checklist') {
-      q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where(
-          'date',
-          '==',
-          moment().format('DD-MM-YYYY'),
-          where('completed', '==', false),
-        ),
       )
     } else if (isDefaultGroup && name === 'Inbox') {
       q = query(
@@ -40,16 +28,19 @@ export const useTasksCount = (isDefaultGroup, projectId, name) => {
         where('important', '==', true),
         where('completed', '==', false),
       )
-    } else if (isDefaultGroup && name === 'Scheduled') {
+    } else {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('date', '!=', ''),
         where('completed', '==', false),
       )
     }
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let numOfTasks = querySnapshot.docs.length
-      setTaskCount(numOfTasks)
+      if (isDefaultGroup && (name === 'Checklist' || name === 'Scheduled')) {
+        setTaskCount(0)
+      } else {
+        setTaskCount(numOfTasks)
+      }
     })
     return unsubscribe
   }, [isDefaultGroup, projectId])

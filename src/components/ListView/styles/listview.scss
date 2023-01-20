@@ -78,6 +78,13 @@
     color: #ffffff99;
     align-items: center;
   }
+
+  &__project-name {
+    display: inline-block;
+    @include respond(phone) {
+      display: none;
+    }
+  }
 }
 .empty-state {
   width: 100%;

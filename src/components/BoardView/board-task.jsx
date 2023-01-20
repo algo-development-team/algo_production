@@ -46,28 +46,17 @@ export const BoardTask = ({ task, index }) => {
                   alignItems: 'center',
                 }}
               >
-                <div style={{ paddingRight: task.startDate ? '6px' : '0px' }}>
+                <div style={{ display: 'inline-block', width: '5rem' }}>
                   {task.startDate && <TaskDate date={task.startDate} />}{' '}
                 </div>
-                {task.startDate && task.date && (
-                  <span style={{ paddingRight: '6px' }}>-</span>
-                )}
-                <div style={{ paddingRight: task.date ? '10px' : '0px' }}>
+                <div style={{ display: 'inline-block', width: '5rem' }}>
                   {task.date && <TaskDate date={task.date} />}{' '}
                 </div>
-                <div>
+                <div style={{ display: 'inline-block' }}>
                   {task.timeLength ? (
                     <TaskScheduleTime timeLength={task.timeLength} />
                   ) : null}
                 </div>
-              </div>
-              <div>
-                {defaultGroup && (
-                  <TaskProject
-                    projectHexColour={taskProject?.projectColour?.hex}
-                    projectName={taskProject?.name}
-                  />
-                )}
               </div>
             </div>
           </div>

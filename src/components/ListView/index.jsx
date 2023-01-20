@@ -14,6 +14,7 @@ import { Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from 'handleUserInfo'
 import { updateDoc } from 'firebase/firestore'
 import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+import moment from 'moment/moment'
 
 // UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)
 
@@ -28,12 +29,49 @@ export const TaskList = () => {
   const { checklist } = useChecklist()
   const [tasklist, setTasklist] = useState([])
 
+  const sortTaskByDate = (tasks) => {
+    const scheduledTasks = tasks.filter(
+      (task) => task.startDate !== '' || task.date !== '',
+    )
+    const formattedScheduledTasks = scheduledTasks.map((task) => {
+      return {
+        ...task,
+        formattedStartDate:
+          task.startDate !== ''
+            ? moment(task.startDate, 'DD-MM-YYYY')
+            : moment(8.64e15),
+        formattedEndDate:
+          task.date !== '' ? moment(task.date, 'DD-MM-YYYY') : moment(8.64e15),
+      }
+    })
+    // do outer sorting by startDate in ascending order, then inner sorting by date in ascending order
+    const sortedScheduledTasks = formattedScheduledTasks.sort((a, b) => {
+      if (a.formattedStartDate.isBefore(b.formattedStartDate)) {
+        return -1
+      } else if (a.formattedStartDate.isAfter(b.formattedStartDate)) {
+        return 1
+      } else {
+        if (a.formattedEndDate.isBefore(b.formattedEndDate)) {
+          return -1
+        } else if (a.formattedEndDate.isAfter(b.formattedEndDate)) {
+          return 1
+        } else {
+          return 0
+        }
+      }
+    })
+    const sortedTasks = sortedScheduledTasks.map(
+      ({ formattedStartDate, formattedEndDate, ...rest }) => {
+        return rest
+      },
+    )
+    return sortedTasks
+  }
+
   const sortTasksByColumnOrder = (tasks) => {
-    if (
-      selectedProject === 'Checklist' ||
-      selectedProject === 'Inbox' ||
-      selectedProject === 'Scheduled'
-    ) {
+    if (selectedProject === 'Scheduled') {
+      return sortTaskByDate(tasks)
+    } else if (selectedProject === 'Checklist' || selectedProject === 'Inbox') {
       return tasks
     }
 
