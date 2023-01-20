@@ -30,23 +30,6 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
-import Switch from 'react-switch'
-
-const taskEditorPlaceholders = [
-  'Prepare for family lunch',
-  'Call Adenike',
-  'Renew Gym membership',
-  'Pickup kids from school',
-  'Design meeting by 10:30am',
-  'Standup by 9am',
-  'Task name',
-  'Finish Art project',
-]
-
-const randomPlaceholder =
-  taskEditorPlaceholders[
-    Math.floor(Math.random() * taskEditorPlaceholders.length)
-  ]
 
 export const TaskEditor = ({
   column,
@@ -58,7 +41,8 @@ export const TaskEditor = ({
 }) => {
   const params = useParams()
   const { defaultGroup, projectId } = params
-  const [schedule, setSchedule] = useState({ day: '', date: '' })
+  const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
+  const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const { projects } = useProjects()
   const { selectedProject, defaultState } = useSelectedProject(params, projects)
   const { projectIsList } = selectedProject
@@ -106,6 +90,20 @@ export const TaskEditor = ({
     }
   }
 
+  const getValidStartDate = (startDate, endDate) => {
+    if (startDate === '') {
+      return ''
+    } else {
+      if (
+        moment(startDate, 'DD-MM-YYYY').isAfter(moment(endDate, 'DD-MM-YYYY'))
+      ) {
+        return endDate
+      } else {
+        return startDate
+      }
+    }
+  }
+
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
@@ -148,7 +146,8 @@ export const TaskEditor = ({
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         {
           projectId: project.selectedProjectId || '',
-          date: schedule.date,
+          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
+          date: endSchedule.date,
           name: taskName,
           taskId: taskId,
           completed: false,
@@ -157,7 +156,7 @@ export const TaskEditor = ({
           description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
-          index: index, // ADD THE CORRECT INDEX HERE
+          index: index,
         },
       )
       // UPDATE TASK INDEX HERE (COMPLETED)
@@ -179,11 +178,12 @@ export const TaskEditor = ({
     setTaskDescription('')
     setTaskPriority(2)
     setTaskTimeLength(60)
+    setStartSchedule({ day: '', date: '' })
     /*The default day is 'Today' only for the Scheduled*/
     if (defaultGroup === 'Scheduled') {
-      setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
+      setEndSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
     } else {
-      setSchedule({ day: '', date: '' })
+      setEndSchedule({ day: '', date: '' })
     }
     setTaskEditorToShow('')
   }
@@ -288,7 +288,8 @@ export const TaskEditor = ({
       taskDocs.forEach(async (taskDoc) => {
         await updateDoc(taskDoc.ref, {
           name: taskName,
-          date: schedule.date,
+          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
+          date: endSchedule.date,
           projectId: newProjectId,
           description: taskDescription, // string
           priority: taskPriority, // number (int) (range: 1-3)
@@ -324,11 +325,18 @@ export const TaskEditor = ({
     }
     if (isEdit) {
       moment.defaultFormat = 'DD-MM-YYYY'
-      setSchedule({
+      setStartSchedule({
+        day:
+          task.startDate.length > 1
+            ? moment(task.startDate, moment.defaultFormat).format('MMM DD')
+            : '',
+        date: task.startDate,
+      })
+      setEndSchedule({
         day:
           task.date.length > 1
             ? moment(task.date, moment.defaultFormat).format('MMM DD')
-            : task.date,
+            : '',
         date: task.date,
       })
     }
@@ -428,9 +436,18 @@ export const TaskEditor = ({
                 <SetNewTaskSchedule
                   isQuickAdd={isQuickAdd}
                   isPopup={isPopup}
-                  schedule={schedule}
-                  setSchedule={setSchedule}
+                  schedule={startSchedule}
+                  setSchedule={setStartSchedule}
                   task={task}
+                  defaultText='Start Date'
+                />
+                <SetNewTaskSchedule
+                  isQuickAdd={isQuickAdd}
+                  isPopup={isPopup}
+                  schedule={endSchedule}
+                  setSchedule={setEndSchedule}
+                  task={task}
+                  defaultText='Due Date'
                 />
                 <SetNewTaskPriority
                   isQuickAdd={isQuickAdd}
