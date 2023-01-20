@@ -23,7 +23,6 @@ import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
 
-
 export const MenuList = ({
   closeOverlay,
   projectId,
@@ -49,7 +48,7 @@ export const MenuList = ({
     setDialogProps({ projectId: projectId })
     setShowDialog('CONFIRM_DELETE')
   }
-  
+
   const { checklist } = useChecklist()
 
   const handleColumnDelete = async () => {
@@ -142,37 +141,34 @@ export const MenuList = ({
       setShowDialog('EDIT_PROJECT')
     }
   }
- 
-  const addtochecklistHandler = async (e) => { 
-      if(checklist.includes(taskId)) {
-        return
-        }
-      try {
-        const newChecklist = Array.from(checklist)
-        newChecklist.push(taskId)
-        await updateUserInfo(currentUser && currentUser.id, {
-          checklist: newChecklist,
-        })
-      } catch (error) {
-        console.log(error)
-      }
 
-   }
+  const addtochecklistHandler = async (e) => {
+    if (checklist.includes(taskId)) {
+      return
+    }
+    try {
+      const newChecklist = Array.from(checklist)
+      newChecklist.push(taskId)
+      await updateUserInfo(currentUser && currentUser.id, {
+        checklist: newChecklist,
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
-  const removefromchecklistHandler = async (e) => { 
-
-      try {
-        const newChecklist = checklist.filter(existingtaskId => existingtaskId !== taskId)
-        await updateUserInfo(currentUser && currentUser.id, {
-          checklist: newChecklist,
-        })
-        
-      } catch (error) {
-        console.log(error)
-      }
-
-   }
-
+  const removefromchecklistHandler = async (e) => {
+    try {
+      const newChecklist = checklist.filter(
+        (existingtaskId) => existingtaskId !== taskId,
+      )
+      await updateUserInfo(currentUser && currentUser.id, {
+        checklist: newChecklist,
+      })
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const computeXPosition = () => {
     let computedXPosition
@@ -193,8 +189,6 @@ export const MenuList = ({
 
     return computedXPosition
   }
-
-  
 
   return (
     <div
@@ -230,15 +224,26 @@ export const MenuList = ({
             </span>
           </li>
 
-          <li className='menu__list--item' onClick={ (e) => {defaultGroup === 'Checklist' ? removefromchecklistHandler(e) : addtochecklistHandler(e)}}>
-            <div className='menu__list--icon'>
-              <RemoveFromOrAddToChecklistIcon />
-            </div>
+          {targetIsTask && (
+            <li
+              className='menu__list--item'
+              onClick={(e) => {
+                defaultGroup === 'Checklist'
+                  ? removefromchecklistHandler(e)
+                  : addtochecklistHandler(e)
+              }}
+            >
+              <div className='menu__list--icon'>
+                <RemoveFromOrAddToChecklistIcon />
+              </div>
 
-            <span className='menu__list--content'>
-              {defaultGroup === 'Checklist' ? 'Remove Task From Checklist' : 'Add Task To Checklist'}
-            </span>
-          </li>
+              <span className='menu__list--content'>
+                {defaultGroup === 'Checklist'
+                  ? 'Remove Task From Checklist'
+                  : 'Add Task To Checklist'}
+              </span>
+            </li>
+          )}
         </ul>
       </div>
     </div>

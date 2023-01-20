@@ -12,7 +12,6 @@ import {
   getTaskDocsInProjectColumnNotCompleted,
   getTaskDocsInProjectColumnCompleted,
 } from '../../handleUserTasks'
-import { useEffect } from 'react'
 
 export const TaskCheckbox = ({
   projectId,
