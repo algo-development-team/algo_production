@@ -200,7 +200,7 @@ export const TaskEditor = ({
   }
 
   const getNewProjectId = () => {
-    if (defaultGroup === 'Checklist') {
+    if (defaultGroup === 'Checklist' || defaultGroup === 'Scheduled') {
       return task.projectId
     } else if (project.selectedProjectName !== task.projectId) {
       return project.selectedProjectId
