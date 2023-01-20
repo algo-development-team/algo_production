@@ -16,7 +16,6 @@ import { db } from '_firebase'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
-//import { cropLabel } from 'handleLabel'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()

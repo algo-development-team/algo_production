@@ -16,6 +16,10 @@ export const SetNewTaskTimeLengthPopper = ({
   yPosition,
   parentPosition,
 }) => {
+  const set0Min = () => {
+    setTaskTimeLength(0)
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
+  }
   const set15Min = () => {
     setTaskTimeLength(15)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
@@ -40,6 +44,10 @@ export const SetNewTaskTimeLengthPopper = ({
     setTaskTimeLength(480)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
+  const set16Hour = () => {
+    setTaskTimeLength(960)
+    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
+  }
 
   const targetedposition = parentPosition
     ? parentPosition
@@ -62,6 +70,16 @@ export const SetNewTaskTimeLengthPopper = ({
         }}
       >
         <ul>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => set0Min()}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>None</p>
+          </li>
           <li
             className='set-schedule__popper--option'
             onClick={() => set15Min()}
@@ -121,6 +139,16 @@ export const SetNewTaskTimeLengthPopper = ({
             </div>
 
             <p className='set-new-task__schedule--name'>8h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => set16Hour()}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>16h</p>
           </li>
         </ul>
       </div>
