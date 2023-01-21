@@ -108,13 +108,109 @@ export const LandingPage = () => {
         <h2 class="box4" text-align="centre">✅ Generate your daily schedule in 2 seconds using "Schedule Generator".</h2>
         <h2 class="box5" text-align="centre">✅ Personalize the Schedule Generator using "Setting".</h2>
         <h2 class="box6" text-align="centre">✅ Add tasks with two clicks using "Quick Task Add".</h2>
-        <h1 class="box7" style={{ textAlign: "center", fontSize: "250%" }}>Upcoming Features</h1>
-        <h2 class="box8" text-align="centre">🔜 Add team members to your projects.</h2>
-        <h2 class="box9" text-align="centre">🔜 Optimize meeting booking.</h2>
-        <h2 class="box10" text-align="centre">🔜 Automatically assign tasks to team-members.</h2>
+        <h2 class="box7" text-align="centre">🔜 Add team members to your projects.</h2>
+        <h2 class="box8" text-align="centre">🔜 Optimize meeting booking.</h2>
+        <h2 class="box9" text-align="centre">🔜 Automatically assign tasks to team-members.</h2>
         </div>
         </div>
+        <h1 style={{ textAlign: "center", fontSize: "250%" }}>Pricing</h1>
       </section>
+      <div class="row row--center row--margin"style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>
+  <div class="col-md-4 col-sm-4 price-box price-box--purple">
+    <div class="price-box__wrap">
+      <div class="price-box__img"></div>
+      <h1 class="price-box__title">
+        Startup
+      </h1>
+      <p class="price-box__people">
+        1 - 100 people
+      </p>
+      <h2 class="price-box__discount">
+        <span class="price-box__dollar">$</span>49<span class="price-box__discount--light">/mo</span>
+      </h2>
+      <h3 class="price-box__price">
+        $65/mo
+      </h3>
+      <p class="price-box__feat">
+        Features
+      </p>
+      <ul class="price-box__list">
+        <li class="price-box__list-el">1 License</li>
+        <li class="price-box__list-el">24h helpcenter</li>
+        <li class="price-box__list-el">No tasks limit</li>
+        <li class="price-box__list-el">No contractors limit </li>
+      </ul>
+       <div class="price-box__btn">
+      <a class="btn btn--purple btn--width">Start now</a>
+    </div>
+  </div>
+  </div>
+
+  <div class="col-md-4 col-sm-4 price-box price-box--violet">
+  <div class="price-box__wrap">
+      <div class="price-box__img"></div>
+      <h1 class="price-box__title">
+        Business
+      </h1>
+      <p class="price-box__people">
+        100 - 500 people
+      </p>
+      <h2 class="price-box__discount">
+      <span class="price-box__dollar">$</span>149<span class="price-box__discount--light">/mo</span>
+      </h2>
+      <h3 class="price-box__price">
+        $225/mo
+      </h3>
+      <p class="price-box__feat">
+        Features
+      </p>
+      <ul class="price-box__list">
+        <li class="price-box__list-el">1 License</li>
+        <li class="price-box__list-el">24h helpcenter</li>
+        <li class="price-box__list-el">No tasks limit</li>
+        <li class="price-box__list-el">No contractors limit </li>
+      </ul>
+      <div class="price-box__btn">
+      <a class="btn btn--violet btn--width">Start now</a>
+    </div>
+  </div>
+  </div>
+
+  <div class="col-md-4 col-sm-4 price-box price-box--blue">
+  <div class="price-box__wrap">
+      <div class="price-box__img"></div>
+      <h1 class="price-box__title">
+        Corporate
+      </h1>
+      <p class="price-box__people">
+        500+ people
+      </p>
+      <h2 class="price-box__discount">
+      <span class="price-box__dollar">$</span>399<span class="price-box__discount--light">/mo</span>
+      </h2>
+      <h3 class="price-box__price">
+        $499/mo
+      </h3>
+      <p class="price-box__feat">
+        Features
+      </p>
+      <ul class="price-box__list">
+        <li class="price-box__list-el">1 License</li>
+        <li class="price-box__list-el">24h helpcenter</li>
+        <li class="price-box__list-el">No tasks limit</li>
+        <li class="price-box__list-el">No contractors limit </li>
+      </ul>
+    <div class="price-box__btn">
+      <a class="btn btn--blue btn--width">Start now</a>
+    </div>
+  </div>
+  </div>
+  </div>
+  <br/>
+  <br/>
+  <br/>
+  <br/>
+
     </main>
   )
 }
