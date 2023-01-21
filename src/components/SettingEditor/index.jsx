@@ -466,12 +466,16 @@ export const SettingEditor = ({ closeOverlay }) => {
             <h4>Schedule calendar by:</h4>
 	
   <div>
-    <input type="radio" name="scb" value="Weekly" style={{marginRight:"10px"}}/>
-    <label for="scb">Weekly</label>
-    <input type="radio" name="scb" value="Weekly" style={{marginLeft:"100px",marginRight:"10px"}} />
-    <label for="scb">Daily</label>
+<label class="container1">Weekly
+  <input type="radio" checked="checked" name="radio"/>
+  <span class="checkmark"></span>
+</label>
+<label class="container1">Daily
+  <input type="radio" name="radio"/>
+  <span class="checkmark"></span>
+</label>
   </div>
-        <h4>Starting date for scheduling next week:</h4>
+        <h4 style={{marginTop: "10px"}}>Starting date for scheduling next week:</h4>
           <div>
             {startDays.map((_, i) => (
               <button
@@ -487,7 +491,7 @@ export const SettingEditor = ({ closeOverlay }) => {
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: "16px" }}>
               <h3>Put</h3>
               <div>
                 <select

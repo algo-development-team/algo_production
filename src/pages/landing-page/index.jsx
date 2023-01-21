@@ -113,9 +113,9 @@ export const LandingPage = () => {
         <h2 class="box9" text-align="centre">🔜 Automatically assign tasks to team-members.</h2>
         </div>
         </div>
-        <h1 style={{ textAlign: "center", fontSize: "250%" }}>Pricing</h1>
+        {/* <h1 style={{ textAlign: "center", fontSize: "250%" }}>Pricing</h1> */}
       </section>
-      <div class="row row--center row--margin"style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>
+      {/* <div class="row row--center row--margin"style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>
   <div class="col-md-4 col-sm-4 price-box price-box--purple">
     <div class="price-box__wrap">
       <div class="price-box__img"></div>
@@ -209,7 +209,7 @@ export const LandingPage = () => {
   <br/>
   <br/>
   <br/>
-  <br/>
+  <br/> */}
 
     </main>
   )
