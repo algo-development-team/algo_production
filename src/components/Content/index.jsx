@@ -6,8 +6,7 @@ import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
 import  React  from 'react';
-import  ReactDOM  from 'react-dom';
-import  Draggable  from 'react-draggable';
+// import  Draggable  from 'react-draggable';
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
