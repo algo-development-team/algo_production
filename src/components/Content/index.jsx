@@ -5,6 +5,9 @@ import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
+import  React  from 'react';
+import  ReactDOM  from 'react-dom';
+import  Draggable  from 'react-draggable';
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
@@ -29,9 +32,23 @@ export const Content = () => {
     }
   }
 
-  return (
+   return ( 
     <div className='content'>
       <div className='project__wrapper'>{getProject()}</div>
     </div>
+    // </div>
+    // </Draggable>
   )
 }
+
+{/*<Draggable
+    axis="x"
+    handle=".handle"
+    defaultPosition={{x: 0, y: 0}}
+    position={null}
+    grid={[25, 25]}
+    scale={1}
+    onStart={this.handleStart}
+    onDrag={this.handleDrag}
+    onStop={this.handleStop}>
+<div>*/}
