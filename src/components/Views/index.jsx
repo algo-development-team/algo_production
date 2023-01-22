@@ -8,6 +8,8 @@ import { LandingPage } from 'pages/landing-page'
 import { PrivacyPolicyPage } from 'pages/privacy-policy-page'
 import { Route, Routes } from 'react-router-dom'
 import { TermsOfServicePage } from 'pages/terms-of-service'
+import { PricingPlanPage } from 'pages/pricing-plan'
+import { PaymentPage } from 'components/PaymentLayout/payment-plan'
 
 export const Views = () => {
   return (
@@ -21,6 +23,7 @@ export const Views = () => {
         </Route>
 
         <Route element={<DashBoardRoutes />}>
+          <Route exact path={'/payment'} element={<PaymentPage />}/>
           <Route exact path={'/app/*'} element={<Layout />}>
             <Route
               path={':defaultGroup'}
@@ -40,6 +43,7 @@ export const Views = () => {
           path='/terms-of-service'
           element={<TermsOfServicePage />}
         />
+        <Route exact path='/pricing-plan' element={<PricingPlanPage />} />
         <Route path='/app' element={<>Page Not Found</>} />
         <Route path='*' element={<>Page Not Found</>} />
       </Routes>

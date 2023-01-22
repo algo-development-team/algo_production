@@ -38,6 +38,10 @@ export const PrivacyPolicyPage = () => {
               <Link className='intro__nav--item intro__nav--link' to='/signup'>
                 Sign up
               </Link>
+              <Link
+                className='intro__nav--item intro__nav--link' to='/pricing-plan'>
+                Pricing
+              </Link>
             </div>
           </div>
         </nav>
