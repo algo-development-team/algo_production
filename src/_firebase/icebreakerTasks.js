@@ -1,6 +1,7 @@
 export const icebreakerTasks = [
   {
     name: 'Start your own project! 🚀',
+    startDate: '',
     date: '',
     projectId: 'welcome',
     taskId: 'icebreaker_1',
@@ -14,6 +15,7 @@ export const icebreakerTasks = [
   },
   {
     name: 'Schedule tasks 📅 ',
+    startDate: '',
     date: '',
     projectId: 'welcome',
     taskId: 'icebreaker_2',
