@@ -18,7 +18,12 @@ export const AuthenticationPage = () => {
                 <LogoSmall />
               </Link>
             </div>
-            <div className='auth-page__content'>
+            {/* Sign-In Page with Only Firebase Google OAuth2 Option */}
+            <div className='auth-page__content' style={{ height: '400px' }}>
+              <LoginSignupForm />
+            </div>
+            {/* Sign-In Page with Both Firebase Google OAuth2 Option and Email-Password Option */}
+            {/* <div className='auth-page__content'>
               {pathname === '/signin' ? (
                 <>
                   <LoginSignupForm />
@@ -30,7 +35,7 @@ export const AuthenticationPage = () => {
               ) : (
                 <SignupForm />
               )}
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
