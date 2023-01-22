@@ -109,7 +109,6 @@ export const SignupForm = () => {
       <div className='signup__wrapper'>
         <div className='step_one'>
           <LoginSignupForm />
-
           <div className='separator'>
             <div className='middle_separator'>OR</div>
           </div>
