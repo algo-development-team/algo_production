@@ -48,7 +48,6 @@ export const SignupForm = () => {
     event?.preventDefault()
     const emailRegex = /\S+@\S+\.\S+/
     if (emailRegex.test(formState.email)) {
-      console.log('regex test passed...') // DEBUGGING
       setEmailIsValid(true)
       setLoading(true)
       const userRef = query(
@@ -57,7 +56,6 @@ export const SignupForm = () => {
       )
       const userSnap = await getDocs(userRef)
       if (userSnap.metadata.fromCache) {
-        console.log('temporary error...') // DEBUGGING
         setEmailIsValid(false)
         setLoading(false)
         setErrorMessage('Temporary error, try again later')
@@ -65,19 +63,16 @@ export const SignupForm = () => {
         return
       }
       if (!userSnap.empty) {
-        console.log('email already registered...') // DEBUGGING
         setEmailIsValid(false)
         setErrorMessage('Your email is already registered with us')
         setGlobalErrorMessage('Your email is already registered with us')
         setLoading(false)
       } else {
-        console.log('proceeding to the next step...') // DEBUGGING
         setLoading(false)
         setInStepOne(false)
         setInStepTwo(true)
       }
     } else {
-      console.log('regex test failed...') // DEBUGGING
       setEmailIsValid(false)
       setErrorMessage("Your email isn't valid")
       setGlobalErrorMessage("Your email isn't valid")
