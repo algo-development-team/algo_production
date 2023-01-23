@@ -6,7 +6,6 @@ import {
   where,
 } from 'firebase/firestore'
 import { useAuth } from 'hooks'
-import moment from 'moment'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { collatedTasksExist } from 'utils'

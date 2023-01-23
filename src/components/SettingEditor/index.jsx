@@ -39,8 +39,6 @@ export const SettingEditor = ({ closeOverlay }) => {
   const [optionBeforeState, setOptionBeforeState] = useState(false)
   const [optionAfterState, setOptionAfterState] = useState(false)
 
-  
-
   useEffect(() => {
     const initializeUserSettingInfo = (userInfo) => {
       const sleepTimesData = userInfo.sleepTimeRange
@@ -341,6 +339,7 @@ export const SettingEditor = ({ closeOverlay }) => {
         style={{ width: '100%' }}
       >
         <div className={'add-task__actions quick-add__actions'}>
+          <h1>Settings</h1>
           {errorMsg !== '' && <p className='text-color__error'>*{errorMsg}</p>}
           <h4>Sleep Hours</h4>
           <div className='display-row'>
@@ -464,34 +463,57 @@ export const SettingEditor = ({ closeOverlay }) => {
               </div>
             ))}
             <h4>Schedule calendar by:</h4>
-	
-  <div>
-<label class="container1">Weekly
-  <input type="radio" checked="checked" name="radio"/>
-  <span class="checkmark"></span>
-</label>
-<label class="container1">Daily
-  <input type="radio" name="radio"/>
-  <span class="checkmark"></span>
-</label>
-  </div>
-        <h4 style={{marginTop: "10px"}}>Starting date for scheduling next week:</h4>
-          <div>
-            {startDays.map((_, i) => (
-              <button
-                className={`work-day-btn${
-                  startingDay === i ? '__selected' : '__not-selected'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  setStartingDay(i)
-                }}
-              >
-                {getDay(i)}
-              </button>
-            ))}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', marginTop: "16px" }}>
+            <div>
+              <label class='container1'>
+                Weekly
+                <input type='radio' checked='checked' name='radio' />
+                <span class='checkmark'></span>
+              </label>
+              <label class='container1'>
+                Daily
+                <input type='radio' name='radio' />
+                <span class='checkmark'></span>
+              </label>
+            </div>
+            <h4>Grouping Tasks:</h4>
+            <div>
+              <label class='container1'>
+                Grouping similar tasks together
+                <input type='radio' checked='checked' name='radio' />
+                <span class='checkmark'></span>
+              </label>
+              <label class='container1'>
+                Mix different tasks
+                <input type='radio' name='radio' />
+                <span class='checkmark'></span>
+              </label>
+            </div>
+            <h4 style={{ marginTop: '10px' }}>
+              Starting date for scheduling next week:
+            </h4>
+            <div>
+              {startDays.map((_, i) => (
+                <button
+                  className={`work-day-btn${
+                    startingDay === i ? '__selected' : '__not-selected'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setStartingDay(i)
+                  }}
+                >
+                  {getDay(i)}
+                </button>
+              ))}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginTop: '16px',
+              }}
+            >
               <h3>Put</h3>
               <div>
                 <select
@@ -500,7 +522,11 @@ export const SettingEditor = ({ closeOverlay }) => {
                   onChange={(e) => {
                     setOptionBeforeState(e.target.value)
                   }}
-                  style={{ fontSize: '16px', marginLeft: '5px', marginRight: '5px' }}
+                  style={{
+                    fontSize: '16px',
+                    marginLeft: '5px',
+                    marginRight: '5px',
+                  }}
                 >
                   <option value={0}>0</option>
                   <option value={1}>15</option>
@@ -508,8 +534,14 @@ export const SettingEditor = ({ closeOverlay }) => {
                 </select>
               </div>
               <h3>min break before each meeting.</h3>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+              }}
+            >
               <h3>Put</h3>
               <div>
                 <select
@@ -518,7 +550,11 @@ export const SettingEditor = ({ closeOverlay }) => {
                   onChange={(e) => {
                     setOptionAfterState(e.target.value)
                   }}
-                  style={{ fontSize: '16px', marginLeft: '5px', marginRight: '5px' }}
+                  style={{
+                    fontSize: '16px',
+                    marginLeft: '5px',
+                    marginRight: '5px',
+                  }}
                 >
                   <option value={0}>0</option>
                   <option value={1}>15</option>
@@ -526,8 +562,8 @@ export const SettingEditor = ({ closeOverlay }) => {
                 </select>
               </div>
               <h3>min break after each meeting.</h3>
+            </div>
           </div>
-  </div>
           <button
             className=' action add-task__actions--add-task'
             type='submit'
@@ -546,6 +582,5 @@ export const SettingEditor = ({ closeOverlay }) => {
         </div>
       </form>
     </div>
-
   )
 }
