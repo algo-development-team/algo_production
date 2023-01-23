@@ -38,6 +38,8 @@ export const SettingEditor = ({ closeOverlay }) => {
   const { isLight } = useThemeContextValue()
   const [optionBeforeState, setOptionBeforeState] = useState(false)
   const [optionAfterState, setOptionAfterState] = useState(false)
+  const [isWeekly, setIsWeekly] = useState(true)
+  const [isGrouping, setIsGrouping] = useState(true)
 
   useEffect(() => {
     const initializeUserSettingInfo = (userInfo) => {
