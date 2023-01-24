@@ -36,10 +36,13 @@ export const getDefaultUserInfo = (email) => {
     workDays: [false, true, true, true, true, true, false],
     isSetup: false,
     calendarId: null,
-    calendarIds: [email],
+    calendarIds: [{ id: email, selected: true, summary: email, colorId: 7 }],
     timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     checklist: [],
     scheduleCreated: false,
+    isGrouping: true,
+    isWeekly: true,
+    startingDay: 5,
   }
   return defaultUserInfo
 }

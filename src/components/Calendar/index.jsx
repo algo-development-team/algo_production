@@ -10,10 +10,10 @@ export const Calendar = () => {
     if (calendarId) {
       srcString += `&src=${calendarId}`
     }
-    if (calendarIds.length > 0) {
-      calendarIds.forEach((id) => {
-        srcString += `&src=${id}`
-      })
+    for (let i = 0; i < calendarIds.length; i++) {
+      if (calendarIds[i].selected) {
+        srcString += `&src=${calendarIds[i].id}`
+      }
     }
     srcString += `&ctz=${timeZone}`
     return srcString
