@@ -1,9 +1,6 @@
 export default function DescriptionBoxLeft({ title, description, imagesrc }) {
   return (
     <div>
-      <h1 style={{ textAlign: 'center', fontSize: '250%' }}>{title}</h1>
-      <br></br>
-      <br></br>
       <style
         dangerouslySetInnerHTML={{
           __html:
@@ -11,8 +8,13 @@ export default function DescriptionBoxLeft({ title, description, imagesrc }) {
         }}
       />
       <div className='container'>
+      <div>
+          <div style={{ textAlign: 'center', fontSize: '23px' , font: "500 100%/1.5 system-ui" }}>
+           {title}
+          </div>
         <div className='text'>
-          <p style={{ textAlign: 'center', fontSize: '120%' }}>{description}</p>
+          <p style={{ textAlign: 'center', fontSize: '15px' }}>{description}</p>
+        </div>
         </div>
         <div className='image'>
           <img className='imgcontainer' src={imagesrc} />

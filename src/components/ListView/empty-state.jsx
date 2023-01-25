@@ -116,7 +116,7 @@ export const EmptyState = () => {
           setTaskEditorToShow('NEW')
         }}
       >
-        Add Task
+        Create Task
       </button>
     </div>
   )

@@ -103,7 +103,6 @@ export const PaymentForm = () => {
             /*onChange={(e) => onChangeHandler(e)}*/
           />
         </div>
-
         <button
           className='payment-button submit-button'
           /*onClick={(e) => handleSubmit(e)}*/
