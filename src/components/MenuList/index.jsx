@@ -1,6 +1,5 @@
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
-import { ReactComponent as RemoveFromOrAddToChecklistIcon } from 'assets/svg/checklist.svg'
 import { useChecklist } from 'hooks'
 import { updateUserInfo } from 'handleUserInfo'
 import {
@@ -170,6 +169,11 @@ export const MenuList = ({
     }
   }
 
+  const doNowAtCalendar = async (e) => {
+    // WRITE SOME CODE
+    // MOVE THIS CODE TO GOOGLE CALENDAR API FILE
+  }
+
   const computeXPosition = () => {
     let computedXPosition
     if (!targetIsBoardTask) {
@@ -234,7 +238,7 @@ export const MenuList = ({
               }}
             >
               <div className='menu__list--icon'>
-                <RemoveFromOrAddToChecklistIcon />
+                <DeleteIcon />
               </div>
 
               <span className='menu__list--content'>
@@ -242,6 +246,20 @@ export const MenuList = ({
                   ? 'Remove Task From Checklist'
                   : 'Add Task To Checklist'}
               </span>
+            </li>
+          )}
+          {targetIsTask && (
+            <li
+              className='menu__list--item'
+              onClick={(e) => {
+                doNowAtCalendar(e)
+              }}
+            >
+              <div className='menu__list--icon'>
+                <EditIcon />
+              </div>
+
+              <span className='menu__list--content'>Do Now (Calendar)</span>
             </li>
           )}
         </ul>
