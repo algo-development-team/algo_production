@@ -176,10 +176,8 @@ export const MenuList = ({
     }
   }
 
+  /* inserts the task as time block at current time in Google Calendar */
   const doNowAtCalendar = async (e) => {
-    // WRITE SOME CODE
-    // MOVE THIS CODE TO GOOGLE CALENDAR API FILE
-    // write code that fetches the task with taskId
     const task = await getTask(currentUser && currentUser.id, taskId)
     const duration = Math.min(task.timeLength, 120) // duration set to 2 hours max
     const now = moment.now()
