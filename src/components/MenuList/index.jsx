@@ -28,6 +28,7 @@ import { insertEvent } from 'googleCalendar'
 import moment from 'moment'
 import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
+import { timeZone } from 'handleCalendars'
 
 export const MenuList = ({
   closeOverlay,
@@ -49,7 +50,7 @@ export const MenuList = ({
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { defaultGroup } = useParams()
-  const { calendarId, timeZone, loading } = useCalendarInfo()
+  const { calendarId, loading } = useCalendarInfo()
   const { checklist } = useChecklist()
 
   const handleProjectDeleteConfirmation = () => {
