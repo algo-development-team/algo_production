@@ -57,7 +57,7 @@ export const AddChecklist = () => {
       } else {
         // Calling Scheduler Algorithm for Today
         setIsScheduleBeingGenerated(true)
-        await scheduleCalendar(currentUser.id)
+        await scheduleToday(currentUser.id)
         setIsScheduleBeingGenerated(false)
         if (!scheduleCreated) {
           await updateUserInfo(currentUser.id, { scheduleCreated: true })
