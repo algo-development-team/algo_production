@@ -47,7 +47,7 @@ export const SetNewTaskPriority = ({
       return 'High'
     }
     if (taskPriority === 4) {
-      return 'Very High'
+      return 'ASAP'
     }
   }
 
