@@ -127,13 +127,21 @@ export const scheduleToday = async (userId) => {
     // console.log('timeMax:', timeMax) // DEBUGGING
 
     const calendars = await fetchAllCalendars()
-    const calendarIds = calendars
+    const calendarIdsInfo = calendars
       .filter((calendar) => calendar.id !== userData.calendarId)
       .filter(
         (calendar) =>
           calendar.id.split('@')[1] !== 'group.v.calendar.google.com',
       )
-      .map((calendar) => calendar.id) // excluding the Algo calendar
+      .map((calendar) => {
+        return {
+          id: calendar.id,
+          summary: calendar.summary,
+          colorId: parseInt(calendar.colorId),
+          selected: calendar.selected,
+        }
+      }) // excluding the Algo calendar
+    const calendarIds = calendarIdsInfo.map((calendar) => calendar.id)
     const eventsByTypeForToday = await getEventsByTypeForToday(
       timeMin,
       timeMax,
@@ -229,7 +237,7 @@ export const scheduleToday = async (userId) => {
 
     await updateUserInfo(userId, {
       checklist: newChecklistWithoutDuplicates,
-      calendarIds: calendarIds,
+      calendarIds: calendarIdsInfo,
       timeZone: userTimeZone,
     })
     // *** UPDATES USERINFO DOC IN FIREBASE END *** //
