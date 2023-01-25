@@ -1,7 +1,6 @@
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
-import { ReactComponent as RemoveFromOrAddToChecklistIcon } from 'assets/svg/checklist.svg'
-import { useChecklist } from 'hooks'
+import { useChecklist, useCalendarInfo } from 'hooks'
 import { updateUserInfo } from 'handleUserInfo'
 import {
   useOverlayContextValue,
@@ -18,10 +17,18 @@ import {
 } from 'firebase/firestore'
 import { useAuth } from 'hooks'
 import { db } from '_firebase'
-import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+import {
+  getTaskDocsInProjectColumnNotCompleted,
+  getTask,
+} from '../../handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
+import { insertEvent } from 'googleCalendar'
+import moment from 'moment'
+import { roundUp15Min } from 'handleMoment'
+import { getTaskColorId } from 'handleColorId'
+import { timeZone } from 'handleCalendars'
 
 export const MenuList = ({
   closeOverlay,
@@ -43,13 +50,13 @@ export const MenuList = ({
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { defaultGroup } = useParams()
+  const { calendarId, loading } = useCalendarInfo()
+  const { checklist } = useChecklist()
 
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
     setShowDialog('CONFIRM_DELETE')
   }
-
-  const { checklist } = useChecklist()
 
   const handleColumnDelete = async () => {
     const newColumns = columns.filter((column) => column.id !== columnId)
@@ -170,6 +177,26 @@ export const MenuList = ({
     }
   }
 
+  /* inserts the task as time block at current time in Google Calendar */
+  const doNowAtCalendar = async (e) => {
+    const task = await getTask(currentUser && currentUser.id, taskId)
+    const duration = Math.min(task.timeLength, 120) // duration set to 2 hours max
+    const now = moment.now()
+    const startTime = roundUp15Min(now)
+    const endTime = moment(startTime).add(duration, 'minutes')
+    if (!loading) {
+      const item = await insertEvent(
+        calendarId,
+        startTime.toISOString(),
+        endTime.toISOString(),
+        timeZone,
+        task.name,
+        task.description,
+        getTaskColorId(task.priority),
+      )
+    }
+  }
+
   const computeXPosition = () => {
     let computedXPosition
     if (!targetIsBoardTask) {
@@ -234,7 +261,7 @@ export const MenuList = ({
               }}
             >
               <div className='menu__list--icon'>
-                <RemoveFromOrAddToChecklistIcon />
+                <DeleteIcon />
               </div>
 
               <span className='menu__list--content'>
@@ -242,6 +269,20 @@ export const MenuList = ({
                   ? 'Remove Task From Checklist'
                   : 'Add Task To Checklist'}
               </span>
+            </li>
+          )}
+          {targetIsTask && (
+            <li
+              className='menu__list--item'
+              onClick={(e) => {
+                doNowAtCalendar(e)
+              }}
+            >
+              <div className='menu__list--icon'>
+                <EditIcon />
+              </div>
+
+              <span className='menu__list--content'>Do Now (Calendar)</span>
             </li>
           )}
         </ul>

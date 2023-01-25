@@ -5,6 +5,7 @@ import {
   collection,
   query,
 } from 'firebase/firestore'
+import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
 
 export const getUserInfo = async (userId) => {
@@ -36,10 +37,13 @@ export const getDefaultUserInfo = (email) => {
     workDays: [false, true, true, true, true, true, false],
     isSetup: false,
     calendarId: null,
-    calendarIds: [email],
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    calendarIds: [{ id: email, selected: true, summary: email, colorId: 7 }],
+    timeZone: timeZone,
     checklist: [],
     scheduleCreated: false,
+    isGrouping: true,
+    isWeekly: true,
+    startingDay: 5,
   }
   return defaultUserInfo
 }

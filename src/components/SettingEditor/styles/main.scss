@@ -3,8 +3,6 @@
   max-height: 32rem;
   overflow-y: scroll;
 
-
-
   // & .quick-add__wrapper {
   //   background-color: ;
   // }
@@ -223,6 +221,7 @@
     color: #dd4b39;
   }
 }
+
 .container1 {
   display: block;
   position: relative;
@@ -266,7 +265,7 @@
 
 /* Create the indicator (the dot/circle - hidden when not checked) */
 .checkmark:after {
-  content: "";
+  content: '';
   position: absolute;
   display: none;
 }
@@ -278,10 +277,10 @@
 
 /* Style the indicator (dot/circle) */
 .container1 .checkmark:after {
- 	top: 6px;
-	left: 6px;
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	background: white;
+  top: 6px;
+  left: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: white;
 }

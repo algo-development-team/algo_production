@@ -27,6 +27,20 @@ export const DefaultProjects = () => {
         <ProjectTasksCounts isDefaultGroup name={'Checklist'} />
       </NavLink>
       <NavLink
+        to={'/app/Calendar'}
+        className={({ isActive }) =>
+          isActive ? 'active project-group' : 'project-group'
+        }
+      >
+        <div className='project-group__group'>
+          <div className='project-group__icon'>
+            <ScheduledIcon fill={`${isLight ? '#246fe0' : '#5297ff'}`} />
+          </div>
+
+          <div className='project-group__name'>Calendar</div>
+        </div>
+      </NavLink>
+      <NavLink
         to={'/app/Inbox'}
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
@@ -56,20 +70,6 @@ export const DefaultProjects = () => {
           <div className='project-group__name'>Scheduled</div>
         </div>
         <ProjectTasksCounts isDefaultGroup name={'Scheduled'} />
-      </NavLink>
-      <NavLink
-        to={'/app/Calendar'}
-        className={({ isActive }) =>
-          isActive ? 'active project-group' : 'project-group'
-        }
-      >
-        <div className='project-group__group'>
-          <div className='project-group__icon'>
-            <ScheduledIcon fill={`${isLight ? '#246fe0' : '#5297ff'}`} />
-          </div>
-
-          <div className='project-group__name'>Calendar</div>
-        </div>
       </NavLink>
       {/* <NavLink to={"/app/Important"} className={({ isActive }) => (isActive ? "active project-group" : "project-group")}>
         <div className="project-group__group">

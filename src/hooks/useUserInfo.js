@@ -3,10 +3,9 @@ import { useAuth } from 'hooks'
 import { useEffect, useState } from 'react'
 import { db } from '_firebase'
 
-export const useCalendarInfo = () => {
+export const useUserInfo = () => {
   const { currentUser } = useAuth()
-  const [calendarId, setCalendarId] = useState(null)
-  const [calendarIds, setCalendarIds] = useState([])
+  const [userInfo, setUserInfo] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -17,29 +16,20 @@ export const useCalendarInfo = () => {
     )
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      let calendarIdResult = null
-      let calendarIdsResult = []
+      let result = []
+      let snapshotIdx = 0
       querySnapshot.forEach((doc) => {
-        if (doc.data()?.calendarId) {
-          calendarIdResult = doc.data()?.calendarId
+        if (snapshotIdx === 0) {
+          result = doc.data()
         }
-        if (doc.data()?.calendarIds) {
-          calendarIdsResult = doc.data()?.calendarIds
-        }
+        snapshotIdx++
       })
 
-      setCalendarId(calendarIdResult)
-      setCalendarIds(calendarIdsResult)
+      setUserInfo(result)
       setLoading(false)
     })
     return unsubscribe
   }, [currentUser])
 
-  return {
-    setCalendarId,
-    setCalendarIds,
-    calendarId,
-    calendarIds,
-    loading,
-  }
+  return { setUserInfo, userInfo, loading }
 }

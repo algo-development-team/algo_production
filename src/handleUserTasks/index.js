@@ -7,24 +7,28 @@ import { db } from '_firebase'
  * task: firestore task document data
  */
 export const getAllUserTasks = async (userId) => {
-  const taskQuery = await query(
-    collection(db, 'user', `${userId}/tasks`),
-    orderBy('index', 'asc'),
-  )
-  const taskDocs = await getDocs(taskQuery)
-  const nonCompletedTasks = []
-  const completedTasks = []
-  taskDocs.forEach((taskDoc) => {
-    const task = taskDoc.data()
-    if (!task.completed) {
-      nonCompletedTasks.push(task)
-    } else {
-      completedTasks.push(task)
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      orderBy('index', 'asc'),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    const nonCompletedTasks = []
+    const completedTasks = []
+    taskDocs.forEach((taskDoc) => {
+      const task = taskDoc.data()
+      if (!task.completed) {
+        nonCompletedTasks.push(task)
+      } else {
+        completedTasks.push(task)
+      }
+    })
+    return {
+      nonCompleted: nonCompletedTasks,
+      completed: completedTasks,
     }
-  })
-  return {
-    nonCompleted: nonCompletedTasks,
-    completed: completedTasks,
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -38,14 +42,18 @@ export const getTaskDocsInProjectColumnNotCompleted = async (
   projectId,
   boardStatus,
 ) => {
-  const projectColumnTaskQuery = await query(
-    collection(db, 'user', `${userId}/tasks`),
-    where('projectId', '==', projectId),
-    where('boardStatus', '==', boardStatus),
-    where('completed', '==', false),
-  )
-  const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
-  return projectColumnTaskDocs
+  try {
+    const projectColumnTaskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('projectId', '==', projectId),
+      where('boardStatus', '==', boardStatus),
+      where('completed', '==', false),
+    )
+    const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
+    return projectColumnTaskDocs
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 /*
@@ -58,12 +66,29 @@ export const getTaskDocsInProjectColumnCompleted = async (
   projectId,
   boardStatus,
 ) => {
-  const projectColumnTaskQuery = await query(
-    collection(db, 'user', `${userId}/tasks`),
-    where('projectId', '==', projectId),
-    where('boardStatus', '==', boardStatus),
-    where('completed', '==', true),
-  )
-  const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
-  return projectColumnTaskDocs
+  try {
+    const projectColumnTaskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('projectId', '==', projectId),
+      where('boardStatus', '==', boardStatus),
+      where('completed', '==', true),
+    )
+    const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
+    return projectColumnTaskDocs
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const getTask = async (userId, taskId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    return taskDocs.docs[0].data()
+  } catch (error) {
+    console.log(error)
+  }
 }
