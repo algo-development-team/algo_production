@@ -357,7 +357,7 @@ export const TaskEditor = ({
   }, [taskEditorToShow])
 
   const splitTaskAttributes = () => {
-    if (isQuickAdd) {
+    if (isPopup || isQuickAdd) {
       return screenType.isMobile
     } else if (defaultGroup) {
       return screenType.isMobile
