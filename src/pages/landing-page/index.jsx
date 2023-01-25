@@ -2,7 +2,6 @@ import illustration from 'assets/svg/main-background.webp'
 import { ReactComponent as LogoMobile } from 'assets/svg/new-logo-mobile.svg'
 import { ReactComponent as Logo } from 'assets/svg/new-logo.svg'
 import { Link } from 'react-router-dom'
-import './feature-table.css'
 import './main.scss'
 import DescriptionBoxRight from './description-box-right'
 import DescriptionBoxLeft from './description-box-left'
@@ -101,22 +100,24 @@ export const LandingPage = () => {
              from Algo as time blocks into your Google Calendar according to the
              task's relative priority and your preference in the setting. The schedule generator algorithm schedules both your work and
              personal tasks."  />
-        
-        <h1 style={{ textAlign: "center", fontSize: "250%" }}>Features</h1>
-
-        <div className='sub-section'>
-        <div class="wrapper">
-        <h2 class="box1" text-align="centre">✅ Keep track of your tasks using "Checklist".</h2>
-        <h2 class="box2" text-align="centre">✅ Manage both work and personal tasks using "Projects".</h2>
-        <h2 class="box3" text-align="centre">✅ Organize your task using "Kanban Board".</h2>
-        <h2 class="box4" text-align="centre">✅ Generate your daily schedule in 2 seconds using "Schedule Generator".</h2>
-        <h2 class="box5" text-align="centre">✅ Personalize the Schedule Generator using "Setting".</h2>
-        <h2 class="box6" text-align="centre">✅ Add tasks with two clicks using "Quick Task Add".</h2>
-        <h2 class="box7" text-align="centre">🔜 Add team members to your projects.</h2>
-        <h2 class="box8" text-align="centre">🔜 Optimize meeting booking.</h2>
-        <h2 class="box9" text-align="centre">🔜 Automatically assign tasks to team-members.</h2>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+          <div style={{  width: "650px", height: "390px", padding: "25px", border: "4px solid grey", borderRadius: "20px", justifyContent: "center"}}>
+            <h1 style={{ textAlign: "center", fontSize: "30px" }}>Features</h1>
+            <ul style={{ fontSize: "18px" , font: "500 100%/1.5 system-ui"}}>
+              <li>✅ Keep track of your tasks using "Checklist".</li>
+              <li>✅ Manage both work and personal tasks using "Projects".</li>
+              <li>✅ Organize your task using "Kanban Board".</li>
+              <li>✅ Generate your daily schedule in 2 seconds using "Schedule Generator".</li>
+              <li>✅ Personalize the Schedule Generator using "Setting".</li>
+              <li>✅ Add tasks with two clicks using "Quick Task Add".</li>
+              <li>🔜 Add team members to your projects.</li>
+              <li>🔜 Optimize meeting booking.</li>
+              <li>🔜 Automatically assign tasks to team-members.</li>
+            </ul>
+          </div>
         </div>
-        </div>
+        <br></br>
+        <br></br>
         {/* <h1 style={{ textAlign: "center", fontSize: "250%" }}>Pricing</h1> */}
       </section>
       {/* <div class="row row--center row--margin"style={{display: "flex", flexDirection: "row", justifyContent: "center"}}>

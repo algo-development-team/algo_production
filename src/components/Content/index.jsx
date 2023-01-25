@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
+import ScrollContainer from "react-indiana-drag-scroll";
 import  React  from 'react';
 // import  Draggable  from 'react-draggable';
 
@@ -33,7 +34,9 @@ export const Content = () => {
 
    return ( 
     <div className='content'>
-      <div className='project__wrapper'>{getProject()}</div>
+      <ScrollContainer className="container">
+       <div className='project__wrapper'>{getProject()}</div>
+       </ScrollContainer>
     </div>
     // </div>
     // </Draggable>

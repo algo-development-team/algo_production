@@ -18,6 +18,7 @@
     "react-beautiful-dnd": "^13.1.0",
     "react-dom": "^17.0.2",
     "react-google-login": "^5.2.2",
+    "react-indiana-drag-scroll": "^2.2.0",
     "react-router-dom": "^6.2.2",
     "react-screentype-hook": "^1.0.18",
     "react-scripts": "^5.0.0",

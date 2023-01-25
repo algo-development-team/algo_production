@@ -7,7 +7,7 @@ export const HamburgerButton = (props) => {
       onClick={props.onClick}
       className='hamburger_button header-clickable'
     >
-      <HamburgerIcon strokeWidth={0.1} />
+      <HamburgerIcon height="24px" width="24px" fill="white" strokeWidth={0.1} />
     </div>
   )
 }

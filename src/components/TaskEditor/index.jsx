@@ -386,7 +386,7 @@ export const TaskEditor = ({
               <use xlinkHref={`${featherIcon}#plus`}></use>
             </svg>
           </div>
-          <span>Add Task</span>
+          <span>Create Task</span>
         </div>
       ) : (
         <></>
@@ -509,7 +509,7 @@ export const TaskEditor = ({
               type='submit'
               disabled={isEdit ? false : disabled}
             >
-              {isEdit ? 'Save' : 'Add task'}
+              {isEdit ? 'Save' : 'Create Task'}
             </button>
             <button
               className={` action  ${
