@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useOverlayContextValue } from 'context'
 import { checkSignInStatus } from 'gapiHandlers'
-import { scheduleToday } from 'scheduler/schedule'
+import { scheduleToday } from 'scheduler/schedule-v1'
 import { useAuth, useScheduleCreated } from 'hooks'
 import { updateUserInfo } from '../../handleUserInfo'
 import useScreenType from 'react-screentype-hook'
 import { useSignInStatusValue } from 'context'
+import { scheduleCalendar } from 'scheduler/schedule-v2'
 
 export const AddChecklist = () => {
   const { setShowDialog } = useOverlayContextValue()
@@ -56,7 +57,7 @@ export const AddChecklist = () => {
       } else {
         // Calling Scheduler Algorithm for Today
         setIsScheduleBeingGenerated(true)
-        await scheduleToday(currentUser.id)
+        await scheduleCalendar(currentUser.id)
         setIsScheduleBeingGenerated(false)
         if (!scheduleCreated) {
           await updateUserInfo(currentUser.id, { scheduleCreated: true })
