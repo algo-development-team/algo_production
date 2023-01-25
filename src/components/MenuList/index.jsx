@@ -195,7 +195,6 @@ export const MenuList = ({
         task.description,
         getTaskColorId(task.priority),
       )
-      console.log('item: ', item) // DEBUGGING
     }
   }
 
