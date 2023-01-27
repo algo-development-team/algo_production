@@ -42,10 +42,6 @@ export const SettingEditor = ({ closeOverlay }) => {
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(true)
 
   useEffect(() => {
-    console.log('currentUser: ', currentUser) // DEBUGGING
-  }, [currentUser])
-
-  useEffect(() => {
     if (!loading) {
       setDisableSubmitBtn(false)
     }

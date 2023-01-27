@@ -2,7 +2,10 @@ import { fetchAllCalendars } from 'gapiHandlers'
 
 /* runtime: 0.2s */
 export const getCalendarIdsInfo = async (calendarIdsInfo) => {
-  const newCalendars = await fetchAllCalendars()
+  const unfilteredNewCalendars = await fetchAllCalendars()
+  const newCalendars = unfilteredNewCalendars.filter(
+    (calendar) => calendar.id.split('@')[1] !== 'group.v.calendar.google.com',
+  )
   const newCalendarIds = newCalendars.map((calendar) => calendar.id)
   const calendarIds = calendarIdsInfo.map((calendar) => calendar.id)
   const calendarIdsInfoInNewCalendars = calendarIdsInfo.filter((calendar) =>

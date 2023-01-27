@@ -37,22 +37,43 @@ export const scheduleCalendar = async (userId) => {
     const userData = userInfo.userInfoDoc.data()
 
     const calendarIdsInfo = await getCalendarIdsInfo(userData.calendarIds)
+    const selectedCalendarIds = calendarIdsInfo
+      .filter((calendarIdInfo) => calendarIdInfo.selected)
+      .map((calendarIdInfo) => calendarIdInfo.id)
+    let now = null
+    let timeRange = null
+    let dayRanges = null
+    let workRanges = null
+    let bufferRange = null
 
     if (!userData.isWeekly) {
       /* daily scheduling */
-      const { now, today, dayRange, workRange } = getTodayTimeRanges(
+      const todayTimeRanges = getTodayTimeRanges(
         userData.sleepTimeRange,
         userData.workTimeRange,
       )
-      const todayBufferRange = getBufferRange([today, today])
+      const todayRange = [todayTimeRanges.today, todayTimeRanges.today]
+      const todayBufferRange = getBufferRange(todayRange)
+
+      now = todayTimeRanges.now
+      timeRange = todayRange
+      dayRanges = [todayTimeRanges.dayRange]
+      workRanges = [todayTimeRanges.workRange]
+      bufferRange = todayBufferRange
     } else {
       /* weekly scheduling */
-      const { now, weekRange, dayRanges, workRanges } = getWeekTimeRanges(
+      const weekTimeRanges = getWeekTimeRanges(
         userData.sleepTimeRange,
         userData.workTimeRange,
         userData.startingDay,
       )
-      const weekBufferRange = getBufferRange(weekRange)
+      const weekBufferRange = getBufferRange(weekTimeRanges.weekRange)
+
+      now = weekTimeRanges.now
+      timeRange = weekTimeRanges.weekRange
+      dayRanges = weekTimeRanges.dayRanges
+      workRanges = weekTimeRanges.workRanges
+      bufferRange = weekBufferRange
     }
   } catch (error) {
     console.log(error)
