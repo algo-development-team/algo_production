@@ -23,9 +23,17 @@ import {
   getTodayTimeRanges,
   getWeekTimeRanges,
   getBufferRange,
+  getTimeRangesSingleDay,
+  divideTimeRangeIntoChunkRanges,
+  groupChunkRangesIntoBlocks,
+  printBlocks,
 } from './timeRanges'
 import { getCalendarIdsInfo } from 'handleCalendars'
 import { getUserInfo } from 'handleUserInfo'
+import { fetchAllEventsByType } from 'googleCalendar'
+import moment from 'moment'
+
+const MAX_NUM_CHUNKS = 8 // 2h
 
 /* returns true if calendar is scheduled properly, else false */
 export const scheduleCalendar = async (userId) => {
@@ -74,6 +82,51 @@ export const scheduleCalendar = async (userId) => {
       dayRanges = weekTimeRanges.dayRanges
       workRanges = weekTimeRanges.workRanges
       bufferRange = weekBufferRange
+    }
+    const eventsByType = await fetchAllEventsByType(
+      bufferRange[0].toISOString(),
+      bufferRange[1].toISOString(),
+      selectedCalendarIds,
+    )
+
+    const timeRangesMultDays = []
+    for (const dayRange of dayRanges) {
+      const timeRangesSingleDay = await getTimeRangesSingleDay(
+        eventsByType.timeBlocked,
+        dayRange[0],
+        dayRange[1],
+      )
+      timeRangesMultDays.push(timeRangesSingleDay)
+    }
+
+    const chunkRangesMultDays = []
+    for (const timeRangesSingleDay of timeRangesMultDays) {
+      const chunkRangesSingleDay =
+        divideTimeRangeIntoChunkRanges(timeRangesSingleDay)
+      chunkRangesMultDays.push(chunkRangesSingleDay)
+    }
+
+    const blocksMultDays = []
+    for (let i = 0; i < chunkRangesMultDays.length; i++) {
+      const hasWorkTime = userData.workDays[workRanges[i][1].day()]
+
+      const blocksSingleDay = groupChunkRangesIntoBlocks(
+        chunkRangesMultDays[i],
+        MAX_NUM_CHUNKS,
+        workRanges[i][0],
+        workRanges[i][1],
+        hasWorkTime,
+      )
+      blocksMultDays.push(blocksSingleDay)
+    }
+
+    for (let i = 0; i < blocksMultDays.length; i++) {
+      // format the moment object in day, month, year format
+      console.log(
+        timeRange[0].clone().add(i, 'day').format('dddd, MMMM Do YYYY'),
+      )
+      printBlocks(blocksMultDays[i].work, 'Work')
+      printBlocks(blocksMultDays[i].personal, 'Personal')
     }
   } catch (error) {
     console.log(error)

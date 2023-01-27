@@ -1,5 +1,6 @@
-import { roundUp15Min } from 'handleMoment'
+import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
+import { timeType } from 'components/enums'
 
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
@@ -133,4 +134,230 @@ export const getBufferRange = (timeRange) => {
     .add(2, 'hour')
     .add(15, 'minute')
   return [timeMin, timeMax]
+}
+
+/***
+ * requirements:
+ * events must not be all day events (must have start.dateTime and end.dateTime)
+ * ***/
+const getTimesWithInfo = (events) => {
+  const timesWithInfo = []
+  for (const event of events) {
+    const timeStartEvent = roundDown15Min(moment(event.start.dateTime))
+    const timeEndEvent = roundUp15Min(moment(event.end.dateTime))
+    timesWithInfo.push({
+      time: timeStartEvent,
+      type: timeType.startEvent,
+      id: event.id,
+    })
+    timesWithInfo.push({
+      time: timeEndEvent,
+      type: timeType.endEvent,
+      id: event.id,
+    })
+  }
+  return timesWithInfo
+}
+
+/***
+ * requirements:
+ * timesWithInfo: { time: moment object, type: timeType }
+ * ***/
+const getTimesWithInfoSorted = (timesWithInfo) => {
+  const timesWithInfoSorted = timesWithInfo.sort((a, b) =>
+    a.time > b.time ? 1 : a.time < b.time ? -1 : 0,
+  )
+  return timesWithInfoSorted
+}
+
+/***
+ * requirements:
+ * timesWithInfo: { time: moment object, type: timeType }
+ * timesWithInfo must be sorted by time
+ * ***/
+const getAvailableTimeRanges = (timesWithInfo) => {
+  const availableTimeRanges = []
+  let dayStarted = false
+  let startAvailableTimeRangeIdx = -1
+  for (let i = 0; i < timesWithInfo.length; i++) {
+    // makes sure only time ranges within the day are considered
+    if (timesWithInfo[i].type === timeType.startDay) {
+      dayStarted = true
+      startAvailableTimeRangeIdx = i
+    } else if (timesWithInfo[i].type === timeType.endDay) {
+      if (startAvailableTimeRangeIdx !== -1) {
+        availableTimeRanges.push({
+          start: timesWithInfo[startAvailableTimeRangeIdx].time,
+          end: timesWithInfo[i].time,
+        })
+      }
+      startAvailableTimeRangeIdx = -1
+
+      dayStarted = false
+    } else if (timesWithInfo[i].type === timeType.endEvent) {
+      if (dayStarted) {
+        startAvailableTimeRangeIdx = i
+      }
+    } else if (timesWithInfo[i].type === timeType.startEvent) {
+      if (startAvailableTimeRangeIdx !== -1) {
+        availableTimeRanges.push({
+          start: timesWithInfo[startAvailableTimeRangeIdx].time,
+          end: timesWithInfo[i].time,
+        })
+      }
+      startAvailableTimeRangeIdx = -1
+    }
+  }
+  return availableTimeRanges
+}
+
+/***
+ * requirements:
+ * events: Google Calendar API events (time-blocked)
+ * timeStartDay: moment object
+ * timeEndDay: moment object
+ * currently only returns available time ranges, can be expanded in future to return blocked time ranges as well
+ * ***/
+export const getTimeRangesSingleDay = async (
+  events,
+  timeStartDay,
+  timeEndDay,
+) => {
+  const timesWithInfo = getTimesWithInfo(events)
+  const timeStartDayWithInfo = {
+    time: timeStartDay,
+    type: timeType.startDay,
+    id: null,
+  }
+  const timeEndDayWithInfo = {
+    time: timeEndDay,
+    type: timeType.endDay,
+    id: null,
+  }
+  timesWithInfo.push(timeStartDayWithInfo)
+  timesWithInfo.push(timeEndDayWithInfo)
+  const timesWithInfoSorted = getTimesWithInfoSorted(timesWithInfo)
+  const timeRangesForDay = getAvailableTimeRanges(timesWithInfoSorted)
+  return timeRangesForDay
+}
+
+export const divideTimeRangeIntoChunkRanges = (timeRanges) => {
+  const chunkRanges = []
+  for (const timeRange of timeRanges) {
+    const chunkRange = []
+    const currentChunk = timeRange.start.clone()
+    while (currentChunk.isBefore(timeRange.end)) {
+      const chunk = {
+        start: currentChunk.clone(),
+        end: currentChunk.clone().add(15, 'minute'),
+      }
+      chunkRange.push(chunk)
+      currentChunk.add(15, 'minute')
+    }
+    chunkRanges.push(chunkRange)
+  }
+  return chunkRanges
+}
+
+/***
+ * requirements:
+ * arr: array of items
+ * size: size of each subarr
+ * ***/
+const sliceIntoSubarr = (arr, size) => {
+  const subarrs = []
+  for (let i = 0; i < arr.length; i += size) {
+    const subarr = arr.slice(i, i + size)
+    subarrs.push(subarr)
+  }
+  return subarrs
+}
+
+/***
+ * Groups chunk ranges considering both max number of chunks and work range
+ * requirements:
+ * chunkRanges: { start: moment, end: moment }[]
+ * ***/
+export const groupChunkRangesIntoBlocks = (
+  chunkRanges,
+  maxNumChunks,
+  workTimeStart,
+  workTimeEnd,
+  hasWorkTime,
+) => {
+  let workBlocks = []
+  let personalBlocks = []
+  // divide chunk ranges into work and personal blocks
+  for (const chunkRange of chunkRanges) {
+    const workChunkRanges = []
+    const personalChunkRanges = []
+    let workChunkRange = []
+    let personalChunkRange = []
+    let isLastChunkWork = false
+    let isLastChunkPersonal = false
+    for (const chunk of chunkRange) {
+      if (hasWorkTime) {
+        if (
+          (chunk.start.isSame(workTimeStart) ||
+            chunk.start.isAfter(workTimeStart)) &&
+          (chunk.end.isSame(workTimeEnd) || chunk.end.isBefore(workTimeEnd))
+        ) {
+          if (isLastChunkPersonal) {
+            personalChunkRanges.push(personalChunkRange)
+            personalChunkRange = []
+            isLastChunkPersonal = false
+          }
+          workChunkRange.push(chunk)
+          isLastChunkWork = true
+        } else {
+          if (isLastChunkWork) {
+            workChunkRanges.push(workChunkRange)
+            workChunkRange = []
+            isLastChunkWork = false
+          }
+          personalChunkRange.push(chunk)
+          isLastChunkPersonal = true
+        }
+      } else {
+        personalChunkRange.push(chunk)
+      }
+    }
+    if (workChunkRange.length > 0) workChunkRanges.push(workChunkRange)
+    if (personalChunkRange.length > 0)
+      personalChunkRanges.push(personalChunkRange)
+    workBlocks = workBlocks.concat(workChunkRanges)
+    personalBlocks = personalBlocks.concat(personalChunkRanges)
+  }
+  // divide blocks into blocks of (maxNumChunks >= number of chunks in a block)
+  const workBlocksSliced = []
+  const personalBlocksSliced = []
+  for (const block of workBlocks) {
+    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    workBlocksSliced.push(...slicedBlock)
+  }
+  for (const block of personalBlocks) {
+    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    personalBlocksSliced.push(...slicedBlock)
+  }
+  return {
+    work: workBlocksSliced,
+    personal: personalBlocksSliced,
+  }
+}
+
+/***
+ * DEBUGGING PURPOSES ONLY
+ * requirements:
+ * blocks: { start, end, preference }[][]
+ * blockType: string
+ * ***/
+export const printBlocks = (blocks, blockType) => {
+  console.log(blockType + ':')
+  for (const block of blocks) {
+    console.log('-'.repeat(15))
+    for (const chunk of block) {
+      console.log(chunk.start.format('HH:mm'), '-', chunk.end.format('HH:mm'))
+    }
+    console.log('-'.repeat(15))
+  }
 }

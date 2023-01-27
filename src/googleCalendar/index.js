@@ -31,6 +31,28 @@ export const fetchEvents = async (timeMin, timeMax, calendarId = 'primary') => {
   return events
 }
 
+export const fetchAllEvents = async (timeMin, timeMax, calendarIds) => {
+  const events = []
+  for (const calendarId of calendarIds) {
+    const fetchedEvents = await fetchEvents(timeMin, timeMax, calendarId)
+    events.push(...fetchedEvents)
+  }
+  return events
+}
+
+export const fetchAllEventsByType = async (timeMin, timeMax, calendarIds) => {
+  const events = await fetchAllEvents(timeMin, timeMax, calendarIds)
+  const eventsByType = { timeBlocked: [], allDay: [] }
+  for (const event of events) {
+    if (event.start.dateTime) {
+      eventsByType.timeBlocked.push(event)
+    } else {
+      eventsByType.allDay.push(event)
+    }
+  }
+  return eventsByType
+}
+
 /***
  * requirements:
  * the passed dateTimes should already be in the correct format
