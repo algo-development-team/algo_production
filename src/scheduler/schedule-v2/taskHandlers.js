@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { preferenceType } from 'components/enums'
+import { preferenceType } from 'enums'
 
 /***
  * requirements:

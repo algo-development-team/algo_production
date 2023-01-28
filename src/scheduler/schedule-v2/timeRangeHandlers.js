@@ -1,6 +1,6 @@
 import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
-import { timeType } from 'components/enums'
+import { timeType } from 'enums'
 import { getPreferences } from 'handlePreferences'
 
 /* helper function */

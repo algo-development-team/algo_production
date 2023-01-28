@@ -12,7 +12,7 @@ import {
 } from './timeRanges'
 import { getUserInfo, updateUserInfo } from 'handleUserInfo'
 import moment from 'moment'
-import { timeType } from 'components/enums'
+import { timeType } from 'enums'
 import { getAllUserTasks } from 'handleUserTasks'
 import { getAllUserProjects } from 'handleUserProjects'
 import { getPreferences } from 'handlePreferences'

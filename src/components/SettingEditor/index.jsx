@@ -313,17 +313,17 @@ export const SettingEditor = ({ closeOverlay }) => {
   const getTimePeriod = (numPeriod) => {
     switch (numPeriod) {
       case 0:
-        return 'Early morning'
+        return '5-7 am'
       case 1:
-        return 'Morning'
+        return '8-10 am'
       case 2:
-        return 'Noon'
+        return '11 am-1 pm'
       case 3:
-        return 'Afternoon'
+        return '2-4 pm'
       case 4:
-        return 'Late Afternoon'
+        return '5-7 pm'
       case 5:
-        return 'Evening'
+        return '8-10 pm'
       default:
         return ''
     }
@@ -519,9 +519,9 @@ export const SettingEditor = ({ closeOverlay }) => {
                     setRankingPreferences(newRankingPreferences)
                   }}
                 >
-                  <option value={0}>Urgent, important Work</option>
-                  <option value={1}>Deep, focus work</option>
-                  <option value={2}>Shallow, easy work</option>
+                  <option value={0}>Urgent Work (ex: Work Due Today)</option>
+                  <option value={1}>Focus Work (ex: Coding)</option>
+                  <option value={2}>Easy Work (ex: Check Emails)</option>
                 </select>
               </div>
             ))}
