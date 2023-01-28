@@ -7,13 +7,7 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { TimeToggler } from './time-toggler'
 import { colorIdToHexCode } from 'constants'
-
-const timeRangeType = Object.freeze({
-  sleepStart: 0,
-  sleepEnd: 1,
-  workStart: 2,
-  workEnd: 3,
-})
+import {timeRangeType} from '../../enums'
 
 const startDays = Object.freeze([0, 1, 2, 3, 4, 5, 6])
 
@@ -30,26 +24,31 @@ export const SettingEditor = ({ closeOverlay }) => {
   const [workEndTimeHour, setWorkEndTimeHour] = useState(0)
   const [workEndTimeMin, setWorkEndTimeMin] = useState(0)
   const [workDays, setWorkDays] = useState(new Array(7).fill(false))
-  const [rankingPreferences, setRankingPreferences] = useState(
-    new Array(6).fill(0),
-  )
   const [startingDay, setStartingDay] = useState(5)
   const { isLight } = useThemeContextValue()
-  const [optionBeforeState, setOptionBeforeState] = useState(false)
-  const [optionAfterState, setOptionAfterState] = useState(false)
+  const [beforeMeetingBufferTime, setBeforeMeetingBufferTime] = useState(0)
+  const [afterMeetingBufferTime, setAfterMeetingBufferTime] = useState(0)
   const [isWeekly, setIsWeekly] = useState(true)
   const [isGrouping, setIsGrouping] = useState(true)
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(true)
-
-  useEffect(() => {
-    console.log('currentUser: ', currentUser) // DEBUGGING
-  }, [currentUser])
+  const [preferences, setPreferences] = useState(new Array(24).fill(0))
+  const [workHourPreferences, setWorkHourPreferences] = useState([])
 
   useEffect(() => {
     if (!loading) {
       setDisableSubmitBtn(false)
     }
   }, [loading])
+
+  useEffect(() => {
+    const newWorkHourPreferences = []
+    for (let i = 0; i < preferences.length; i++) {
+      if (i >= workStartTimeHour && i < workEndTimeHour) {
+        newWorkHourPreferences.push({ preference: preferences[i], hour: i })
+      }
+    }
+    setWorkHourPreferences(newWorkHourPreferences)
+  }, [preferences, workStartTimeHour, workEndTimeHour])
 
   useEffect(() => {
     if (userInfo) {
@@ -71,10 +70,12 @@ export const SettingEditor = ({ closeOverlay }) => {
       setWorkEndTimeHour(workTimesData[1][0])
       setWorkEndTimeMin(workTimesData[1][1])
       setWorkDays(userInfo.workDays)
-      setRankingPreferences(userInfo.rankingPreferences)
+      setPreferences(userInfo.preferences)
       setStartingDay(userInfo.startingDay)
       setIsWeekly(userInfo.isWeekly)
       setIsGrouping(userInfo.isGrouping)
+      setBeforeMeetingBufferTime(userInfo.beforeMeetingBufferTime)
+      setAfterMeetingBufferTime(userInfo.afterMeetingBufferTime)
     }
   }, [userInfo])
 
@@ -95,10 +96,12 @@ export const SettingEditor = ({ closeOverlay }) => {
       )}-${workEndTimeHour}:${formatMin(workEndTimeMin)}`,
       workDays: workDays,
       startingDay: startingDay,
-      rankingPreferences: rankingPreferences,
+      preferences: preferences,
       isWeekly: isWeekly,
       isGrouping: isGrouping,
       calendarIds: calendarIds,
+      beforeMeetingBufferTime: beforeMeetingBufferTime,
+      afterMeetingBufferTime: afterMeetingBufferTime,
     }
     try {
       const userInfoQuery = await query(
@@ -314,25 +317,6 @@ export const SettingEditor = ({ closeOverlay }) => {
     }
   }
 
-  const getTimePeriod = (numPeriod) => {
-    switch (numPeriod) {
-      case 0:
-        return 'Early morning'
-      case 1:
-        return 'Morning'
-      case 2:
-        return 'Noon'
-      case 3:
-        return 'Afternoon'
-      case 4:
-        return 'Late Afternoon'
-      case 5:
-        return 'Evening'
-      default:
-        return ''
-    }
-  }
-
   const uncheckCalendar = (calendarId) => {
     const newCalendarIds = calendarIds.map((calendarIdInfo) => {
       if (calendarIdInfo.id === calendarId) {
@@ -341,6 +325,18 @@ export const SettingEditor = ({ closeOverlay }) => {
       return calendarIdInfo
     })
     setCalendarIds(newCalendarIds)
+  }
+
+  const getHourlyTimeRange = (i) => {
+    if (i === 0) {
+      return '12-1am'
+    } else if (i < 12) {
+      return `${i}-${i + 1}am`
+    } else if (i === 12) {
+      return '12-1pm'
+    } else {
+      return `${i - 12}-${i - 11}pm`
+    }
   }
 
   return (
@@ -503,103 +499,103 @@ export const SettingEditor = ({ closeOverlay }) => {
             ))}
           </div>
           <h2>Preference Setting</h2>
-          <h4>During these time periods, I prefer...</h4>
-          <div style={{ marginBottom: '40px' }}>
-            {rankingPreferences.map((rankingPreference, i) => (
+          <h4>During work hours, I prefer...</h4>
+          <div>
+            {workHourPreferences.map(({ preference, hour }) => (
               <div className='display-row time-period__row'>
-                <p className='time-period__label'>{getTimePeriod(i)}</p>
+                <p className='time-period__label'>{getHourlyTimeRange(hour)}</p>
                 <select
-                  value={rankingPreference}
+                  value={preference}
                   className={`select-preference text-color${
-                    rankingPreference === 0
+                    preference === 0
                       ? '__urgent'
-                      : rankingPreference === 1
+                      : preference === 1
                       ? '__deep'
                       : '__shallow'
                   }`}
                   onChange={(e) => {
-                    const newRankingPreferences = [...rankingPreferences]
-                    newRankingPreferences[i] = parseInt(e.target.value)
-                    setRankingPreferences(newRankingPreferences)
+                    const newPreferences = [...preferences]
+                    newPreferences[hour] = parseInt(e.target.value)
+                    setPreferences(newPreferences)
                   }}
                 >
-                  <option value={0}>Urgent, important Work</option>
-                  <option value={1}>Deep, focus work</option>
-                  <option value={2}>Shallow, easy work</option>
+                  <option value={0}>Urgent Work (ex: Work Due Today)</option>
+                  <option value={1}>Focus Work (ex: Coding)</option>
+                  <option value={2}>Easy Work (ex: Check Emails)</option>
                 </select>
               </div>
             ))}
-            <h4>Grouping Tasks:</h4>
-            <input
-              type='radio'
-              id='grouping'
-              checked={isGrouping}
-              onClick={() => setIsGrouping(true)}
-            />
-            <label for='grouping'>Group similar tasks</label>
-            <input
-              type='radio'
-              id='mixing'
-              checked={!isGrouping}
-              onClick={() => setIsGrouping(false)}
-            />
-            <label for='mixing'>Mix different tasks</label>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <h4>Put</h4>
-              <div>
-                <select
-                  value={optionBeforeState}
-                  className='select-preference text-color__shallow'
-                  onChange={(e) => {
-                    setOptionBeforeState(e.target.value)
-                  }}
-                  style={{
-                    fontSize: '14px',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <option value={0}>0</option>
-                  <option value={1}>15</option>
-                  <option value={2}>30</option>
-                </select>
-              </div>
-              <h4>min break before each meeting.</h4>
+          </div>
+          <h4>Grouping Tasks:</h4>
+          <input
+            type='radio'
+            id='grouping'
+            checked={isGrouping}
+            onClick={() => setIsGrouping(true)}
+          />
+          <label for='grouping'>Group similar tasks</label>
+          <input
+            type='radio'
+            id='mixing'
+            checked={!isGrouping}
+            onClick={() => setIsGrouping(false)}
+          />
+          <label for='mixing'>Mix different tasks</label>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <h4>Put</h4>
+            <div>
+              <select
+                value={beforeMeetingBufferTime}
+                className='select-preference text-color__shallow'
+                onChange={(e) => {
+                  setBeforeMeetingBufferTime(parseInt(e.target.value))
+                }}
+                style={{
+                  fontSize: '14px',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <option value={0}>0</option>
+                <option value={15}>15</option>
+                <option value={30}>30</option>
+              </select>
             </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
-              <h4>Put</h4>
-              <div>
-                <select
-                  value={optionAfterState}
-                  className='select-preference text-color__shallow'
-                  onChange={(e) => {
-                    setOptionAfterState(e.target.value)
-                  }}
-                  style={{
-                    fontSize: '14px',
-                    marginLeft: '5px',
-                    marginRight: '5px',
-                  }}
-                >
-                  <option value={0}>0</option>
-                  <option value={1}>15</option>
-                  <option value={2}>30</option>
-                </select>
-              </div>
-              <h4>min break after each meeting.</h4>
+            <h4>min break before each meeting.</h4>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <h4>Put</h4>
+            <div>
+              <select
+                value={afterMeetingBufferTime}
+                className='select-preference text-color__shallow'
+                onChange={(e) => {
+                  setAfterMeetingBufferTime(parseInt(e.target.value))
+                }}
+                style={{
+                  fontSize: '14px',
+                  marginLeft: '5px',
+                  marginRight: '5px',
+                }}
+              >
+                <option value={0}>0</option>
+                <option value={15}>15</option>
+                <option value={30}>30</option>
+              </select>
             </div>
+            <h4>min break after each meeting.</h4>
           </div>
           <button
             className=' action add-task__actions--add-task'
