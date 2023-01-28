@@ -1,13 +1,13 @@
 export const timeType = Object.freeze({
-  startEvent: 0,
-  endEvent: 1,
-  startDay: 2,
-  endDay: 3,
+  startDay: 0,
+  endDay: 1,
+  startEvent: 2,
+  endEvent: 3,
 })
 
-export const preferenceType = Object.freeze({
-  URGENT: 0,
-  DEEP: 1,
-  SHALLOW: 2,
-  ASAP: 3,
+export const timeRangeType = Object.freeze({
+  sleepStart: 0,
+  sleepEnd: 1,
+  workStart: 2,
+  workEnd: 3,
 })

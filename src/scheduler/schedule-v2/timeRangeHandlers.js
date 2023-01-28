@@ -1,7 +1,6 @@
 import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
 import { timeType } from 'enums'
-import { getPreferences } from 'handlePreferences'
 
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
@@ -140,6 +139,36 @@ export const getBufferRange = (timeRange) => {
 /***
  * requirements:
  * events must not be all day events (must have start.dateTime and end.dateTime)
+ * startBufferAmount and endBufferAmount must be in minutes
+ * ***/
+export const getBufferRangeForEvents = (
+  events,
+  startBufferAmount,
+  endBufferAmount,
+) => {
+  const bufferRanges = []
+  for (const event of events) {
+    const bufferStartEvent = moment(event.start.dateTime).subtract(
+      startBufferAmount,
+      'minute',
+    )
+    const bufferEndEvent = moment(event.end.dateTime).add(
+      endBufferAmount,
+      'minute',
+    )
+    const id = event.id
+    bufferRanges.push({
+      id: id,
+      start: bufferStartEvent,
+      end: bufferEndEvent,
+    })
+  }
+  return bufferRanges
+}
+
+/***
+ * requirements:
+ * events must not be all day events (must have start.dateTime and end.dateTime)
  * ***/
 const getTimesWithInfo = (events) => {
   const timesWithInfo = []
@@ -160,13 +189,44 @@ const getTimesWithInfo = (events) => {
   return timesWithInfo
 }
 
+const compareDifferentTimeTypes = (a, b) => {
+  if (a.type === timeType.endEvent) {
+    if (b.type === timeType.startEvent) {
+      return -1
+    } else if (b.type === timeType.startDay) {
+      return -1
+    }
+  }
+  if (a.type === timeType.startDay) {
+    if (b.type === timeType.startEvent) {
+      return -1
+    }
+  }
+  if (a.type === timeType.endEvent) {
+    if (b.type === timeType.endDay) {
+      return -1
+    }
+  }
+  if (a.type === timeType.endDay) {
+    if (b.type === timeType.startEvent) {
+      return -1
+    }
+  }
+  return 0
+}
+
 /***
  * requirements:
  * timesWithInfo: { time: moment object, type: timeType }
  * ***/
+/* modify to account for different time types */
 const getTimesWithInfoSorted = (timesWithInfo) => {
   const timesWithInfoSorted = timesWithInfo.sort((a, b) =>
-    a.time > b.time ? 1 : a.time < b.time ? -1 : 0,
+    a.time > b.time
+      ? 1
+      : a.time < b.time
+      ? -1
+      : compareDifferentTimeTypes(a, b),
   )
   return timesWithInfoSorted
 }
@@ -176,7 +236,7 @@ const getTimesWithInfoSorted = (timesWithInfo) => {
  * timesWithInfo: { time: moment object, type: timeType }
  * timesWithInfo must be sorted by time
  * ***/
-const getAvailableTimeRanges = (timesWithInfo) => {
+export const getAvailableTimeRanges = (timesWithInfo) => {
   const availableTimeRanges = []
   let dayStarted = false
   let startAvailableTimeRangeIdx = -1
@@ -219,7 +279,7 @@ const getAvailableTimeRanges = (timesWithInfo) => {
  * timeEndDay: moment object
  * currently only returns available time ranges, can be expanded in future to return blocked time ranges as well
  * ***/
-export const getTimeRangesSingleDay = async (
+export const getAvailableTimeRangesSingleDay = async (
   events,
   timeStartDay,
   timeEndDay,
@@ -238,8 +298,8 @@ export const getTimeRangesSingleDay = async (
   timesWithInfo.push(timeStartDayWithInfo)
   timesWithInfo.push(timeEndDayWithInfo)
   const timesWithInfoSorted = getTimesWithInfoSorted(timesWithInfo)
-  const timeRangesForDay = getAvailableTimeRanges(timesWithInfoSorted)
-  return timeRangesForDay
+  const availableTimeRangesForDay = getAvailableTimeRanges(timesWithInfoSorted)
+  return availableTimeRangesForDay
 }
 
 export const divideTimeRangeIntoChunkRanges = (timeRanges) => {
@@ -349,7 +409,7 @@ export const groupChunkRangesIntoBlocks = (
 /***
  * DEBUGGING PURPOSES ONLY
  * requirements:
- * blocks: { start, end, preference }[][]
+ * blocks: { start, end, preference (optional), taskId (optional) }[][]
  * blockType: string
  * ***/
 export const printBlocks = (blocks, blockType) => {
@@ -367,8 +427,7 @@ export const printBlocks = (blocks, blockType) => {
  * requirements:
  * blocks: { start, end }[][]
  * ***/
-export const rankBlocksOfChunks = (blocks, rankingPreferences) => {
-  const preferences = getPreferences(rankingPreferences)
+export const rankBlocks = (blocks, preferences) => {
   return blocks.map((block) =>
     block.map((chunk) => {
       return {

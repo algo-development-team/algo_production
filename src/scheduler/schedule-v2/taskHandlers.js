@@ -1,5 +1,4 @@
 import moment from 'moment'
-import { preferenceType } from 'enums'
 
 /***
  * requirements:
@@ -14,27 +13,8 @@ export const filterTaskNotPassedDeadline = (tasks, today) => {
   })
 }
 
-/***
- * requirements:
- * priority: number (1-4)
- * startDate: moment object
- * date: moment object
- * timeLength: number (1-64)
- * ***/
-const calculatePreference = (priority, startDate, date, timeLength) => {
-  // const isShort = timeLength <= 4 // 1h or less
-  // const isImportant =
-  //   priority === 3 ? true : priority === 2 && !isShort ? true : false
-  // if (isUrgent && isImportant) {
-  //   return 0 // urgent
-  // } else if (isUrgent && !isImportant) {
-  //   return 2 // shallow
-  // } else if (!isUrgent && isImportant) {
-  //   return 1 // deep
-  // } else {
-  //   return 2 // shallow
-  // }
-  return preferenceType.SHALLOW
+export const filterTaskNotNoneTimeLength = (tasks) => {
+  return tasks.filter((task) => task.timeLength > 0)
 }
 
 /***
@@ -56,12 +36,6 @@ export const formatTasks = (tasks, projects) => {
       task.startDate !== '' ? moment(task.startDate, 'DD-MM-YYYY') : null
     const formattedDate =
       task.date !== '' ? moment(task.date, 'DD-MM-YYYY') : null
-    const preference = calculatePreference(
-      task.priority,
-      formattedStartDate,
-      formattedDate,
-      formattedTimeLength,
-    )
     const formattedTask = {
       taskId: task.taskId,
       name: task.name,
@@ -71,7 +45,6 @@ export const formatTasks = (tasks, projects) => {
       date: formattedDate,
       timeLength: formattedTimeLength,
       allocatedTimeLength: formmatedAllocatedTimeLength,
-      preference: preference,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)

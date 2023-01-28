@@ -29,11 +29,11 @@ export const getUserInfo = async (userId) => {
 }
 
 export const getDefaultUserInfo = (email) => {
-  const defaultRankingPreferences = new Array(6).fill(0) // all preferences are urgent
+  const defaultPreferences = new Array(6).fill(0) // all preferences are urgent
   const defaultUserInfo = {
     workTimeRange: '9:00-17:00',
     sleepTimeRange: '23:00-07:00',
-    rankingPreferences: defaultRankingPreferences,
+    preferences: defaultPreferences,
     workDays: [false, true, true, true, true, true, false],
     isSetup: false,
     calendarId: null,
@@ -44,6 +44,8 @@ export const getDefaultUserInfo = (email) => {
     isGrouping: true,
     isWeekly: true,
     startingDay: 5,
+    beforeMeetingBufferTime: 0,
+    afterMeetingBufferTime: 0,
   }
   return defaultUserInfo
 }

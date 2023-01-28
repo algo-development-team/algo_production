@@ -15,7 +15,6 @@ import moment from 'moment'
 import { timeType } from 'enums'
 import { getAllUserTasks } from 'handleUserTasks'
 import { getAllUserProjects } from 'handleUserProjects'
-import { getPreferences } from 'handlePreferences'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
@@ -168,11 +167,8 @@ export const scheduleToday = async (userId) => {
     // printBlocks(blocks.personal, 'personal') // DEBUGGING
 
     const blocksOfChunksWithRankingAndTaskId = {
-      work: rankBlocksOfChunks(blocks.work, userData.rankingPreferences),
-      personal: rankBlocksOfChunks(
-        blocks.personal,
-        userData.rankingPreferences,
-      ),
+      work: rankBlocksOfChunks(blocks.work, userData.preferences),
+      personal: rankBlocksOfChunks(blocks.personal, userData.preferences),
     }
     //*** GETTING AVAILABLE TIME RANGES END ***//
 
@@ -828,8 +824,7 @@ const formatTasks = (tasks, projects, today) => {
  * requirements:
  * blocks: { start, end }[][]
  * ***/
-const rankBlocksOfChunks = (blocks, rankingPreferences) => {
-  const preferences = getPreferences(rankingPreferences)
+const rankBlocksOfChunks = (blocks, preferences) => {
   return blocks.map((block) =>
     block.map((chunk) => {
       return {
