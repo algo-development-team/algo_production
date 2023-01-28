@@ -1,6 +1,7 @@
 import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
 import { timeType } from 'components/enums'
+import { getPreferences } from 'handlePreferences'
 
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
@@ -360,4 +361,22 @@ export const printBlocks = (blocks, blockType) => {
     }
     console.log('-'.repeat(15))
   }
+}
+
+/***
+ * requirements:
+ * blocks: { start, end }[][]
+ * ***/
+export const rankBlocksOfChunks = (blocks, rankingPreferences) => {
+  const preferences = getPreferences(rankingPreferences)
+  return blocks.map((block) =>
+    block.map((chunk) => {
+      return {
+        start: chunk.start,
+        end: chunk.end,
+        preference: preferences[chunk.start.hour()],
+        taskId: null,
+      }
+    }),
+  )
 }

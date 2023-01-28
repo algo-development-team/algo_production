@@ -1,24 +1,3 @@
-/* default imports */
-// import {
-//   fetchAllCalendars,
-//   insertCalendar,
-//   getUserTimeZone,
-// } from 'gapiHandlers'
-// import { insertEvent, updateEvent, deleteEvent } from 'googleCalendar'
-// import { fetchAllEvents } from '../schedule-v1/events'
-// import {
-//   getTimesWithInfo,
-//   getTimesWithInfoSorted,
-//   getAvailableTimeRanges,
-// } from '../schedule-v1/timeRanges'
-// import moment from 'moment'
-// import { timeType } from 'components/enums'
-// import { getAllUserTasks } from 'handleUserTasks'
-// import { getAllUserProjects } from 'handleUserProjects'
-// import { getPreferences } from 'handlePreferences'
-// import { updateUserInfo } from 'handleUserInfo'
-
-/* START OF NEW CODE */
 import {
   getTodayTimeRanges,
   getWeekTimeRanges,
@@ -27,11 +6,18 @@ import {
   divideTimeRangeIntoChunkRanges,
   groupChunkRangesIntoBlocks,
   printBlocks,
-} from './timeRanges'
+  rankBlocksOfChunks,
+} from './timeRangeHandlers'
+import {
+  filterTaskNotPassedDeadline,
+  formatTasks,
+  getTaskMap,
+} from './taskHandlers'
 import { getCalendarIdsInfo } from 'handleCalendars'
 import { getUserInfo } from 'handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import moment from 'moment'
+import { getAllUserTasks } from 'handleUserTasks'
+import { getAllUserProjects } from 'handleUserProjects'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 
@@ -110,6 +96,7 @@ export const scheduleCalendar = async (userId) => {
     for (let i = 0; i < chunkRangesMultDays.length; i++) {
       const hasWorkTime = userData.workDays[workRanges[i][1].day()]
 
+      /* filter out meeting buffer times */
       const blocksSingleDay = groupChunkRangesIntoBlocks(
         chunkRangesMultDays[i],
         MAX_NUM_CHUNKS,
@@ -128,8 +115,38 @@ export const scheduleCalendar = async (userId) => {
       printBlocks(blocksMultDays[i].work, 'Work')
       printBlocks(blocksMultDays[i].personal, 'Personal')
     }
+
+    const rankedBlocksOfChunksMultDay = []
+
+    for (const blocksSingleDay of blocksMultDays) {
+      const rankedBlocksOfChunksSingleDay = {
+        work: rankBlocksOfChunks(
+          blocksSingleDay.work,
+          userData.rankingPreferences,
+        ),
+        personal: rankBlocksOfChunks(
+          blocksSingleDay.personal,
+          userData.rankingPreferences,
+        ),
+      }
+      rankedBlocksOfChunksMultDay.push(rankedBlocksOfChunksSingleDay)
+    }
+
+    const tasks = await getAllUserTasks(userId)
+    const projects = await getAllUserProjects(userId)
+    const tasksNotPassedDeadline = filterTaskNotPassedDeadline(
+      tasks.nonCompleted,
+      timeRange[0],
+    )
+    /* update the format tasks to accomodate for newly added fields */
+    const formattedTasks = formatTasks(tasksNotPassedDeadline, projects)
+    const taskMap = {
+      ...getTaskMap(formattedTasks.work),
+      ...getTaskMap(formattedTasks.personal),
+    }
+
+    console.log('taskMap: ', taskMap) // DEBUGGING
   } catch (error) {
     console.log(error)
   }
 }
-/* END OF NEW CODE */

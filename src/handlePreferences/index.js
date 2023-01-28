@@ -1,3 +1,5 @@
+import { preferenceType } from '../enums'
+
 /***
  * note:
  * preferences values:
@@ -20,11 +22,11 @@ export const getPreferences = (rankingPreferences) => {
     for (let j = 0; j < 3; j++) {
       const idx = i * 3 + j + 5
       if (rankingPreferences[i] === 0) {
-        preferences[idx] = 0
+        preferences[idx] = preferenceType.URGENT
       } else if (rankingPreferences[i] === 1) {
-        preferences[idx] = 1
+        preferences[idx] = preferenceType.DEEP
       } else if (rankingPreferences[i] === 2) {
-        preferences[idx] = 2
+        preferences[idx] = preferenceType.SHALLOW
       }
     }
   }
