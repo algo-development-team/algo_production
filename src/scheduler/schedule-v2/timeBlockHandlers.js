@@ -1,6 +1,6 @@
 const EMPTY_TASK_ID = 'EMPTY_TASK_ID'
 
-function assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges) {
+const assignEmptyTaskIdForBufferRanges = (blocksMultDays, bufferRanges) => {
   blocksMultDays.forEach((blocksSingleDay) => {
     blocksSingleDay.forEach((chunks) => {
       chunks.forEach((chunk) => {
@@ -17,6 +17,13 @@ function assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges) {
   })
 }
 
+/*
+ * parameters:
+ * blocksMultDays: {start: moment.Moment, end: moment.Moment, preference: number, taskId: string | null}[][][]
+ * tasks: {taskId: string, name: string, description: string, priority: number, startDate: moment.Moment | null, date: moment.Moment | null, timeLength: number, allocatedTimeLength: number}
+ * bufferRanges: {id: string, start: moment.Moment, end: moment.Moment}[]
+ * now: moment.Moment
+ */
 export const allocateWorkTimeBlocks = (
   blocksMultDays,
   tasks,
