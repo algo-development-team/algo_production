@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { getEventIdToTimeLengthMap } from './timeRangeHandlers'
 
 /***
  * requirements:
@@ -30,8 +31,6 @@ export const formatTasks = (tasks, projects) => {
   const formattedWorkTasks = []
   const formattedPersonalTasks = []
   for (const task of tasks) {
-    const formattedTimeLength = task.timeLength / 15
-    const formmatedAllocatedTimeLength = task.allocatedTimeLength / 15
     const formattedStartDate =
       task.startDate !== '' ? moment(task.startDate, 'DD-MM-YYYY') : null
     const formattedDate =
@@ -43,8 +42,7 @@ export const formatTasks = (tasks, projects) => {
       priority: task.priority,
       startDate: formattedStartDate,
       date: formattedDate,
-      timeLength: formattedTimeLength,
-      allocatedTimeLength: formmatedAllocatedTimeLength,
+      timeLength: task.timeLength,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)
@@ -60,7 +58,19 @@ export const formatTasks = (tasks, projects) => {
 
 /***
  * requirements:
- * tasks: { priority, deadline, timeLength, preference, taskId, name, description }[]
+ * tasks: task[] (from firestore)
+ * ***/
+export const getTaskToEventIdsMap = (tasks) => {
+  const taskToEventIdsMap = {}
+  for (const task of tasks) {
+    taskToEventIdsMap[task.taskId] = task.eventIds
+  }
+  return taskToEventIdsMap
+}
+
+/***
+ * requirements:
+ * tasks: { priority, startDate, date, timeLength, preference, taskId, name, description }[]
  * ***/
 export const getTaskMap = (tasks) => {
   const taskMap = {}
@@ -68,4 +78,29 @@ export const getTaskMap = (tasks) => {
     taskMap[task.taskId] = task
   }
   return taskMap
+}
+
+export const getTaskToAllocatedTimeLengthMap = (
+  taskToEventIdsMap,
+  eventIdToTimeLengthMap,
+) => {
+  const taskToAllocatedTimeLengthMap = {}
+  for (const taskId in taskToEventIdsMap) {
+    const eventIds = taskToEventIdsMap[taskId]
+    let allocatedTimeLength = 0
+    for (const eventId of eventIds) {
+      allocatedTimeLength += eventIdToTimeLengthMap[eventId]
+    }
+    taskToAllocatedTimeLengthMap[taskId] = allocatedTimeLength
+  }
+  return taskToAllocatedTimeLengthMap
+}
+
+/* categorize the tasks based on priority and startDate */
+/***
+ * requirements:
+ * tasks: { priority, startDate, date, timeLength, preference, taskId, name, description }[]
+ * ***/
+export const categorizeTasks = (tasks) => {
+  // START HERE
 }

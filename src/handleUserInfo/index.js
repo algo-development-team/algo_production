@@ -4,9 +4,12 @@ import {
   updateDoc,
   collection,
   query,
+  doc,
+  getDoc,
 } from 'firebase/firestore'
 import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
+import moment from 'moment'
 
 export const getUserInfo = async (userId) => {
   try {
@@ -25,6 +28,21 @@ export const getUserInfo = async (userId) => {
   } catch (error) {
     console.log(error)
     return { empty: true, userInfoDoc: null, failed: true }
+  }
+}
+
+export const getUserDefaultData = async (userId) => {
+  try {
+    const userRef = doc(db, 'user', userId)
+    const userSnapshot = await getDoc(userRef)
+    if (userSnapshot.exists()) {
+      const userDefaultData = userSnapshot.data()
+      return userDefaultData
+    }
+    return null
+  } catch (error) {
+    console.log(error)
+    return null
   }
 }
 

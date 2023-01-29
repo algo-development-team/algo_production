@@ -141,6 +141,23 @@ export const getBufferRange = (timeRange) => {
  * events must not be all day events (must have start.dateTime and end.dateTime)
  * startBufferAmount and endBufferAmount must be in minutes
  * ***/
+export const getEventIdToTimeLengthMap = (events) => {
+  const getEventIdToTimeLengthMap = {}
+  for (const event of events) {
+    const timeLength = moment(event.end.dateTime).diff(
+      moment(event.start.dateTime),
+      'minute',
+    )
+    getEventIdToTimeLengthMap[event.id] = timeLength
+  }
+  return getEventIdToTimeLengthMap
+}
+
+/***
+ * requirements:
+ * events must not be all day events (must have start.dateTime and end.dateTime)
+ * startBufferAmount and endBufferAmount must be in minutes
+ * ***/
 export const getBufferRangeForEvents = (
   events,
   startBufferAmount,
