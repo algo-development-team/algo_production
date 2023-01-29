@@ -158,7 +158,6 @@ export const TaskEditor = ({
           description: taskDescription ? taskDescription : '', // string
           priority: taskPriority, // number (int) (range: 1-3)
           timeLength: taskTimeLength, // number (int) (range: 15-480)
-          allocatedTimeLength: 0,
           index: index,
         },
       )

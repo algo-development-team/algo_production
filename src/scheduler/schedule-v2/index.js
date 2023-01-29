@@ -8,22 +8,27 @@ import {
   printBlocks,
   rankBlocks,
   getBufferRangeForEvents,
+  getEventIdToTimeLengthMap,
 } from './timeRangeHandlers'
 import {
   filterTaskNotPassedDeadline,
   filterTaskNotNoneTimeLength,
   formatTasks,
   getTaskMap,
+  getTaskToEventIdsMap,
+  getTaskToAllocatedTimeLengthMap,
 } from './taskHandlers'
 import {
   allocateWorkTimeBlocks,
   allocatePersonalTimeBlocks,
 } from './timeBlockHandlers'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { getUserInfo } from 'handleUserInfo'
+import { getUserInfo, getUserDefaultData } from 'handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
 import { getAllUserTasks } from 'handleUserTasks'
 import { getAllUserProjects } from 'handleUserProjects'
+import { roundUp15Min } from 'handleMoment'
+import moment from 'moment'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 
@@ -36,6 +41,17 @@ export const scheduleCalendar = async (userId) => {
       return false
     }
     const userData = userInfo.userInfoDoc.data()
+
+    /* get formattedCreatedAt for Algo Calendar events fetching */
+    const userDefaultInfo = await getUserDefaultData(userId)
+    let formattedCreatedAt = null
+    if (userDefaultInfo === null) {
+      formattedCreatedAt = moment(new Date(2023, 0, 1))
+    } else {
+      formattedCreatedAt = roundUp15Min(
+        moment.unix(userDefaultInfo.createdAt.seconds),
+      )
+    }
 
     /* fetches calendars information */
     const calendarIdsInfo = await getCalendarIdsInfo(userData.calendarIds)
@@ -173,24 +189,55 @@ export const scheduleCalendar = async (userId) => {
       tasksNotPassedDeadline,
     )
 
+    const taskToEventIdsMap = {
+      ...getTaskToEventIdsMap(tasksNotNoneTimeLength),
+    }
+
     /* update the format tasks to accomodate for newly added fields */
     const formattedTasks = formatTasks(tasksNotNoneTimeLength, projects)
+
     const taskMap = {
       ...getTaskMap(formattedTasks.work),
       ...getTaskMap(formattedTasks.personal),
     }
+
+    /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
+    const algoCalendarFetchTimeRange = [
+      formattedCreatedAt,
+      moment().startOf('day').add(1, 'days'),
+    ]
+    const algoCalendarFetchBufferRange = getBufferRange(
+      algoCalendarFetchTimeRange,
+    )
+    const algoCalendarEvents = await fetchAllEventsByType(
+      algoCalendarFetchBufferRange[0].toISOString(),
+      algoCalendarFetchBufferRange[1].toISOString(),
+      [userData.calendarId],
+    )
+
+    const algoCalendarEventIdToTimeLengthMap = getEventIdToTimeLengthMap(
+      algoCalendarEvents.timeBlocked,
+    )
+
+    /* get the taskId to amount of time allocated (in minutes) map */
+    const taskToAllocatedTimeLengthMap = getTaskToAllocatedTimeLengthMap(
+      taskToEventIdsMap,
+      algoCalendarEventIdToTimeLengthMap,
+    )
 
     /* allocate a task (or leave empty) for each chunk in each block for work and personal */
     /* mutates rankedWorkBlocks, rankedPersonalBlocks, and formattedTasks */
     allocateWorkTimeBlocks(
       rankedWorkBlocks,
       formattedTasks.work,
+      taskToAllocatedTimeLengthMap,
       onlineMeetingsBufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
       formattedTasks.personal,
+      taskToAllocatedTimeLengthMap,
       onlineMeetingsBufferRanges,
       now,
     )
