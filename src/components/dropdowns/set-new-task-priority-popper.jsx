@@ -86,7 +86,7 @@ export const SetNewTaskPriorityPopper = ({
               <NextWeekIcon fill={'#ff7066'} />
             </div>
 
-            <p className='set-new-task__schedule--name'>ASAP</p>
+            <p className='set-new-task__schedule--name'>Very High</p>
           </li>
         </ul>
       </div>
