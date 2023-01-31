@@ -39,7 +39,11 @@ export const SettingEditor = ({ closeOverlay }) => {
   const [isGrouping, setIsGrouping] = useState(true)
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(true)
   const [preferences, setPreferences] = useState(new Array(24).fill(0))
+  const [personalPreferences, setPersonalPreferences] = useState(
+    new Array(24).fill(0),
+  )
   const [workHourPreferences, setWorkHourPreferences] = useState([])
+  const [personalHourPreferences, setPersonalHourPreferences] = useState([])
 
   useEffect(() => {
     if (!loading) {
@@ -47,16 +51,75 @@ export const SettingEditor = ({ closeOverlay }) => {
     }
   }, [loading])
 
+  const validWorkHour = (hour, workStartTimeHour, workEndTimeHour) => {
+    if (workStartTimeHour < workEndTimeHour) {
+      return hour >= workStartTimeHour && hour < workEndTimeHour
+    } else {
+      return hour >= workStartTimeHour || hour < workEndTimeHour
+    }
+  }
+
+  const validSleepHour = (hour, sleepStartTimeHour, sleepEndTimeHour) => {
+    if (sleepStartTimeHour < sleepEndTimeHour) {
+      return hour >= sleepStartTimeHour && hour < sleepEndTimeHour
+    } else {
+      return hour >= sleepStartTimeHour || hour < sleepEndTimeHour
+    }
+  }
+
+  const validPersonalHour = (
+    hour,
+    sleepStartTimeHour,
+    sleepEndTimeHour,
+    workStartTimeHour,
+    workEndTimeHour,
+  ) => {
+    return (
+      !validWorkHour(hour, workStartTimeHour, workEndTimeHour) &&
+      !validSleepHour(hour, sleepStartTimeHour, sleepEndTimeHour)
+    )
+  }
+
+  /* initializing work hour preferences */
   useEffect(() => {
     const newWorkHourPreferences = []
     for (let i = 0; i < preferences.length; i++) {
-      if (i >= workStartTimeHour && i < workEndTimeHour) {
+      if (validWorkHour(i, workStartTimeHour, workEndTimeHour)) {
         newWorkHourPreferences.push({ preference: preferences[i], hour: i })
       }
     }
     setWorkHourPreferences(newWorkHourPreferences)
   }, [preferences, workStartTimeHour, workEndTimeHour])
 
+  /* initializing personal hour preferences */
+  useEffect(() => {
+    const newPersonalHourPreferences = []
+    for (let i = 0; i < personalPreferences.length; i++) {
+      if (
+        validPersonalHour(
+          i,
+          sleepStartTimeHour,
+          sleepEndTimeHour,
+          workStartTimeHour,
+          workEndTimeHour,
+        )
+      ) {
+        newPersonalHourPreferences.push({
+          preference: personalPreferences[i],
+          hour: i,
+        })
+      }
+    }
+    setPersonalHourPreferences(newPersonalHourPreferences)
+  }, [
+    personalPreferences,
+    sleepStartTimeHour,
+    sleepEndTimeHour,
+    workStartTimeHour,
+    workEndTimeHour,
+  ])
+
+  /* initializing setting information from userInfo data */
   useEffect(() => {
     if (userInfo) {
       const sleepTimesData = userInfo.sleepTimeRange
@@ -78,6 +141,7 @@ export const SettingEditor = ({ closeOverlay }) => {
       setWorkEndTimeMin(workTimesData[1][1])
       setWorkDays(userInfo.workDays)
       setPreferences(userInfo.preferences)
+      setPersonalPreferences(userInfo.personalPreferences)
       setStartingDay(userInfo.startingDay)
       setIsWeekly(userInfo.isWeekly)
       setIsGrouping(userInfo.isGrouping)
@@ -533,6 +597,12 @@ export const SettingEditor = ({ closeOverlay }) => {
               preferences={preferences}
               setPreferences={setPreferences}
               title='During work hours, I prefer...'
+            />
+            <PreferenceSetter
+              selectedPreferences={personalHourPreferences}
+              preferences={personalPreferences}
+              setPreferences={setPersonalPreferences}
+              title='During personal hours, I prefer...'
             />
           </div>
           <button
