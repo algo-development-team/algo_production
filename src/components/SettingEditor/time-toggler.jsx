@@ -15,13 +15,13 @@ export const TimeToggler = ({ time, changeTime, isHour, timeRangeTypeVal }) => {
 
   return (
     <div className='display-row'>
-      <h3
+      <p
         className={`reg-left-margin time-field${
           isHour ? '__hour' : '__minute'
         }`}
       >
         {!isHour && ':'} {isHour ? handleAmPm(time) : time}
-      </h3>
+      </p>
       <div className='display-col'>
         <i
           class='arrow up'
