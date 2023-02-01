@@ -121,6 +121,7 @@
   display: inline-block;
   padding: 2px;
   margin: 1px;
+  cursor: pointer;
 }
 
 .up {
@@ -155,7 +156,7 @@
   }
 
   &__minute {
-    width: 36px;
+    width: 26px;
   }
 }
 
@@ -209,12 +210,20 @@
     color: #058527;
   }
 
+  &__personal {
+    color: #058527;
+  }
+
   &__urgent {
     color: #ad6200;
   }
 
   &__deep {
     color: #246fe0;
+  }
+
+  &__no-work {
+    color: inherit;
   }
 
   &__error {
@@ -283,4 +292,14 @@
   height: 8px;
   border-radius: 50%;
   background: white;
+}
+
+.setting__section {
+  margin-left: 0.5rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.setting__title {
+  margin-left: 0.5rem;
 }

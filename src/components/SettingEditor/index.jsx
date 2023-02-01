@@ -7,7 +7,10 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { TimeToggler } from './time-toggler'
 import { colorIdToHexCode } from 'constants'
-import {timeRangeType} from '../../enums'
+import { timeRangeType } from '../../enums'
+import { BufferTimeSetter } from './buffer-time-setter'
+import { RadioToggle } from './radio-toggle'
+import { PreferenceSetter } from './preference-setter'
 
 const startDays = Object.freeze([0, 1, 2, 3, 4, 5, 6])
 
@@ -28,11 +31,19 @@ export const SettingEditor = ({ closeOverlay }) => {
   const { isLight } = useThemeContextValue()
   const [beforeMeetingBufferTime, setBeforeMeetingBufferTime] = useState(0)
   const [afterMeetingBufferTime, setAfterMeetingBufferTime] = useState(0)
+  const [beforeWorkBufferTime, setBeforeWorkBufferTime] = useState(30)
+  const [afterWorkBufferTime, setAfterWorkBufferTime] = useState(30)
+  const [beforeSleepBufferTime, setBeforeSleepBufferTime] = useState(30)
+  const [afterSleepBufferTime, setAfterSleepBufferTime] = useState(30)
   const [isWeekly, setIsWeekly] = useState(true)
   const [isGrouping, setIsGrouping] = useState(true)
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(true)
   const [preferences, setPreferences] = useState(new Array(24).fill(0))
+  const [personalPreferences, setPersonalPreferences] = useState(
+    new Array(24).fill(0),
+  )
   const [workHourPreferences, setWorkHourPreferences] = useState([])
+  const [personalHourPreferences, setPersonalHourPreferences] = useState([])
 
   useEffect(() => {
     if (!loading) {
@@ -40,16 +51,75 @@ export const SettingEditor = ({ closeOverlay }) => {
     }
   }, [loading])
 
+  const validWorkHour = (hour, workStartTimeHour, workEndTimeHour) => {
+    if (workStartTimeHour < workEndTimeHour) {
+      return hour >= workStartTimeHour && hour < workEndTimeHour
+    } else {
+      return hour >= workStartTimeHour || hour < workEndTimeHour
+    }
+  }
+
+  const validSleepHour = (hour, sleepStartTimeHour, sleepEndTimeHour) => {
+    if (sleepStartTimeHour < sleepEndTimeHour) {
+      return hour >= sleepStartTimeHour && hour < sleepEndTimeHour
+    } else {
+      return hour >= sleepStartTimeHour || hour < sleepEndTimeHour
+    }
+  }
+
+  const validPersonalHour = (
+    hour,
+    sleepStartTimeHour,
+    sleepEndTimeHour,
+    workStartTimeHour,
+    workEndTimeHour,
+  ) => {
+    return (
+      !validWorkHour(hour, workStartTimeHour, workEndTimeHour) &&
+      !validSleepHour(hour, sleepStartTimeHour, sleepEndTimeHour)
+    )
+  }
+
+  /* initializing work hour preferences */
   useEffect(() => {
     const newWorkHourPreferences = []
     for (let i = 0; i < preferences.length; i++) {
-      if (i >= workStartTimeHour && i < workEndTimeHour) {
+      if (validWorkHour(i, workStartTimeHour, workEndTimeHour)) {
         newWorkHourPreferences.push({ preference: preferences[i], hour: i })
       }
     }
     setWorkHourPreferences(newWorkHourPreferences)
   }, [preferences, workStartTimeHour, workEndTimeHour])
 
+  /* initializing personal hour preferences */
+  useEffect(() => {
+    const newPersonalHourPreferences = []
+    for (let i = 0; i < personalPreferences.length; i++) {
+      if (
+        validPersonalHour(
+          i,
+          sleepStartTimeHour,
+          sleepEndTimeHour,
+          workStartTimeHour,
+          workEndTimeHour,
+        )
+      ) {
+        newPersonalHourPreferences.push({
+          preference: personalPreferences[i],
+          hour: i,
+        })
+      }
+    }
+    setPersonalHourPreferences(newPersonalHourPreferences)
+  }, [
+    personalPreferences,
+    sleepStartTimeHour,
+    sleepEndTimeHour,
+    workStartTimeHour,
+    workEndTimeHour,
+  ])
+
+  /* initializing setting information from userInfo data */
   useEffect(() => {
     if (userInfo) {
       const sleepTimesData = userInfo.sleepTimeRange
@@ -71,11 +141,16 @@ export const SettingEditor = ({ closeOverlay }) => {
       setWorkEndTimeMin(workTimesData[1][1])
       setWorkDays(userInfo.workDays)
       setPreferences(userInfo.preferences)
+      setPersonalPreferences(userInfo.personalPreferences)
       setStartingDay(userInfo.startingDay)
       setIsWeekly(userInfo.isWeekly)
       setIsGrouping(userInfo.isGrouping)
       setBeforeMeetingBufferTime(userInfo.beforeMeetingBufferTime)
       setAfterMeetingBufferTime(userInfo.afterMeetingBufferTime)
+      setBeforeWorkBufferTime(userInfo.beforeWorkBufferTime)
+      setAfterWorkBufferTime(userInfo.afterWorkBufferTime)
+      setBeforeSleepBufferTime(userInfo.beforeSleepBufferTime)
+      setAfterSleepBufferTime(userInfo.afterSleepBufferTime)
     }
   }, [userInfo])
 
@@ -97,11 +172,16 @@ export const SettingEditor = ({ closeOverlay }) => {
       workDays: workDays,
       startingDay: startingDay,
       preferences: preferences,
+      personalPreferences: personalPreferences,
       isWeekly: isWeekly,
       isGrouping: isGrouping,
       calendarIds: calendarIds,
       beforeMeetingBufferTime: beforeMeetingBufferTime,
       afterMeetingBufferTime: afterMeetingBufferTime,
+      beforeWorkBufferTime: beforeWorkBufferTime,
+      afterWorkBufferTime: afterWorkBufferTime,
+      beforeSleepBufferTime: beforeSleepBufferTime,
+      afterSleepBufferTime: afterSleepBufferTime,
     }
     try {
       const userInfoQuery = await query(
@@ -327,18 +407,6 @@ export const SettingEditor = ({ closeOverlay }) => {
     setCalendarIds(newCalendarIds)
   }
 
-  const getHourlyTimeRange = (i) => {
-    if (i === 0) {
-      return '12-1am'
-    } else if (i < 12) {
-      return `${i}-${i + 1}am`
-    } else if (i === 12) {
-      return '12-1pm'
-    } else {
-      return `${i - 12}-${i - 11}pm`
-    }
-  }
-
   return (
     <div
       className={'add-task__wrapper quick-add__wrapper'}
@@ -352,250 +420,193 @@ export const SettingEditor = ({ closeOverlay }) => {
         style={{ width: '100%' }}
       >
         <div className={'add-task__actions quick-add__actions'}>
-          <h2>Calendar Setting</h2>
-          {calendarIds.map((calendarIdInfo) => (
-            <div style={{ marginBottom: '5px' }}>
-              <input
-                type='checkbox'
-                id={calendarIdInfo.id}
-                checked={calendarIdInfo.selected}
-                style={{
-                  accentColor: colorIdToHexCode[calendarIdInfo.colorId],
-                }}
-                onClick={() => uncheckCalendar(calendarIdInfo.id)}
-              />
-              <label for='calendarIdInfo.calendarId'>
-                {calendarIdInfo.summary === currentUser?.email
-                  ? `${currentUser?.displayName} (Primary)`
-                  : calendarIdInfo.summary}
-              </label>
-            </div>
-          ))}
-          <h2>Time Setting</h2>
-          <h4>Sleep Hours</h4>
-          <div className='display-row'>
-            <TimeToggler
-              time={sleepStartTimeHour}
-              changeTime={changeTime}
-              isHour={true}
-              timeRangeTypeVal={timeRangeType.sleepStart}
-            />
-            <TimeToggler
-              time={sleepStartTimeMin}
-              changeTime={changeTime}
-              isHour={false}
-              timeRangeTypeVal={timeRangeType.sleepStart}
-            />
-            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
-              {sleepStartTimeHour >= 12 ? 'pm' : 'am'}
-            </span>
-            <h3 className='reg-left-margin'>to</h3>
-            <TimeToggler
-              time={sleepEndTimeHour}
-              changeTime={changeTime}
-              isHour={true}
-              timeRangeTypeVal={timeRangeType.sleepEnd}
-            />
-            <TimeToggler
-              time={sleepEndTimeMin}
-              changeTime={changeTime}
-              isHour={false}
-              timeRangeTypeVal={timeRangeType.sleepEnd}
-            />
-
-            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
-              {sleepEndTimeHour >= 12 ? 'pm' : 'am'}
-            </span>
+          <div className={'setting__title'}>
+            <h1>Settings</h1>
           </div>
-          <h4>Work Hours</h4>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <TimeToggler
-              time={workStartTimeHour}
-              changeTime={changeTime}
-              isHour={true}
-              timeRangeTypeVal={timeRangeType.workStart}
-            />
-            <TimeToggler
-              time={workStartTimeMin}
-              changeTime={changeTime}
-              isHour={false}
-              timeRangeTypeVal={timeRangeType.workStart}
-            />
-            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
-              {workStartTimeHour >= 12 ? 'pm' : 'am'}
-            </span>
-            <h3 className='reg-left-margin'>to</h3>
-            <TimeToggler
-              time={workEndTimeHour}
-              changeTime={changeTime}
-              isHour={true}
-              timeRangeTypeVal={timeRangeType.workEnd}
-            />
-            <TimeToggler
-              time={workEndTimeMin}
-              changeTime={changeTime}
-              isHour={false}
-              timeRangeTypeVal={timeRangeType.workEnd}
-            />
-            <span style={{ color: 'inherit', paddingLeft: '10px' }}>
-              {workEndTimeHour >= 12 ? 'pm' : 'am'}
-            </span>
-          </div>
-          <h4>Select working days:</h4>
-          <div>
-            {workDays.map((workDay, i) => (
-              <button
-                className={`work-day-btn${
-                  workDay ? '__selected' : '__not-selected'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  const newWorkDays = [...workDays]
-                  newWorkDays[i] = !newWorkDays[i]
-                  setWorkDays(newWorkDays)
-                }}
-              >
-                {getDay(i)}
-              </button>
-            ))}
-          </div>
-          <h4>Schedule calendar by:</h4>
-          <input
-            type='radio'
-            id='weekly'
-            checked={isWeekly}
-            onClick={() => setIsWeekly(true)}
-          />
-          <label for='weekly'>Weekly</label>
-          <input
-            type='radio'
-            id='daily'
-            checked={!isWeekly}
-            onClick={() => setIsWeekly(false)}
-          />
-          <label for='daily'>Daily</label>
-          <h4 style={{ marginTop: '10px' }}>
-            Starting date for scheduling next week:
-          </h4>
-          <div>
-            {startDays.map((_, i) => (
-              <button
-                className={`work-day-btn${
-                  startingDay === i ? '__selected' : '__not-selected'
-                }`}
-                onClick={(e) => {
-                  e.preventDefault()
-                  setStartingDay(i)
-                }}
-              >
-                {getDay(i)}
-              </button>
-            ))}
-          </div>
-          <h2>Preference Setting</h2>
-          <h4>During work hours, I prefer...</h4>
-          <div>
-            {workHourPreferences.map(({ preference, hour }) => (
-              <div className='display-row time-period__row'>
-                <p className='time-period__label'>{getHourlyTimeRange(hour)}</p>
-                <select
-                  value={preference}
-                  className={`select-preference text-color${
-                    preference === 0
-                      ? '__urgent'
-                      : preference === 1
-                      ? '__deep'
-                      : '__shallow'
-                  }`}
-                  onChange={(e) => {
-                    const newPreferences = [...preferences]
-                    newPreferences[hour] = parseInt(e.target.value)
-                    setPreferences(newPreferences)
+          <div className={'setting__section'}>
+            <h2>Calendar</h2>
+            {calendarIds.map((calendarIdInfo) => (
+              <div style={{ marginBottom: '5px' }}>
+                <input
+                  type='checkbox'
+                  id={calendarIdInfo.id}
+                  checked={calendarIdInfo.selected}
+                  style={{
+                    accentColor: colorIdToHexCode[calendarIdInfo.colorId],
+                    marginRight: '8px',
                   }}
-                >
-                  <option value={0}>Urgent Work (ex: Work Due Today)</option>
-                  <option value={1}>Focus Work (ex: Coding)</option>
-                  <option value={2}>Easy Work (ex: Check Emails)</option>
-                </select>
+                  onClick={() => uncheckCalendar(calendarIdInfo.id)}
+                />
+                <label for='calendarIdInfo.calendarId'>
+                  {calendarIdInfo.summary === currentUser?.email
+                    ? `${currentUser?.displayName} (Primary)`
+                    : calendarIdInfo.summary}
+                </label>
               </div>
             ))}
           </div>
-          <h4>Grouping Tasks:</h4>
-          <input
-            type='radio'
-            id='grouping'
-            checked={isGrouping}
-            onClick={() => setIsGrouping(true)}
-          />
-          <label for='grouping'>Group similar tasks</label>
-          <input
-            type='radio'
-            id='mixing'
-            checked={!isGrouping}
-            onClick={() => setIsGrouping(false)}
-          />
-          <label for='mixing'>Mix different tasks</label>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <h4>Put</h4>
-            <div>
-              <select
-                value={beforeMeetingBufferTime}
-                className='select-preference text-color__shallow'
-                onChange={(e) => {
-                  setBeforeMeetingBufferTime(parseInt(e.target.value))
-                }}
-                style={{
-                  fontSize: '14px',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <option value={0}>0</option>
-                <option value={15}>15</option>
-                <option value={30}>30</option>
-              </select>
+          <div className={'setting__section'}>
+            <h2>Time</h2>
+            <h4>Sleep Hours</h4>
+            <div className='display-row'>
+              <TimeToggler
+                time={sleepStartTimeHour}
+                changeTime={changeTime}
+                isHour={true}
+                timeRangeTypeVal={timeRangeType.sleepStart}
+              />
+              <TimeToggler
+                time={sleepStartTimeMin}
+                changeTime={changeTime}
+                isHour={false}
+                timeRangeTypeVal={timeRangeType.sleepStart}
+              />
+              <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+                {sleepStartTimeHour >= 12 ? 'pm' : 'am'}
+              </span>
+              <p className='reg-left-margin'>to</p>
+              <TimeToggler
+                time={sleepEndTimeHour}
+                changeTime={changeTime}
+                isHour={true}
+                timeRangeTypeVal={timeRangeType.sleepEnd}
+              />
+              <TimeToggler
+                time={sleepEndTimeMin}
+                changeTime={changeTime}
+                isHour={false}
+                timeRangeTypeVal={timeRangeType.sleepEnd}
+              />
+
+              <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+                {sleepEndTimeHour >= 12 ? 'pm' : 'am'}
+              </span>
             </div>
-            <h4>min break before each meeting.</h4>
+            <h4>Work Hours</h4>
+            <div className='display-row'>
+              <TimeToggler
+                time={workStartTimeHour}
+                changeTime={changeTime}
+                isHour={true}
+                timeRangeTypeVal={timeRangeType.workStart}
+              />
+              <TimeToggler
+                time={workStartTimeMin}
+                changeTime={changeTime}
+                isHour={false}
+                timeRangeTypeVal={timeRangeType.workStart}
+              />
+              <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+                {workStartTimeHour >= 12 ? 'pm' : 'am'}
+              </span>
+              <p className='reg-left-margin'>to</p>
+              <TimeToggler
+                time={workEndTimeHour}
+                changeTime={changeTime}
+                isHour={true}
+                timeRangeTypeVal={timeRangeType.workEnd}
+              />
+              <TimeToggler
+                time={workEndTimeMin}
+                changeTime={changeTime}
+                isHour={false}
+                timeRangeTypeVal={timeRangeType.workEnd}
+              />
+              <span style={{ color: 'inherit', paddingLeft: '10px' }}>
+                {workEndTimeHour >= 12 ? 'pm' : 'am'}
+              </span>
+            </div>
+            <h4>Select working days:</h4>
+            <div>
+              {workDays.map((workDay, i) => (
+                <button
+                  className={`work-day-btn${
+                    workDay ? '__selected' : '__not-selected'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    const newWorkDays = [...workDays]
+                    newWorkDays[i] = !newWorkDays[i]
+                    setWorkDays(newWorkDays)
+                  }}
+                >
+                  {getDay(i)}
+                </button>
+              ))}
+            </div>
+            <RadioToggle
+              value={isWeekly}
+              setValue={setIsWeekly}
+              title='Schedule Calendar By'
+              label1='Weekly'
+              label2='Daily'
+            />
+            <h4 style={{ marginTop: '10px' }}>
+              Starting date for scheduling next week:
+            </h4>
+            <div>
+              {startDays.map((_, i) => (
+                <button
+                  className={`work-day-btn${
+                    startingDay === i ? '__selected' : '__not-selected'
+                  }`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setStartingDay(i)
+                  }}
+                >
+                  {getDay(i)}
+                </button>
+              ))}
+            </div>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <h4>Put</h4>
-            <div>
-              <select
-                value={afterMeetingBufferTime}
-                className='select-preference text-color__shallow'
-                onChange={(e) => {
-                  setAfterMeetingBufferTime(parseInt(e.target.value))
-                }}
-                style={{
-                  fontSize: '14px',
-                  marginLeft: '5px',
-                  marginRight: '5px',
-                }}
-              >
-                <option value={0}>0</option>
-                <option value={15}>15</option>
-                <option value={30}>30</option>
-              </select>
-            </div>
-            <h4>min break after each meeting.</h4>
+          <div className={'setting__section'}>
+            <h2>Preference</h2>
+            <BufferTimeSetter
+              beforeBufferTime={beforeMeetingBufferTime}
+              setBeforeBufferTime={setBeforeMeetingBufferTime}
+              afterBufferTime={afterMeetingBufferTime}
+              setAfterBufferTime={setAfterMeetingBufferTime}
+              isBy30Min={false}
+              title='Each Meeting'
+            />
+            <BufferTimeSetter
+              beforeBufferTime={beforeWorkBufferTime}
+              setBeforeBufferTime={setBeforeWorkBufferTime}
+              afterBufferTime={afterWorkBufferTime}
+              setAfterBufferTime={setAfterWorkBufferTime}
+              isBy30Min={true}
+              title='Work Hours'
+            />
+            <BufferTimeSetter
+              beforeBufferTime={beforeSleepBufferTime}
+              setBeforeBufferTime={setBeforeSleepBufferTime}
+              afterBufferTime={afterSleepBufferTime}
+              setAfterBufferTime={setAfterSleepBufferTime}
+              isBy30Min={true}
+              title='Sleep Hours'
+            />
+            <RadioToggle
+              value={isGrouping}
+              setValue={setIsGrouping}
+              title='Group Tasks By Project In Schedule'
+              label1='Group tasks in same project'
+              label2='Mix tasks in different projects'
+            />
+            <PreferenceSetter
+              selectedPreferences={workHourPreferences}
+              preferences={preferences}
+              setPreferences={setPreferences}
+              type='work'
+              title='During work hours, I prefer...'
+            />
+            <PreferenceSetter
+              selectedPreferences={personalHourPreferences}
+              preferences={personalPreferences}
+              setPreferences={setPersonalPreferences}
+              type='personal'
+              title='During personal hours, I prefer...'
+            />
           </div>
           <button
             className=' action add-task__actions--add-task'

@@ -8,7 +8,8 @@ import {
   printBlocks,
   rankBlocks,
   getBufferRangeForEvents,
-  getEventIdToTimeLengthMap,
+  getEventIdToAllocatedTimeLengthMap,
+  getBufferRangeForTimeRangesExclusive,
 } from './timeRangeHandlers'
 import {
   filterTaskNotPassedDeadline,
@@ -65,6 +66,7 @@ export const scheduleCalendar = async (userId) => {
     let timeRange = null
     let dayRanges = null
     let workRanges = null
+    let sleepRanges = null
     let bufferRange = null
 
     /* gets time ranges information */
@@ -81,6 +83,7 @@ export const scheduleCalendar = async (userId) => {
       timeRange = todayRange
       dayRanges = [todayTimeRanges.dayRange]
       workRanges = [todayTimeRanges.workRange]
+      sleepRanges = [todayTimeRanges.sleepRange]
       bufferRange = todayBufferRange
     } else {
       /* weekly scheduling */
@@ -95,6 +98,7 @@ export const scheduleCalendar = async (userId) => {
       timeRange = weekTimeRanges.weekRange
       dayRanges = weekTimeRanges.dayRanges
       workRanges = weekTimeRanges.workRanges
+      sleepRanges = weekTimeRanges.sleepRanges
       bufferRange = weekBufferRange
     }
     const eventsByType = await fetchAllEventsByType(
@@ -157,6 +161,7 @@ export const scheduleCalendar = async (userId) => {
       (rankedBlocksSingleDay) => rankedBlocksSingleDay.personal,
     )
 
+    /* calculates buffer ranges for online meetings */
     /* note: includes all online meetings, whether or not it has been accepted */
     const onlineMeetings = eventsByType.timeBlocked.filter(
       (event) => event.attendees,
@@ -166,6 +171,32 @@ export const scheduleCalendar = async (userId) => {
       userData.beforeMeetingBufferTime,
       userData.afterMeetingBufferTime,
     )
+
+    /* calculates buffer ranges for work hours */
+    const workBufferRanges = getBufferRangeForTimeRangesExclusive(
+      workRanges,
+      userData.beforeWorkBufferTime,
+      userData.afterWorkBufferTime,
+    )
+
+    /* calculates buffer ranges for sleep hours */
+    const sleepBufferRanges = getBufferRangeForTimeRangesExclusive(
+      sleepRanges,
+      userData.beforeSleepBufferTime,
+      userData.afterSleepBufferTime,
+    )
+
+    const bufferRanges = [
+      ...onlineMeetingsBufferRanges,
+      ...workBufferRanges,
+      ...sleepBufferRanges,
+    ]
+
+    // const sleepBufferRanges = getBufferRangeForEvents(
+    //   sleepRanges,
+    //   userData.beforeSleepBufferTime,
+    //   userData.afterSleepBufferTime,
+    // )
 
     /* prints the blocks to console */
     // for (let i = 0; i < rankedBlocksMultDay.length; i++) {
@@ -214,15 +245,13 @@ export const scheduleCalendar = async (userId) => {
       algoCalendarFetchBufferRange[1].toISOString(),
       [userData.calendarId],
     )
-
-    const algoCalendarEventIdToTimeLengthMap = getEventIdToTimeLengthMap(
-      algoCalendarEvents.timeBlocked,
-    )
+    const algoCalendarEventIdToAllocatedTimeLengthMap =
+      getEventIdToAllocatedTimeLengthMap(algoCalendarEvents.timeBlocked, now)
 
     /* get the taskId to amount of time allocated (in minutes) map */
     const taskToAllocatedTimeLengthMap = getTaskToAllocatedTimeLengthMap(
       taskToEventIdsMap,
-      algoCalendarEventIdToTimeLengthMap,
+      algoCalendarEventIdToAllocatedTimeLengthMap,
     )
 
     /* allocate a task (or leave empty) for each chunk in each block for work and personal */
@@ -231,14 +260,14 @@ export const scheduleCalendar = async (userId) => {
       rankedWorkBlocks,
       formattedTasks.work,
       taskToAllocatedTimeLengthMap,
-      onlineMeetingsBufferRanges,
+      bufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
       formattedTasks.personal,
       taskToAllocatedTimeLengthMap,
-      onlineMeetingsBufferRanges,
+      bufferRanges,
       now,
     )
   } catch (error) {

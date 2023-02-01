@@ -60,6 +60,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
   const nowRoundedImmutable = Object.freeze(roundUp15Min(now.clone()))
   const todayImmutable = Object.freeze(today)
   const dayRangeImmutable = Object.freeze(dayRange)
+  const sleepRangeImmutable = Object.freeze(sleepRange)
   const workRangeImmutable = Object.freeze(workRange)
 
   return {
@@ -67,6 +68,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
     today: todayImmutable,
     dayRange: dayRangeImmutable,
     workRange: workRangeImmutable,
+    sleepRange: sleepRangeImmutable,
   }
 }
 
@@ -77,7 +79,7 @@ export const getWeekTimeRanges = (
   workTimeRange,
   startingDay,
 ) => {
-  const { now, today, dayRange, workRange } = getTodayTimeRanges(
+  const { now, today, dayRange, workRange, sleepRange } = getTodayTimeRanges(
     sleepTimeRange,
     workTimeRange,
   )
@@ -109,15 +111,25 @@ export const getWeekTimeRanges = (
       workRange[1].clone().add(i, 'day'),
     ])
   }
+  const sleepRanges = []
+  for (let i = 0; i <= numDays; i++) {
+    sleepRanges.push([
+      sleepRange[0].clone().add(i, 'day'),
+      sleepRange[1].clone().add(i, 'day'),
+    ])
+  }
 
   const weekRangeImmutable = Object.freeze(weekRange)
   const dayRangesImmutable = Object.freeze(dayRanges)
   const workRangesImmutable = Object.freeze(workRanges)
+  const sleepRangesImmutable = Object.freeze(sleepRanges)
+
   return {
     now: now,
     weekRange: weekRangeImmutable,
     dayRanges: dayRangesImmutable,
     workRanges: workRangesImmutable,
+    sleepRanges: sleepRangesImmutable,
   }
 }
 
@@ -141,13 +153,21 @@ export const getBufferRange = (timeRange) => {
  * events must not be all day events (must have start.dateTime and end.dateTime)
  * startBufferAmount and endBufferAmount must be in minutes
  * ***/
-export const getEventIdToTimeLengthMap = (events) => {
+export const getEventIdToAllocatedTimeLengthMap = (events, now) => {
   const getEventIdToTimeLengthMap = {}
   for (const event of events) {
-    const timeLength = moment(event.end.dateTime).diff(
-      moment(event.start.dateTime),
-      'minute',
-    )
+    let timeLength = 0
+    if (
+      moment(event.start.dateTime).isBefore(now) &&
+      moment(event.end.dateTime).isAfter(now)
+    ) {
+      timeLength = now.diff(moment(event.start.dateTime), 'minute')
+    } else if (moment(event.end.dateTime).isSameOrBefore(now)) {
+      timeLength = moment(event.end.dateTime).diff(
+        moment(event.start.dateTime),
+        'minute',
+      )
+    }
     getEventIdToTimeLengthMap[event.id] = timeLength
   }
   return getEventIdToTimeLengthMap
@@ -179,6 +199,23 @@ export const getBufferRangeForEvents = (
       start: bufferStartEvent,
       end: bufferEndEvent,
     })
+  }
+  return bufferRanges
+}
+
+export const getBufferRangeForTimeRangesExclusive = (
+  timeRanges,
+  startBufferAmount,
+  endBufferAmount,
+) => {
+  const bufferRanges = []
+  for (const timeRange of timeRanges) {
+    const bufferStart = timeRange[0]
+      .clone()
+      .subtract(startBufferAmount, 'minute')
+    const bufferEnd = timeRange[1].clone().add(endBufferAmount, 'minute')
+    bufferRanges.push([bufferStart, timeRange[0].clone()])
+    bufferRanges.push([timeRange[1].clone(), bufferEnd])
   }
   return bufferRanges
 }
