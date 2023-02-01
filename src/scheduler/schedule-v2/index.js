@@ -8,7 +8,7 @@ import {
   printBlocks,
   rankBlocks,
   getBufferRangeForEvents,
-  getEventIdToTimeLengthMap,
+  getEventIdToAllocatedTimeLengthMap,
 } from './timeRangeHandlers'
 import {
   filterTaskNotPassedDeadline,
@@ -202,6 +202,7 @@ export const scheduleCalendar = async (userId) => {
     }
 
     /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
+    /* treats events independent from each other */
     const algoCalendarFetchTimeRange = [
       formattedCreatedAt,
       moment().startOf('day').add(1, 'days'),
@@ -214,15 +215,13 @@ export const scheduleCalendar = async (userId) => {
       algoCalendarFetchBufferRange[1].toISOString(),
       [userData.calendarId],
     )
-
-    const algoCalendarEventIdToTimeLengthMap = getEventIdToTimeLengthMap(
-      algoCalendarEvents.timeBlocked,
-    )
+    const algoCalendarEventIdToAllocatedTimeLengthMap =
+      getEventIdToAllocatedTimeLengthMap(algoCalendarEvents.timeBlocked, now)
 
     /* get the taskId to amount of time allocated (in minutes) map */
     const taskToAllocatedTimeLengthMap = getTaskToAllocatedTimeLengthMap(
       taskToEventIdsMap,
-      algoCalendarEventIdToTimeLengthMap,
+      algoCalendarEventIdToAllocatedTimeLengthMap,
     )
 
     /* allocate a task (or leave empty) for each chunk in each block for work and personal */

@@ -141,13 +141,21 @@ export const getBufferRange = (timeRange) => {
  * events must not be all day events (must have start.dateTime and end.dateTime)
  * startBufferAmount and endBufferAmount must be in minutes
  * ***/
-export const getEventIdToTimeLengthMap = (events) => {
+export const getEventIdToAllocatedTimeLengthMap = (events, now) => {
   const getEventIdToTimeLengthMap = {}
   for (const event of events) {
-    const timeLength = moment(event.end.dateTime).diff(
-      moment(event.start.dateTime),
-      'minute',
-    )
+    let timeLength = 0
+    if (
+      moment(event.start.dateTime).isBefore(now) &&
+      moment(event.end.dateTime).isAfter(now)
+    ) {
+      timeLength = now.diff(moment(event.start.dateTime), 'minute')
+    } else if (moment(event.end.dateTime).isSameOrBefore(now)) {
+      timeLength = moment(event.end.dateTime).diff(
+        moment(event.start.dateTime),
+        'minute',
+      )
+    }
     getEventIdToTimeLengthMap[event.id] = timeLength
   }
   return getEventIdToTimeLengthMap
