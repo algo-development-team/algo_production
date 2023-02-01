@@ -172,6 +172,7 @@ export const SettingEditor = ({ closeOverlay }) => {
       workDays: workDays,
       startingDay: startingDay,
       preferences: preferences,
+      personalPreferences: personalPreferences,
       isWeekly: isWeekly,
       isGrouping: isGrouping,
       calendarIds: calendarIds,
@@ -596,12 +597,14 @@ export const SettingEditor = ({ closeOverlay }) => {
               selectedPreferences={workHourPreferences}
               preferences={preferences}
               setPreferences={setPreferences}
+              type='work'
               title='During work hours, I prefer...'
             />
             <PreferenceSetter
               selectedPreferences={personalHourPreferences}
               preferences={personalPreferences}
               setPreferences={setPersonalPreferences}
+              type='personal'
               title='During personal hours, I prefer...'
             />
           </div>
