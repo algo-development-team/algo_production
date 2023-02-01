@@ -11,6 +11,7 @@ export const icebreakerTasks = [
     description: 'Click + button to add new project.', // string
     priority: 3, // number (int) (range: 1-3)
     timeLength: 15, // number (int) (range: 15-480)
+    eventIds: [],
     index: 0,
   },
   {
@@ -25,6 +26,7 @@ export const icebreakerTasks = [
     description: 'Add new tasks.', // string
     priority: 3, // number (int) (range: 1-3)
     timeLength: 15, // number (int) (range: 15-480)
+    eventIds: [],
     index: 1,
   },
 ]
