@@ -175,6 +175,22 @@ export const getEventIdToAllocatedTimeLengthMap = (events, now) => {
 
 /***
  * requirements:
+ * workRanges: [moment.Moment, moment.Moment][]
+ * workDays: boolean[] (len: 7)
+ * ***/
+export const getFilteredWorkRanges = (workRanges, workDays) => {
+  const filteredWorkRanges = []
+  for (const workRange of workRanges) {
+    const day = workRange[0].day()
+    if (workDays[day]) {
+      filteredWorkRanges.push([workRange[0].clone(), workRange[1].clone()])
+    }
+  }
+  return filteredWorkRanges
+}
+
+/***
+ * requirements:
  * events must not be all day events (must have start.dateTime and end.dateTime)
  * startBufferAmount and endBufferAmount must be in minutes
  * ***/
@@ -214,8 +230,12 @@ export const getBufferRangeForTimeRangesExclusive = (
       .clone()
       .subtract(startBufferAmount, 'minute')
     const bufferEnd = timeRange[1].clone().add(endBufferAmount, 'minute')
-    bufferRanges.push([bufferStart, timeRange[0].clone()])
-    bufferRanges.push([timeRange[1].clone(), bufferEnd])
+    bufferRanges.push({
+      id: null,
+      start: bufferStart,
+      end: timeRange[0].clone(),
+    })
+    bufferRanges.push({ id: null, start: timeRange[1].clone(), end: bufferEnd })
   }
   return bufferRanges
 }

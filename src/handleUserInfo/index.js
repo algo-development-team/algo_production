@@ -66,10 +66,10 @@ export const getDefaultUserInfo = (email) => {
     startingDay: 5,
     beforeMeetingBufferTime: 0,
     afterMeetingBufferTime: 0,
-    beforeWorkBufferTime: 0,
-    afterWorkBufferTime: 0,
-    beforeSleepBufferTime: 0,
-    afterSleepBufferTime: 0,
+    beforeWorkBufferTime: 30,
+    afterWorkBufferTime: 30,
+    beforeSleepBufferTime: 30,
+    afterSleepBufferTime: 30,
   }
   return defaultUserInfo
 }

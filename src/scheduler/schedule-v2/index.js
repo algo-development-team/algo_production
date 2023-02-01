@@ -10,6 +10,7 @@ import {
   getBufferRangeForEvents,
   getEventIdToAllocatedTimeLengthMap,
   getBufferRangeForTimeRangesExclusive,
+  getFilteredWorkRanges,
 } from './timeRangeHandlers'
 import {
   filterTaskNotPassedDeadline,
@@ -173,8 +174,12 @@ export const scheduleCalendar = async (userId) => {
     )
 
     /* calculates buffer ranges for work hours */
-    const workBufferRanges = getBufferRangeForTimeRangesExclusive(
+    const filteredWorkRanges = getFilteredWorkRanges(
       workRanges,
+      userData.workDays,
+    )
+    const workBufferRanges = getBufferRangeForTimeRangesExclusive(
+      filteredWorkRanges,
       userData.beforeWorkBufferTime,
       userData.afterWorkBufferTime,
     )
