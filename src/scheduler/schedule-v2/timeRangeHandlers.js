@@ -60,6 +60,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
   const nowRoundedImmutable = Object.freeze(roundUp15Min(now.clone()))
   const todayImmutable = Object.freeze(today)
   const dayRangeImmutable = Object.freeze(dayRange)
+  const sleepRangeImmutable = Object.freeze(sleepRange)
   const workRangeImmutable = Object.freeze(workRange)
 
   return {
@@ -67,6 +68,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
     today: todayImmutable,
     dayRange: dayRangeImmutable,
     workRange: workRangeImmutable,
+    sleepRange: sleepRangeImmutable,
   }
 }
 
@@ -77,7 +79,7 @@ export const getWeekTimeRanges = (
   workTimeRange,
   startingDay,
 ) => {
-  const { now, today, dayRange, workRange } = getTodayTimeRanges(
+  const { now, today, dayRange, workRange, sleepRange } = getTodayTimeRanges(
     sleepTimeRange,
     workTimeRange,
   )
@@ -109,15 +111,25 @@ export const getWeekTimeRanges = (
       workRange[1].clone().add(i, 'day'),
     ])
   }
+  const sleepRanges = []
+  for (let i = 0; i <= numDays; i++) {
+    sleepRanges.push([
+      sleepRange[0].clone().add(i, 'day'),
+      sleepRange[1].clone().add(i, 'day'),
+    ])
+  }
 
   const weekRangeImmutable = Object.freeze(weekRange)
   const dayRangesImmutable = Object.freeze(dayRanges)
   const workRangesImmutable = Object.freeze(workRanges)
+  const sleepRangesImmutable = Object.freeze(sleepRanges)
+
   return {
     now: now,
     weekRange: weekRangeImmutable,
     dayRanges: dayRangesImmutable,
     workRanges: workRangesImmutable,
+    sleepRanges: sleepRangesImmutable,
   }
 }
 
@@ -187,6 +199,23 @@ export const getBufferRangeForEvents = (
       start: bufferStartEvent,
       end: bufferEndEvent,
     })
+  }
+  return bufferRanges
+}
+
+export const getBufferRangeForTimeRangesExclusive = (
+  timeRanges,
+  startBufferAmount,
+  endBufferAmount,
+) => {
+  const bufferRanges = []
+  for (const timeRange of timeRanges) {
+    const bufferStart = timeRange[0]
+      .clone()
+      .subtract(startBufferAmount, 'minute')
+    const bufferEnd = timeRange[1].clone().add(endBufferAmount, 'minute')
+    bufferRanges.push([bufferStart, timeRange[0].clone()])
+    bufferRanges.push([timeRange[1].clone(), bufferEnd])
   }
   return bufferRanges
 }
