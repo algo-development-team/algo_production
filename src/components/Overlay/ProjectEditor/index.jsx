@@ -17,6 +17,7 @@ import { db } from '_firebase'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
+import { inputProjectAction } from '../../../handleAnalytics'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()
@@ -58,8 +59,9 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
         projectIsWork: projectIsWork,
       })
     })
-  }
 
+    inputProjectAction(currentUser.id, "UPDATE")
+  }
   useEffect(() => {
     setSelectedColour(projectColour)
 
@@ -102,6 +104,8 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       newProject,
     )
     setProjects({ ...newProject })
+
+    inputProjectAction(currentUser.id, "CREATE")
   }
 
   const handleChange = (e) => {

@@ -29,6 +29,7 @@ import moment from 'moment'
 import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
 import { timeZone } from 'handleCalendars'
+import { inputTaskAction } from '../../handleAnalytics'
 
 export const MenuList = ({
   closeOverlay,
@@ -117,6 +118,8 @@ export const MenuList = ({
       taskDocs.forEach(async (taskDoc) => {
         await deleteDoc(taskDoc.ref)
       })
+
+    inputTaskAction(currentUser.id, "DELETE")
     } catch (error) {
       console.log(error)
     }

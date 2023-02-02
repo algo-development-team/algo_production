@@ -13,6 +13,8 @@ import { getProjectTitle } from 'utils'
 import { db } from '_firebase'
 import './light.scss'
 import './main.scss'
+import { inputProjectAction } from '../../handleAnalytics'
+
 export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
@@ -27,6 +29,8 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
       docs.forEach(async (projectDoc) => {
         await deleteDoc(projectDoc.ref)
       })
+
+      inputProjectAction(currentUser.id, "DELETE")
     } catch (error) {
       console.log(error)
     }
