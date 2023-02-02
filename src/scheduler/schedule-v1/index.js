@@ -10,11 +10,11 @@ import {
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo, updateUserInfo } from 'handleUserInfo'
+import { getUserInfo, updateUserInfo } from 'backend/handleUserInfo'
 import moment from 'moment'
-import { timeType } from 'enums'
-import { getAllUserTasks } from 'handleUserTasks'
-import { getAllUserProjects } from 'handleUserProjects'
+import { timeType } from '../../enums'
+import { getAllUserTasks } from '../../backend/handleUserTasks'
+import { getAllUserProjects } from '../../backend/handleUserProjects'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])

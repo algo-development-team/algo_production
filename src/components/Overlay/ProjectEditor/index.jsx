@@ -1,23 +1,12 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
-import {
-  collection,
-  doc,
-  getDocs,
-  query,
-  addDoc,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
 import { useAuth, useProjects } from 'hooks'
 import { useEffect, useState } from 'react'
 import { generatePushId } from 'utils/index'
-import { db } from '_firebase'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
-import { inputProjectAction } from '../../../handleAnalytics'
+import { updatedProject, addProject } from '../../../backend/handleUserProjects'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()
@@ -46,21 +35,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
 
   const updateProjectHandler = async (e) => {
     e.preventDefault()
-    const projectQuery = await query(
-      collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-      where('projectId', '==', projectToEdit.projectId),
-    )
-    const projectDocs = await getDocs(projectQuery)
-    projectDocs.forEach(async (projectDoc) => {
-      await updateDoc(projectDoc.ref, {
-        name: projectName,
-        projectColour: projectColour,
-        projectIsList: projectIsList,
-        projectIsWork: projectIsWork,
-      })
-    })
-
-    inputProjectAction(currentUser.id, "UPDATE")
+    await updatedProject(currentUser && currentUser.id, projectToEdit.projectId, projectName, projectColour, projectIsList, projectIsWork)
   }
   useEffect(() => {
     setSelectedColour(projectColour)
@@ -99,13 +74,9 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
     }
     setShowDialog('')
 
-    await addDoc(
-      collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-      newProject,
-    )
-    setProjects({ ...newProject })
+    await addProject(currentUser && currentUser.id, newProject)
 
-    inputProjectAction(currentUser.id, "CREATE")
+    setProjects({ ...newProject })
   }
 
   const handleChange = (e) => {

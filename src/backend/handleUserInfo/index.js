@@ -4,12 +4,13 @@ import {
   updateDoc,
   collection,
   query,
+  where,
+  deleteDoc,
   doc,
   getDoc,
 } from 'firebase/firestore'
 import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
-import moment from 'moment'
 
 export const getUserInfo = async (userId) => {
   try {
@@ -96,3 +97,17 @@ export const updateUserInfo = async (userId, newUserInfo) => {
     console.log(error)
   }
 }
+
+export const projectTasksDelete = async (userId, projectId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('projectId', '==', projectId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (taskDoc) => {
+      await deleteDoc(taskDoc.ref)
+    })
+  } catch (error) {
+    console.log(error)
+  }}

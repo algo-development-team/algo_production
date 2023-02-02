@@ -9,7 +9,7 @@ import { PrivacyPolicyPage } from 'pages/privacy-policy-page'
 import { Route, Routes } from 'react-router-dom'
 import { TermsOfServicePage } from 'pages/terms-of-service'
 import { PricingPlanPage } from 'pages/pricing-plan'
-import { PaymentPage } from 'components/PaymentLayout/payment-plan'
+import { PaymentPage } from 'components/Payment'
 
 export const Views = () => {
   return (

@@ -1,54 +1,24 @@
 import { ReactComponent as InfoIcon } from 'assets/svg/info.svg'
 import { ReactComponent as CancelIcon } from 'assets/svg/plus.svg'
-import {
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  where,
-} from 'firebase/firestore'
 import { useAuth, useProjects } from 'hooks'
 import { useNavigate } from 'react-router-dom'
 import { getProjectTitle } from 'utils'
-import { db } from '_firebase'
 import './light.scss'
 import './main.scss'
-import { inputProjectAction } from '../../handleAnalytics'
+import { projectDelete } from '../../backend/handleUserProjects'
+import { projectTasksDelete } from '../../backend/handleUserInfo'
 
 export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
 
   const handleProjectDelete = async () => {
-    try {
-      const q = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-        where('projectId', '==', projectId),
-      )
-      const docs = await getDocs(q)
-      docs.forEach(async (projectDoc) => {
-        await deleteDoc(projectDoc.ref)
-      })
-
-      inputProjectAction(currentUser.id, "DELETE")
-    } catch (error) {
-      console.log(error)
-    }
+    await projectDelete(currentUser && currentUser.id, projectId)
   }
 
   const handleProjectTasksDelete = async () => {
-    try {
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('projectId', '==', projectId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
-      })
-    } catch (error) {
-      console.log(error)
-    }
+   // Project Task Delete 
+   await projectTasksDelete(currentUser && currentUser.id, projectId)
   }
 
   const deleteHandler = async (e) => {

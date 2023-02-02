@@ -24,10 +24,10 @@ import {
   allocatePersonalTimeBlocks,
 } from './timeBlockHandlers'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { getUserInfo, getUserDefaultData } from 'handleUserInfo'
+import { getUserInfo, getUserDefaultData } from '../../backend/handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import { getAllUserTasks } from 'handleUserTasks'
-import { getAllUserProjects } from 'handleUserProjects'
+import { getAllUserTasks } from '../../backend/handleUserTasks'
+import { getAllUserProjects } from '../../backend/handleUserProjects'
 import { roundUp15Min } from 'handleMoment'
 import moment from 'moment'
 
