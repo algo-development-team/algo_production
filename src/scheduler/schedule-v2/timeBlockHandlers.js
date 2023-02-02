@@ -55,19 +55,19 @@ const assignEmptyTaskIdForRestHours = (blocksMultDays, restHours) => {
  */
 export const allocateWorkTimeBlocks = (
   blocksMultDays,
-  tasks,
+  categorizedTaskIds,
+  tasksMap,
   bufferRanges,
   now,
 ) => {
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
-  console.log('blocksMultDays', blocksMultDays) // DEBUGGING
-  console.log('tasks', tasks) // DEBUGGING
 }
 
 export const allocatePersonalTimeBlocks = (
   blocksMultDays,
-  tasks,
+  categorizedTaskIds,
+  tasksMap,
   bufferRanges,
   restHours,
   now,

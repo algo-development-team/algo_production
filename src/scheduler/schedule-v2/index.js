@@ -19,7 +19,7 @@ import {
   getTaskMap,
   getTaskToEventIdsMap,
   getTaskToAllocatedTimeLengthMap,
-  categorizeTasks,
+  categorizeTaskIds,
 } from './taskHandlers'
 import {
   allocateWorkTimeBlocks,
@@ -103,6 +103,7 @@ export const scheduleCalendar = async (userId) => {
       sleepRanges = weekTimeRanges.sleepRanges
       bufferRange = weekBufferRange
     }
+
     const eventsByType = await fetchAllEventsByType(
       bufferRange[0].toISOString(),
       bufferRange[1].toISOString(),
@@ -263,12 +264,13 @@ export const scheduleCalendar = async (userId) => {
       taskToAllocatedTimeLengthMap,
       projects,
     )
-    const categorizedTasks = {
-      work: categorizeTasks(formattedTasks.work),
-      personal: categorizeTasks(formattedTasks.personal),
+
+    const categorizedTaskIds = {
+      work: categorizeTaskIds(formattedTasks.work, timeRange),
+      personal: categorizeTaskIds(formattedTasks.personal, timeRange),
     }
 
-    const taskMap = {
+    const formattedTasksMap = {
       ...getTaskMap(formattedTasks.work),
       ...getTaskMap(formattedTasks.personal),
     }
@@ -277,13 +279,15 @@ export const scheduleCalendar = async (userId) => {
     /* mutates rankedWorkBlocks, rankedPersonalBlocks, and formattedTasks */
     allocateWorkTimeBlocks(
       rankedWorkBlocks,
-      categorizedTasks.work,
+      categorizedTaskIds.work,
+      formattedTasksMap,
       bufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
-      categorizedTasks.personal,
+      categorizedTaskIds.personal,
+      formattedTasksMap,
       bufferRanges,
       restHours,
       now,
