@@ -56,18 +56,18 @@ const assignEmptyTaskIdForRestHours = (blocksMultDays, restHours) => {
 export const allocateWorkTimeBlocks = (
   blocksMultDays,
   tasks,
-  taskToAllocatedTimeLengthMap,
   bufferRanges,
   now,
 ) => {
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
+  console.log('blocksMultDays', blocksMultDays) // DEBUGGING
+  console.log('tasks', tasks) // DEBUGGING
 }
 
 export const allocatePersonalTimeBlocks = (
   blocksMultDays,
   tasks,
-  taskToAllocatedTimeLengthMap,
   bufferRanges,
   restHours,
   now,
@@ -75,5 +75,4 @@ export const allocatePersonalTimeBlocks = (
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
   assignEmptyTaskIdForRestHours(blocksMultDays, restHours)
-  console.log('blocksMultDays', blocksMultDays) // DEBUGGING
 }

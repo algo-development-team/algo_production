@@ -131,7 +131,7 @@ export const scheduleCalendar = async (userId) => {
     /* groups 15 min chunks into 2h blocks, each block containing 8 chunks */
     const blocksMultDays = []
     for (let i = 0; i < chunkRangesMultDays.length; i++) {
-      const hasWorkTime = userData.workDays[workRanges[i][1].day()]
+      const hasWorkTime = userData.workDays[workRanges[i][0].day()]
 
       /* filter out meeting buffer times */
       const blocksSingleDay = groupChunkRangesIntoBlocks(
@@ -235,18 +235,6 @@ export const scheduleCalendar = async (userId) => {
       ...getTaskToEventIdsMap(tasksNotNoneTimeLength),
     }
 
-    /* update the format tasks to accomodate for newly added fields */
-    const formattedTasks = formatTasks(tasksNotNoneTimeLength, projects)
-    const categorizedTasks = {
-      work: categorizeTasks(formattedTasks.work),
-      personal: categorizeTasks(formattedTasks.personal),
-    }
-
-    const taskMap = {
-      ...getTaskMap(formattedTasks.work),
-      ...getTaskMap(formattedTasks.personal),
-    }
-
     /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
     const algoCalendarFetchTimeRange = [
       formattedCreatedAt,
@@ -269,19 +257,33 @@ export const scheduleCalendar = async (userId) => {
       algoCalendarEventIdToAllocatedTimeLengthMap,
     )
 
+    /* update the format tasks to accomodate for newly added fields */
+    const formattedTasks = formatTasks(
+      tasksNotNoneTimeLength,
+      taskToAllocatedTimeLengthMap,
+      projects,
+    )
+    const categorizedTasks = {
+      work: categorizeTasks(formattedTasks.work),
+      personal: categorizeTasks(formattedTasks.personal),
+    }
+
+    const taskMap = {
+      ...getTaskMap(formattedTasks.work),
+      ...getTaskMap(formattedTasks.personal),
+    }
+
     /* allocate a task (or leave empty) for each chunk in each block for work and personal */
     /* mutates rankedWorkBlocks, rankedPersonalBlocks, and formattedTasks */
     allocateWorkTimeBlocks(
       rankedWorkBlocks,
       categorizedTasks.work,
-      taskToAllocatedTimeLengthMap,
       bufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
       categorizedTasks.personal,
-      taskToAllocatedTimeLengthMap,
       bufferRanges,
       restHours,
       now,

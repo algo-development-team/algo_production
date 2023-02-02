@@ -1,5 +1,4 @@
 import moment from 'moment'
-import { getEventIdToTimeLengthMap } from './timeRangeHandlers'
 
 /***
  * requirements:
@@ -18,14 +17,12 @@ export const filterTaskNotNoneTimeLength = (tasks) => {
   return tasks.filter((task) => task.timeLength > 0)
 }
 
-const calculateStaticRelativePriority = () => {}
-
 /***
  * requirements:
  * tasks: task[] (from firestore)
  * projects: project[] (from firestore)
  * ***/
-export const formatTasks = (tasks, projects) => {
+export const formatTasks = (tasks, taskToAllocatedTimeLengthMap, projects) => {
   const projectIdToIsWork = {}
   for (const project of projects) {
     projectIdToIsWork[project.projectId] = project.projectIsWork
@@ -37,6 +34,8 @@ export const formatTasks = (tasks, projects) => {
       task.startDate !== '' ? moment(task.startDate, 'DD-MM-YYYY') : null
     const formattedDate =
       task.date !== '' ? moment(task.date, 'DD-MM-YYYY') : null
+    const allocatableTimeLength =
+      task.timeLength - taskToAllocatedTimeLengthMap[task.taskId]
     const formattedTask = {
       taskId: task.taskId,
       name: task.name,
@@ -44,7 +43,7 @@ export const formatTasks = (tasks, projects) => {
       priority: task.priority,
       startDate: formattedStartDate,
       date: formattedDate,
-      timeLength: task.timeLength,
+      allocatableTimeLength: allocatableTimeLength,
     }
     if (projectIdToIsWork[task.projectId]) {
       formattedWorkTasks.push(formattedTask)
@@ -72,7 +71,7 @@ export const getTaskToEventIdsMap = (tasks) => {
 
 /***
  * requirements:
- * tasks: { priority, startDate, date, timeLength, taskId, name, description }[]
+ * tasks: { priority, startDate, date, allocatableTimeLength, taskId, name, description }[]
  * ***/
 export const getTaskMap = (tasks) => {
   const taskMap = {}
@@ -101,7 +100,7 @@ export const getTaskToAllocatedTimeLengthMap = (
 /* categorize the tasks based on priority and startDate */
 /***
  * requirements:
- * tasks: { priority, startDate, date, timeLength, taskId, name, description }[]
+ * tasks: { priority, startDate, date, allocatableTimeLength, taskId, name, description }[]
  * ***/
 export const categorizeTasks = (tasks) => {
   /* group tasks by their priority (range 1-4), group 1 and 2 together */
