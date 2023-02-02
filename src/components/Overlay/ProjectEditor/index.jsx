@@ -6,7 +6,7 @@ import { generatePushId } from 'utils/index'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
-import {updatedProject, addProject} from '../../../backend/handleUserProjects'
+import { updatedProject, addProject } from '../../../backend/handleUserProjects'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()
@@ -35,8 +35,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
 
   const updateProjectHandler = async (e) => {
     e.preventDefault()
-   await updatedProject(currentUser && currentUser.id, projectToEdit.projectId, projectName, projectColour, projectIsList, projectIsWork)
-   // Update Project
+    await updatedProject(currentUser && currentUser.id, projectToEdit.projectId, projectName, projectColour, projectIsList, projectIsWork)
   }
   useEffect(() => {
     setSelectedColour(projectColour)

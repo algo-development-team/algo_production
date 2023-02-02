@@ -30,7 +30,7 @@ export const Content = () => {
     }
   }
 
-   return ( 
+  return (
     <div className='content'>
       <div className='project__wrapper'>{getProject()}</div>
     </div>

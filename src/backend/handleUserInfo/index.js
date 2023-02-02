@@ -5,8 +5,11 @@ import {
   collection,
   query,
   where,
-  deleteDoc
+  deleteDoc,
+  doc,
+  getDoc,
 } from 'firebase/firestore'
+import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
 
 export const getUserInfo = async (userId) => {
@@ -29,19 +32,45 @@ export const getUserInfo = async (userId) => {
   }
 }
 
+export const getUserDefaultData = async (userId) => {
+  try {
+    const userRef = doc(db, 'user', userId)
+    const userSnapshot = await getDoc(userRef)
+    if (userSnapshot.exists()) {
+      const userDefaultData = userSnapshot.data()
+      return userDefaultData
+    }
+    return null
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
 export const getDefaultUserInfo = (email) => {
-  const defaultRankingPreferences = new Array(6).fill(0) // all preferences are urgent
+  const defaultPreferences = new Array(24).fill(0) // all preferences are urgent
+  const defaultPersonalPreferences = new Array(24).fill(0) // all preferences are personal work
   const defaultUserInfo = {
     workTimeRange: '9:00-17:00',
     sleepTimeRange: '23:00-07:00',
-    rankingPreferences: defaultRankingPreferences,
+    preferences: defaultPreferences,
+    personalPreferences: defaultPersonalPreferences,
     workDays: [false, true, true, true, true, true, false],
     isSetup: false,
     calendarId: null,
-    calendarIds: [email],
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    calendarIds: [{ id: email, selected: true, summary: email, colorId: 7 }],
+    timeZone: timeZone,
     checklist: [],
     scheduleCreated: false,
+    isGrouping: true,
+    isWeekly: true,
+    startingDay: 5,
+    beforeMeetingBufferTime: 0,
+    afterMeetingBufferTime: 0,
+    beforeWorkBufferTime: 0,
+    afterWorkBufferTime: 0,
+    beforeSleepBufferTime: 0,
+    afterSleepBufferTime: 0,
   }
   return defaultUserInfo
 }

@@ -83,20 +83,6 @@ export const TaskEditor = ({
     }
   }
 
-  const getValidStartDate = (startDate, endDate) => {
-    if (startDate === '') {
-      return ''
-    } else {
-      if (
-        moment(startDate, 'DD-MM-YYYY').isAfter(moment(endDate, 'DD-MM-YYYY'))
-      ) {
-        return endDate
-      } else {
-        return startDate
-      }
-    }
-  }
-
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
@@ -127,7 +113,6 @@ export const TaskEditor = ({
     
     resetForm()
 
-    // addTask
     await addTask(currentUser && currentUser.id, project.selectedProjectId, startSchedule.date, endSchedule.date, taskName, taskId,
       boardStatus, defaultGroup, taskDescription, taskPriority, taskTimeLength, index, scheduleCreated)
   }
@@ -161,10 +146,9 @@ export const TaskEditor = ({
 
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    await updateFireStore(currentUser && currentUser.id, task.taskId, task.projectId, task.boardstatus, task.index, projects, taskName, 
+    await updateFireStore(currentUser && currentUser.id, task.taskId, task.projectId, task.boardStatus, task.index, projects, taskName, 
                           taskDescription, taskPriority, taskTimeLength, scheduleCreated, endSchedule.date, startSchedule.date, 
                           defaultGroup, task.projectId, project.selectedProjectName, project.selectedProjectId)
-    // update firestore
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }
@@ -213,7 +197,7 @@ export const TaskEditor = ({
   }, [taskEditorToShow])
 
   const splitTaskAttributes = () => {
-    if (isQuickAdd) {
+    if (isPopup || isQuickAdd) {
       return screenType.isMobile
     } else if (defaultGroup) {
       return screenType.isMobile

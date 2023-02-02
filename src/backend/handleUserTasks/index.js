@@ -3,11 +3,18 @@ import { db } from '_firebase'
 import { updateUserInfo } from '../handleUserInfo'
 import moment from 'moment'
 
-/*
- * Description: fetches all tasks and separates them into arrays of completed and non-completed tasks
- * Return Type: {nonCompleted: task[], completed: task[]}
- * task: firestore task document data
- */
+export const getTask = async (userId, taskId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    return taskDocs.docs[0].data()
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 const getValidStartDate = (startDate, endDate) => {
   if (startDate === '') {

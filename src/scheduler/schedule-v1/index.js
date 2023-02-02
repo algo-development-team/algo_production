@@ -12,10 +12,9 @@ import {
 } from './timeRanges'
 import { getUserInfo, updateUserInfo } from 'backend/handleUserInfo'
 import moment from 'moment'
-import { timeType } from 'components/enums'
-import { getAllUserTasks } from '../backend/handleUserTasks'
-import { getAllUserProjects } from '../backend/handleUserProjects'
-import { getPreferences } from 'handlePreferences'
+import { timeType } from '../../enums'
+import { getAllUserTasks } from '../../backend/handleUserTasks'
+import { getAllUserProjects } from '../../backend/handleUserProjects'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
@@ -127,13 +126,21 @@ export const scheduleToday = async (userId) => {
     // console.log('timeMax:', timeMax) // DEBUGGING
 
     const calendars = await fetchAllCalendars()
-    const calendarIds = calendars
+    const calendarIdsInfo = calendars
       .filter((calendar) => calendar.id !== userData.calendarId)
       .filter(
         (calendar) =>
           calendar.id.split('@')[1] !== 'group.v.calendar.google.com',
       )
-      .map((calendar) => calendar.id) // excluding the Algo calendar
+      .map((calendar) => {
+        return {
+          id: calendar.id,
+          summary: calendar.summary,
+          colorId: parseInt(calendar.colorId),
+          selected: calendar.selected,
+        }
+      }) // excluding the Algo calendar
+    const calendarIds = calendarIdsInfo.map((calendar) => calendar.id)
     const eventsByTypeForToday = await getEventsByTypeForToday(
       timeMin,
       timeMax,
@@ -160,11 +167,8 @@ export const scheduleToday = async (userId) => {
     // printBlocks(blocks.personal, 'personal') // DEBUGGING
 
     const blocksOfChunksWithRankingAndTaskId = {
-      work: rankBlocksOfChunks(blocks.work, userData.rankingPreferences),
-      personal: rankBlocksOfChunks(
-        blocks.personal,
-        userData.rankingPreferences,
-      ),
+      work: rankBlocksOfChunks(blocks.work, userData.preferences),
+      personal: rankBlocksOfChunks(blocks.personal, userData.preferences),
     }
     //*** GETTING AVAILABLE TIME RANGES END ***//
 
@@ -229,7 +233,7 @@ export const scheduleToday = async (userId) => {
 
     await updateUserInfo(userId, {
       checklist: newChecklistWithoutDuplicates,
-      calendarIds: calendarIds,
+      calendarIds: calendarIdsInfo,
       timeZone: userTimeZone,
     })
     // *** UPDATES USERINFO DOC IN FIREBASE END *** //
@@ -820,8 +824,7 @@ const formatTasks = (tasks, projects, today) => {
  * requirements:
  * blocks: { start, end }[][]
  * ***/
-const rankBlocksOfChunks = (blocks, rankingPreferences) => {
-  const preferences = getPreferences(rankingPreferences)
+const rankBlocksOfChunks = (blocks, preferences) => {
   return blocks.map((block) =>
     block.map((chunk) => {
       return {

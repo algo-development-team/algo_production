@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useOverlayContextValue } from 'context'
 import { checkSignInStatus } from 'gapiHandlers'
-import { scheduleToday } from 'scheduler/schedule'
+import { scheduleToday } from 'scheduler/schedule-v1'
 import { useAuth, useScheduleCreated } from 'hooks'
 import { updateUserInfo } from '../../backend/handleUserInfo'
 import useScreenType from 'react-screentype-hook'
 import { useSignInStatusValue } from 'context'
+import { scheduleCalendar } from 'scheduler/schedule-v2'
 
 export const AddChecklist = () => {
   const { setShowDialog } = useOverlayContextValue()

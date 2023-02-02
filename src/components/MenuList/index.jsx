@@ -1,7 +1,6 @@
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
-import { ReactComponent as RemoveFromOrAddToChecklistIcon } from 'assets/svg/checklist.svg'
-import { useChecklist } from 'hooks'
+import { useChecklist, useCalendarInfo } from 'hooks'
 import { updateUserInfo } from '../../backend/handleUserInfo'
 import { updateProjectColumns } from '../../backend/handleUserProjects'
 import {
@@ -10,10 +9,15 @@ import {
   useColumnEditorContextValue,
 } from 'context'
 import { useAuth } from 'hooks'
-import { columnTaskDelete, taskDelete } from '../../backend/handleUserTasks'
+import { columnTaskDelete, taskDelete, getTask } from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
+import { insertEvent } from 'googleCalendar'
+import moment from 'moment'
+import { roundUp15Min } from 'handleMoment'
+import { getTaskColorId } from 'handleColorId'
+import { timeZone } from 'handleCalendars'
 
 export const MenuList = ({
   closeOverlay,
@@ -35,13 +39,18 @@ export const MenuList = ({
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { defaultGroup } = useParams()
+  const { calendarId, loading } = useCalendarInfo()
+  const { checklist } = useChecklist()
 
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
     setShowDialog('CONFIRM_DELETE')
   }
 
-  const { checklist } = useChecklist()
+  const handleColumnDelete = async () => {
+    const newColumns = columns.filter((column) => column.id !== columnId)
+    await updateProjectColumns(currentUser.id, projectId, newColumns)
+  }
 
   const handleColumnTasksDelete = async () => {
     // column task delete
@@ -49,7 +58,6 @@ export const MenuList = ({
   }
 
   const handleTaskDelete = async () => {
-    // Task Delete
     await taskDelete(currentUser && currentUser.id, projectId, columnId, taskIndex, taskId)
   }
 
@@ -106,6 +114,26 @@ export const MenuList = ({
       })
     } catch (error) {
       console.log(error)
+    }
+  }
+
+  /* inserts the task as time block at current time in Google Calendar */
+  const doNowAtCalendar = async (e) => {
+    const task = await getTask(currentUser && currentUser.id, taskId)
+    const duration = Math.min(task.timeLength, 120) // duration set to 2 hours max
+    const now = moment.now()
+    const startTime = roundUp15Min(now)
+    const endTime = moment(startTime).add(duration, 'minutes')
+    if (!loading) {
+      const item = await insertEvent(
+        calendarId,
+        startTime.toISOString(),
+        endTime.toISOString(),
+        timeZone,
+        task.name,
+        task.description,
+        getTaskColorId(task.priority),
+      )
     }
   }
 
@@ -173,7 +201,7 @@ export const MenuList = ({
               }}
             >
               <div className='menu__list--icon'>
-                <RemoveFromOrAddToChecklistIcon />
+                <DeleteIcon />
               </div>
 
               <span className='menu__list--content'>
@@ -181,6 +209,20 @@ export const MenuList = ({
                   ? 'Remove Task From Checklist'
                   : 'Add Task To Checklist'}
               </span>
+            </li>
+          )}
+          {targetIsTask && (
+            <li
+              className='menu__list--item'
+              onClick={(e) => {
+                doNowAtCalendar(e)
+              }}
+            >
+              <div className='menu__list--icon'>
+                <EditIcon />
+              </div>
+
+              <span className='menu__list--content'>Do Now (Calendar)</span>
             </li>
           )}
         </ul>

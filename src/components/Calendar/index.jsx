@@ -1,19 +1,20 @@
+import { timeZone } from 'handleCalendars'
 import { useCalendarInfo } from 'hooks'
 import './styles/light.scss'
 import './styles/main.scss'
 
 export const Calendar = () => {
-  const { calendarId, calendarIds, timeZone, loading } = useCalendarInfo()
+  const { calendarId, calendarIds, loading } = useCalendarInfo()
 
   const getSrcString = () => {
     let srcString = 'https://calendar.google.com/calendar/embed?'
     if (calendarId) {
       srcString += `&src=${calendarId}`
     }
-    if (calendarIds.length > 0) {
-      calendarIds.forEach((id) => {
-        srcString += `&src=${id}`
-      })
+    for (let i = 0; i < calendarIds.length; i++) {
+      if (calendarIds[i].selected) {
+        srcString += `&src=${calendarIds[i].id}`
+      }
     }
     srcString += `&ctz=${timeZone}`
     return srcString

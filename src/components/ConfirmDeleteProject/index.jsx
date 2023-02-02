@@ -7,13 +7,13 @@ import './light.scss'
 import './main.scss'
 import { projectDelete } from '../../backend/handleUserProjects'
 import { projectTasksDelete } from '../../backend/handleUserInfo'
+
 export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   const { currentUser } = useAuth()
   const navigate = useNavigate()
 
   const handleProjectDelete = async () => {
     await projectDelete(currentUser && currentUser.id, projectId)
-    // projectDelete
   }
 
   const handleProjectTasksDelete = async () => {
