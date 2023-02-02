@@ -19,6 +19,7 @@ import {
   getTaskMap,
   getTaskToEventIdsMap,
   getTaskToAllocatedTimeLengthMap,
+  categorizeTasks,
 } from './taskHandlers'
 import {
   allocateWorkTimeBlocks,
@@ -231,6 +232,10 @@ export const scheduleCalendar = async (userId) => {
 
     /* update the format tasks to accomodate for newly added fields */
     const formattedTasks = formatTasks(tasksNotNoneTimeLength, projects)
+    const categorizedTasks = {
+      work: categorizeTasks(formattedTasks.work),
+      personal: categorizeTasks(formattedTasks.personal),
+    }
 
     const taskMap = {
       ...getTaskMap(formattedTasks.work),
@@ -263,14 +268,14 @@ export const scheduleCalendar = async (userId) => {
     /* mutates rankedWorkBlocks, rankedPersonalBlocks, and formattedTasks */
     allocateWorkTimeBlocks(
       rankedWorkBlocks,
-      formattedTasks.work,
+      categorizedTasks.work,
       taskToAllocatedTimeLengthMap,
       bufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
-      formattedTasks.personal,
+      categorizedTasks.personal,
       taskToAllocatedTimeLengthMap,
       bufferRanges,
       now,

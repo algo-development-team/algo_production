@@ -49,6 +49,8 @@ export const allocateWorkTimeBlocks = (
 ) => {
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
+  console.log('tasks', tasks) // DEBUGGING
+  console.log('taskToAllocatedTimeLengthMap', taskToAllocatedTimeLengthMap) // DEBUGGING
 }
 
 export const allocatePersonalTimeBlocks = (
