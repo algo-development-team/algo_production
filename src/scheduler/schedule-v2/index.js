@@ -198,6 +198,11 @@ export const scheduleCalendar = async (userId) => {
       ...sleepBufferRanges,
     ]
 
+    /* get rest hours for personal time */
+    const restHours = userData.personalPreferences.map((personalPreference) =>
+      personalPreference === 1 ? true : false,
+    )
+
     // const sleepBufferRanges = getBufferRangeForEvents(
     //   sleepRanges,
     //   userData.beforeSleepBufferTime,
@@ -278,6 +283,7 @@ export const scheduleCalendar = async (userId) => {
       categorizedTasks.personal,
       taskToAllocatedTimeLengthMap,
       bufferRanges,
+      restHours,
       now,
     )
   } catch (error) {

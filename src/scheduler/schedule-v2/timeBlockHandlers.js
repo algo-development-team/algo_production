@@ -33,6 +33,19 @@ const assignEmptyTaskIdForPassedTimeBlocks = (blocksMultDays, now) => {
   })
 }
 
+const assignEmptyTaskIdForRestHours = (blocksMultDays, restHours) => {
+  blocksMultDays.forEach((blocksSingleDay) => {
+    blocksSingleDay.forEach((chunks) => {
+      chunks.forEach((chunk) => {
+        const hour = chunk.start.hour()
+        if (restHours[hour]) {
+          chunk.taskId = EMPTY_TASK_ID
+        }
+      })
+    })
+  })
+}
+
 /*
  * parameters:
  * blocksMultDays: {start: moment.Moment, end: moment.Moment, preference: number, taskId: string | null}[][][]
@@ -49,8 +62,6 @@ export const allocateWorkTimeBlocks = (
 ) => {
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
-  console.log('tasks', tasks) // DEBUGGING
-  console.log('taskToAllocatedTimeLengthMap', taskToAllocatedTimeLengthMap) // DEBUGGING
 }
 
 export const allocatePersonalTimeBlocks = (
@@ -58,8 +69,11 @@ export const allocatePersonalTimeBlocks = (
   tasks,
   taskToAllocatedTimeLengthMap,
   bufferRanges,
+  restHours,
   now,
 ) => {
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
+  assignEmptyTaskIdForRestHours(blocksMultDays, restHours)
+  console.log('blocksMultDays', blocksMultDays) // DEBUGGING
 }
