@@ -144,8 +144,6 @@ export const categorizeTaskIds = (tasks, timeRange) => {
         taskDiffDaysInfo.diffDaysStartDate <= i &&
         i <= taskDiffDaysInfo.diffDaysDate
       ) {
-        console.log('taskDiffDaysInfo', taskDiffDaysInfo)
-        console.log('i', i)
         if (taskDiffDaysInfo.priority === 0) {
           dayCategories[i].low.push({
             taskId: taskDiffDaysInfo.taskId,
