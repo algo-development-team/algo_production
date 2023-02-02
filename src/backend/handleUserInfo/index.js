@@ -4,6 +4,8 @@ import {
   updateDoc,
   collection,
   query,
+  where,
+  deleteDoc
 } from 'firebase/firestore'
 import { db } from '_firebase'
 
@@ -66,3 +68,17 @@ export const updateUserInfo = async (userId, newUserInfo) => {
     console.log(error)
   }
 }
+
+export const projectTasksDelete = async (userId, projectId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('projectId', '==', projectId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (taskDoc) => {
+      await deleteDoc(taskDoc.ref)
+    })
+  } catch (error) {
+    console.log(error)
+  }}

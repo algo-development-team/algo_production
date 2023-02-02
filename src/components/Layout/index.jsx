@@ -8,7 +8,7 @@ import { ColumnEditorContextProvider } from 'context/board-column-editor-context
 import { useProjects } from 'hooks'
 import { useCallback, useEffect, useState } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
-import { updateUserInfo } from '../../handleUserInfo'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 import { useIsSetup, useAuth } from 'hooks'
 import { useOverlayContextValue } from 'context'
 

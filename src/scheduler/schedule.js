@@ -10,11 +10,11 @@ import {
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo, updateUserInfo } from 'handleUserInfo'
+import { getUserInfo, updateUserInfo } from 'backend/handleUserInfo'
 import moment from 'moment'
 import { timeType } from 'components/enums'
-import { getAllUserTasks } from 'handleUserTasks'
-import { getAllUserProjects } from 'handleUserProjects'
+import { getAllUserTasks } from '../backend/handleUserTasks'
+import { getAllUserProjects } from '../backend/handleUserProjects'
 import { getPreferences } from 'handlePreferences'
 
 const MAX_NUM_CHUNKS = 8 // 2h

@@ -2,23 +2,15 @@ import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { ReactComponent as RemoveFromOrAddToChecklistIcon } from 'assets/svg/checklist.svg'
 import { useChecklist } from 'hooks'
-import { updateUserInfo } from 'handleUserInfo'
+import { updateUserInfo } from '../../backend/handleUserInfo'
+import { updateProjectColumns } from '../../backend/handleUserProjects'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
   useColumnEditorContextValue,
 } from 'context'
-import {
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
 import { useAuth } from 'hooks'
-import { db } from '_firebase'
-import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+import { columnTaskDelete, taskDelete } from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
@@ -51,68 +43,14 @@ export const MenuList = ({
 
   const { checklist } = useChecklist()
 
-  const handleColumnDelete = async () => {
-    const newColumns = columns.filter((column) => column.id !== columnId)
-
-    try {
-      const projectQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-        where('projectId', '==', projectId),
-      )
-      const projectDocs = await getDocs(projectQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await updateDoc(projectDoc.ref, {
-          columns: newColumns,
-        })
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
   const handleColumnTasksDelete = async () => {
-    try {
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('projectId', '==', projectId),
-        where('boardStatus', '==', columnId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    // column task delete
+    await columnTaskDelete(currentUser && currentUser.id, projectId, columnId)
   }
 
   const handleTaskDelete = async () => {
-    try {
-      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        projectId,
-        columnId,
-      )
-
-      columnTaskDocs.forEach(async (taskDoc) => {
-        if (taskDoc.data().index > taskIndex) {
-          await updateDoc(taskDoc.ref, {
-            index: taskDoc.data().index - 1,
-          })
-        }
-      })
-      // UPDATE TASK INDEX HERE (COMPLETED)
-      const q = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', taskId),
-      )
-      const taskDocs = await getDocs(q)
-      taskDocs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    // Task Delete
+    await taskDelete(currentUser && currentUser.id, projectId, columnId, taskIndex, taskId)
   }
 
   const deleteHandler = async (e) => {
@@ -121,7 +59,8 @@ export const MenuList = ({
     if (targetIsProject) {
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
-      await handleColumnDelete()
+      const newColumns = columns.filter((column) => column.id !== columnId)
+      await updateProjectColumns(currentUser && currentUser.id, projectId, newColumns)
       await handleColumnTasksDelete()
     } else {
       await handleTaskDelete()

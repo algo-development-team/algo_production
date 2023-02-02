@@ -5,9 +5,7 @@ import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
-import ScrollContainer from "react-indiana-drag-scroll";
 import  React  from 'react';
-// import  Draggable  from 'react-draggable';
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
@@ -34,23 +32,7 @@ export const Content = () => {
 
    return ( 
     <div className='content'>
-      <ScrollContainer className="container">
-       <div className='project__wrapper'>{getProject()}</div>
-       </ScrollContainer>
+      <div className='project__wrapper'>{getProject()}</div>
     </div>
-    // </div>
-    // </Draggable>
   )
 }
-
-{/*<Draggable
-    axis="x"
-    handle=".handle"
-    defaultPosition={{x: 0, y: 0}}
-    position={null}
-    grid={[25, 25]}
-    scale={1}
-    onStart={this.handleStart}
-    onDrag={this.handleDrag}
-    onStop={this.handleStop}>
-<div>*/}
