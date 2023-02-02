@@ -31,6 +31,7 @@ import './styles/light.scss'
 import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import useScreenType from 'react-screentype-hook'
+import { inputTaskAction } from '../../handleAnalytics'
 
 export const TaskEditor = ({
   column,
@@ -168,6 +169,8 @@ export const TaskEditor = ({
           scheduleCreated: false,
         })
       }
+
+      inputTaskAction(currentUser.id, "CREATE")
     } catch (error) {
       console.log(error)
     }
@@ -301,12 +304,13 @@ export const TaskEditor = ({
           index: newIndex,
         })
       })
-
       if (scheduleCreated) {
         updateUserInfo(currentUser && currentUser.id, {
           scheduleCreated: false,
         })
       }
+
+      inputTaskAction(currentUser.id, "UPDATE")
     } catch (error) {
       console.log(error)
     }

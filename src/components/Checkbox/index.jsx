@@ -12,6 +12,7 @@ import {
   getTaskDocsInProjectColumnNotCompleted,
   getTaskDocsInProjectColumnCompleted,
 } from '../../handleUserTasks'
+import { inputTaskAction } from '../../handleAnalytics'
 
 export const TaskCheckbox = ({
   projectId,
@@ -72,6 +73,7 @@ export const TaskCheckbox = ({
         })
       })
       // TASK INDEX HERE (COMPLETED)
+      inputTaskAction(currentUser.id, "COMPLETE")
     } catch (error) {
       console.log(error)
     }
