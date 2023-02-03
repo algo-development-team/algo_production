@@ -103,7 +103,7 @@ export const getTaskToAllocatedTimeLengthMap = (
  * tasks: { priority, startDate, date, allocatableTimeLength, taskId, name, description }[]
  * today: moment.Moment
  * ***/
-export const categorizeTaskIds = (tasks, timeRange) => {
+export const categorizeTasks = (tasks, timeRange) => {
   /* get day categories (0~N) */
   const timeRangeNumeric = [0, timeRange[1].diff(timeRange[0], 'days')]
   const dayCategories = new Array(timeRangeNumeric[1] + 1)
@@ -129,8 +129,7 @@ export const categorizeTaskIds = (tasks, timeRange) => {
       ? task.date.diff(timeRange[0], 'days')
       : timeRangeNumeric[1]
     tasksDiffDaysInfo.push({
-      taskId: task.taskId,
-      priority: task.priority,
+      ...task,
       diffDaysStartDate: diffDaysStartDate,
       diffDaysDate: diffDaysEndDate,
       hasStartDate: hasStartDate,
@@ -150,24 +149,28 @@ export const categorizeTaskIds = (tasks, timeRange) => {
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
+            dayDate: taskDiffDaysInfo.diffDaysDate,
           })
         } else if (taskDiffDaysInfo.priority === 2) {
           dayCategories[i].average.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
+            dayDate: taskDiffDaysInfo.diffDaysDate,
           })
         } else if (taskDiffDaysInfo.priority === 3) {
           dayCategories[i].high.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
+            dayDate: taskDiffDaysInfo.diffDaysDate,
           })
         } else if (taskDiffDaysInfo.priority === 4) {
           dayCategories[i].veryHigh.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
+            dayDate: taskDiffDaysInfo.diffDaysDate,
           })
         }
       }
