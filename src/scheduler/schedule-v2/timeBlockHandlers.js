@@ -115,25 +115,19 @@ const calculateRelativePriorityType1 = (
   )
 }
 
-const allocateHighOrVeryHighTasks = (
-  chunk,
-  timeLengthRemaining,
-  highOrVeryHighTasks,
-  tasksMap,
-  curDay,
-) => {
-  const validHighOrVeryHighTasks = validateTasks(highOrVeryHighTasks, tasksMap)
+const allocateTasks = (chunk, timeLengthRemaining, tasks, tasksMap, curDay) => {
+  const validTasks = validateTasks(tasks, tasksMap)
+  if (validTasks.length === 0) return
   let max = -1
   let maxIndex = 0
-  for (let i = 0; i < validHighOrVeryHighTasks.length; i++) {
+  for (let i = 0; i < validTasks.length; i++) {
     const diffTimeLength =
-      tasksMap[validHighOrVeryHighTasks[i].taskId].allocatableTimeLength -
-      timeLengthRemaining
-    const daysUntilDeadline = validHighOrVeryHighTasks[i].dayDate - curDay
+      tasksMap[validTasks[i].taskId].allocatableTimeLength - timeLengthRemaining
+    const daysUntilDeadline = validTasks[i].dayDate - curDay
     const relativePriority = calculateRelativePriorityType1(
       diffTimeLength,
-      validHighOrVeryHighTasks[i].hasStartDate,
-      validHighOrVeryHighTasks[i].hasDate,
+      validTasks[i].hasStartDate,
+      validTasks[i].hasDate,
       daysUntilDeadline,
     )
     if (relativePriority > max) {
@@ -141,10 +135,8 @@ const allocateHighOrVeryHighTasks = (
       maxIndex = i
     }
   }
-  chunk.taskId = validHighOrVeryHighTasks[maxIndex].taskId
-  tasksMap[
-    validHighOrVeryHighTasks[maxIndex].taskId
-  ].allocatableTimeLength -= 15
+  chunk.taskId = validTasks[maxIndex].taskId
+  tasksMap[validTasks[maxIndex].taskId].allocatableTimeLength -= 15
 }
 
 const allocateLowAverageHighTasks = (
@@ -155,8 +147,19 @@ const allocateLowAverageHighTasks = (
   highTasks,
   tasksMap,
   curDay,
-  numDays,
 ) => {
+  // change this code so that it can allocate tasks with different preference if the preferred task is not available
+  if (chunk.preference === 1) {
+    // allocate high tasks
+    allocateTasks(chunk, timeLengthRemaining, highTasks, tasksMap, curDay)
+  } else if (chunk.preference === 2) {
+    // allocate low tasks
+    allocateTasks(chunk, timeLengthRemaining, lowTasks, tasksMap, curDay)
+  } else {
+    // allocate all tasks
+    const combinedTasks = [...lowTasks, ...averageTasks, ...highTasks]
+    allocateTasks(chunk, timeLengthRemaining, combinedTasks, tasksMap, curDay)
+  }
   return
 }
 
@@ -203,10 +206,11 @@ const assignTaskIdForWorkTasks = (
         if (chunk.taskId === EMPTY_TASK_ID) {
           continue
         }
+        /* to modify, include high tasks due today as part of very high tasks */
         if (
           hasVeryHighTasksLeft(categorizedTasksSingleDay.veryHigh, tasksMap)
         ) {
-          allocateHighOrVeryHighTasks(
+          allocateTasks(
             chunk,
             numChunksTimeLengthRemaining,
             categorizedTasksSingleDay.veryHigh,
@@ -222,7 +226,7 @@ const assignTaskIdForWorkTasks = (
             tasksMap,
           )
         ) {
-          allocateHighOrVeryHighTasks(
+          allocateTasks(
             chunk,
             numChunksTimeLengthRemaining,
             categorizedTasksSingleDay.high,
