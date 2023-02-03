@@ -104,17 +104,18 @@ export const getTaskToAllocatedTimeLengthMap = (
  * today: moment.Moment
  * ***/
 export const categorizeTaskIds = (tasks, timeRange) => {
-  console.log('tasks', tasks)
-  console.log('timeRange', timeRange)
-
   /* get day categories (0~N) */
   const timeRangeNumeric = [0, timeRange[1].diff(timeRange[0], 'days')]
-  const dayCategories = new Array(timeRangeNumeric[1] + 1).fill({
-    low: [],
-    average: [],
-    high: [],
-    veryHigh: [],
-  })
+  const dayCategories = new Array(timeRangeNumeric[1] + 1)
+
+  for (let i = 0; i < dayCategories.length; i++) {
+    dayCategories[i] = {
+      low: [],
+      average: [],
+      high: [],
+      veryHigh: [],
+    }
+  }
 
   /* get task diff days info */
   const tasksDiffDaysInfo = []
@@ -144,25 +145,25 @@ export const categorizeTaskIds = (tasks, timeRange) => {
         taskDiffDaysInfo.diffDaysStartDate <= i &&
         i <= taskDiffDaysInfo.diffDaysDate
       ) {
-        if (taskDiffDaysInfo.priority === 0) {
+        if (taskDiffDaysInfo.priority === 1) {
           dayCategories[i].low.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
           })
-        } else if (taskDiffDaysInfo.priority === 1) {
+        } else if (taskDiffDaysInfo.priority === 2) {
           dayCategories[i].average.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
           })
-        } else if (taskDiffDaysInfo.priority === 2) {
+        } else if (taskDiffDaysInfo.priority === 3) {
           dayCategories[i].high.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
             hasDate: taskDiffDaysInfo.hasDate,
           })
-        } else if (taskDiffDaysInfo.priority === 3) {
+        } else if (taskDiffDaysInfo.priority === 4) {
           dayCategories[i].veryHigh.push({
             taskId: taskDiffDaysInfo.taskId,
             hasStartDate: taskDiffDaysInfo.hasStartDate,
@@ -172,8 +173,6 @@ export const categorizeTaskIds = (tasks, timeRange) => {
       }
     }
   }
-
-  console.log('dayCategories', dayCategories) // DEBUGGING
 
   return dayCategories
 }
