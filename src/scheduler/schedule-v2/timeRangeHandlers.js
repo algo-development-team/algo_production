@@ -2,6 +2,8 @@ import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
 import { timeType } from 'enums'
 
+const MAX_NUM_CHUNKS = 8 // 2h
+
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
 /* parameter: sleepTimeRange: string (HH:MM-HH:MM), workTimeRange: string (HH:MM-HH:MM), */
@@ -415,7 +417,6 @@ const sliceIntoSubarr = (arr, size) => {
  * ***/
 export const groupChunkRangesIntoBlocks = (
   chunkRanges,
-  maxNumChunks,
   workTimeStart,
   workTimeEnd,
   hasWorkTime,
@@ -467,11 +468,11 @@ export const groupChunkRangesIntoBlocks = (
   const workBlocksSliced = []
   const personalBlocksSliced = []
   for (const block of workBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     workBlocksSliced.push(...slicedBlock)
   }
   for (const block of personalBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     personalBlocksSliced.push(...slicedBlock)
   }
   return {
