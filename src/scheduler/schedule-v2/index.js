@@ -248,7 +248,8 @@ export const scheduleCalendar = async (userId) => {
 
     /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
     /* create a new Algo calendar if non-exists */
-    let algoCalendarEventIdToAllocatedTimeLengthMap = {}
+    let algoCalendarEvents = { timeBlocked: [], allDay: [] }
+
     if (userData.calendarId) {
       const algoCalendarFetchTimeRange = [
         formattedCreatedAt,
@@ -257,18 +258,19 @@ export const scheduleCalendar = async (userId) => {
       const algoCalendarFetchBufferRange = getBufferRange(
         algoCalendarFetchTimeRange,
       )
-      const algoCalendarEvents = await fetchAllEventsByType(
+      algoCalendarEvents = await fetchAllEventsByType(
         algoCalendarFetchBufferRange[0].toISOString(),
         algoCalendarFetchBufferRange[1].toISOString(),
         [userData.calendarId],
       )
-      algoCalendarEventIdToAllocatedTimeLengthMap =
-        getEventIdToAllocatedTimeLengthMap(algoCalendarEvents.timeBlocked, now)
     } else {
       const result = await insertCalendar('Algo')
       userData.calendarId = result.id
       await updateUserInfo(userId, { calendarId: result.id })
     }
+
+    const algoCalendarEventIdToAllocatedTimeLengthMap =
+      getEventIdToAllocatedTimeLengthMap(algoCalendarEvents.timeBlocked, now)
 
     /* get the taskId to amount of time allocated (in minutes) map */
     const taskToAllocatedTimeLengthMap = getTaskToAllocatedTimeLengthMap(
