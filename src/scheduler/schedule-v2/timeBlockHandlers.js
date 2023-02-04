@@ -1,4 +1,6 @@
 const EMPTY_TASK_ID = 'EMPTY_TASK_ID'
+const SINGLE_TYPE = 'SINGLE_TYPE'
+const MULTIPLE_TYPE = 'MULTIPLE_TYPE'
 
 const assignEmptyTaskIdForBufferRanges = (blocksMultDays, bufferRanges) => {
   blocksMultDays.forEach((blocksSingleDay) => {
@@ -56,22 +58,23 @@ const validateTasks = (tasks, tasksMap) => {
   return validTasks
 }
 
-const hasVeryHighTasksLeft = (veryHighTasks, tasksMap) => {
-  return validateTasks(veryHighTasks, tasksMap).length > 0
+const hasTasksLeft = (tasks, tasksMap) => {
+  for (const task of tasks) {
+    if (tasksMap[task.taskId].allocatableTimeLength > 0) {
+      return true
+    }
+  }
+  return false
 }
 
-const hasEnoughTimeForHighTasks = (
-  totalNumAvailableChunks,
-  highTasks,
-  tasksMap,
-) => {
-  const validHighTasks = validateTasks(highTasks, tasksMap)
-  let totalHighTasksAllocatableTimeLength = 0
-  for (const validHighTask of validHighTasks) {
-    totalHighTasksAllocatableTimeLength +=
+const hasEnoughTimeForTasks = (totalNumAvailableChunks, tasks, tasksMap) => {
+  const validTasks = validateTasks(tasks, tasksMap)
+  let totalTasksAllocatableTimeLength = 0
+  for (const validHighTask of validTasks) {
+    totalTasksAllocatableTimeLength +=
       tasksMap[validHighTask.taskId].allocatableTimeLength
   }
-  if (totalHighTasksAllocatableTimeLength > totalNumAvailableChunks) {
+  if (totalTasksAllocatableTimeLength > totalNumAvailableChunks) {
     return false
   }
   return true
@@ -98,7 +101,7 @@ const normalizeLog2 = (min, value) => {
  * hasDate: boolean
  * daysUntilDeadline: number (0~N)
  * ***/
-const calculateRelativePriorityType1 = (
+const calculateRelativePriorityForSingleType = (
   diffTimeLength,
   hasStartDate,
   hasDate,
@@ -115,7 +118,14 @@ const calculateRelativePriorityType1 = (
   )
 }
 
-const allocateTasks = (chunk, timeLengthRemaining, tasks, tasksMap, curDay) => {
+const allocateTasks = (
+  chunk,
+  timeLengthRemaining,
+  tasks,
+  tasksMap,
+  curDay,
+  type,
+) => {
   const validTasks = validateTasks(tasks, tasksMap)
   if (validTasks.length === 0) return
   let max = -1
@@ -124,7 +134,7 @@ const allocateTasks = (chunk, timeLengthRemaining, tasks, tasksMap, curDay) => {
     const diffTimeLength =
       tasksMap[validTasks[i].taskId].allocatableTimeLength - timeLengthRemaining
     const daysUntilDeadline = validTasks[i].dayDate - curDay
-    const relativePriority = calculateRelativePriorityType1(
+    const relativePriority = calculateRelativePriorityForSingleType(
       diffTimeLength,
       validTasks[i].hasStartDate,
       validTasks[i].hasDate,
@@ -148,17 +158,37 @@ const allocateLowAverageHighTasks = (
   tasksMap,
   curDay,
 ) => {
-  // change this code so that it can allocate tasks with different preference if the preferred task is not available
-  if (chunk.preference === 1) {
+  if (chunk.preference === 1 && hasTasksLeft(highTasks, tasksMap)) {
     // allocate high tasks
-    allocateTasks(chunk, timeLengthRemaining, highTasks, tasksMap, curDay)
-  } else if (chunk.preference === 2) {
+    allocateTasks(
+      chunk,
+      timeLengthRemaining,
+      highTasks,
+      tasksMap,
+      curDay,
+      SINGLE_TYPE,
+    )
+  } else if (chunk.preference === 2 && hasTasksLeft(lowTasks, tasksMap)) {
     // allocate low tasks
-    allocateTasks(chunk, timeLengthRemaining, lowTasks, tasksMap, curDay)
+    allocateTasks(
+      chunk,
+      timeLengthRemaining,
+      lowTasks,
+      tasksMap,
+      curDay,
+      SINGLE_TYPE,
+    )
   } else {
     // allocate all tasks
     const combinedTasks = [...lowTasks, ...averageTasks, ...highTasks]
-    allocateTasks(chunk, timeLengthRemaining, combinedTasks, tasksMap, curDay)
+    allocateTasks(
+      chunk,
+      timeLengthRemaining,
+      combinedTasks,
+      tasksMap,
+      curDay,
+      MULTIPLE_TYPE,
+    )
   }
   return
 }
@@ -206,19 +236,17 @@ const assignTaskIdForWorkTasks = (
         if (chunk.taskId === EMPTY_TASK_ID) {
           continue
         }
-        /* to modify, include high tasks due today as part of very high tasks */
-        if (
-          hasVeryHighTasksLeft(categorizedTasksSingleDay.veryHigh, tasksMap)
-        ) {
+        if (hasTasksLeft(categorizedTasksSingleDay.veryHigh, tasksMap)) {
           allocateTasks(
             chunk,
             numChunksTimeLengthRemaining,
             categorizedTasksSingleDay.veryHigh,
             tasksMap,
             i,
+            SINGLE_TYPE,
           )
         } else if (
-          !hasEnoughTimeForHighTasks(
+          !hasEnoughTimeForTasks(
             chunkFormattedStartToNumAvailableChunksMap[
               chunk.start.toISOString()
             ],
@@ -232,6 +260,7 @@ const assignTaskIdForWorkTasks = (
             categorizedTasksSingleDay.high,
             tasksMap,
             i,
+            SINGLE_TYPE,
           )
         } else {
           allocateLowAverageHighTasks(
@@ -248,8 +277,15 @@ const assignTaskIdForWorkTasks = (
       }
     }
   }
-  console.log('blocksMultDays', blocksMultDays)
+
+  console.log('blocksMultDays', blocksMultDays) // DEBUGGING
 }
+
+const assignTaskIdForPersonalTasks = (
+  blocksMultDays,
+  categorizedTasks,
+  taskMap,
+) => {}
 
 /*
  * note:
@@ -284,4 +320,5 @@ export const allocatePersonalTimeBlocks = (
   assignEmptyTaskIdForBufferRanges(blocksMultDays, bufferRanges)
   assignEmptyTaskIdForPassedTimeBlocks(blocksMultDays, now)
   assignEmptyTaskIdForRestHours(blocksMultDays, restHours)
+  assignTaskIdForPersonalTasks(blocksMultDays, categorizedTasks, tasksMap)
 }
