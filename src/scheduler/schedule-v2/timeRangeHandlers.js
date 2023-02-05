@@ -355,7 +355,7 @@ export const getAvailableTimeRanges = (timesWithInfo) => {
  * timeEndDay: moment object
  * currently only returns available time ranges, can be expanded in future to return blocked time ranges as well
  * ***/
-export const getAvailableTimeRangesSingleDay = async (
+export const getAvailableTimeRangesSingleDay = (
   events,
   timeStartDay,
   timeEndDay,

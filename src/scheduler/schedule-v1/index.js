@@ -453,10 +453,6 @@ const changeAlgoCalendarSchedule = async (
   }
 }
 
-/***
- * requirements:
- * tasks: task[] (from firestore)
- * ***/
 const getEventsInRange = (events, start, end) => {
   const between = []
   const startOuter = []

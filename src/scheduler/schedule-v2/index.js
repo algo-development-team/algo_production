@@ -139,7 +139,7 @@ export const scheduleCalendar = async (userId) => {
     /* gets time ranges of non-blocked times */
     const timeRangesMultDays = []
     for (const dayRange of dayRanges) {
-      const timeRangesSingleDay = await getAvailableTimeRangesSingleDay(
+      const timeRangesSingleDay = getAvailableTimeRangesSingleDay(
         eventsByType.timeBlocked,
         dayRange[0],
         dayRange[1],
