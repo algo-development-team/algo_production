@@ -90,7 +90,9 @@ export const getTaskToAllocatedTimeLengthMap = (
     const eventIds = taskToEventIdsMap[taskId]
     let allocatedTimeLength = 0
     for (const eventId of eventIds) {
-      allocatedTimeLength += eventIdToTimeLengthMap[eventId]
+      if (eventIdToTimeLengthMap[eventId]) {
+        allocatedTimeLength += eventIdToTimeLengthMap[eventId]
+      }
     }
     taskToAllocatedTimeLengthMap[taskId] = allocatedTimeLength
   }

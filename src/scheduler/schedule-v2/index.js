@@ -31,6 +31,11 @@ import {
   getTimeBlocksSorted,
   filterTimeBlocks,
 } from './timeBlockHandlers'
+import {
+  getEventsInRange,
+  handleEventsOutOfRange,
+  changeAlgoCalendarSchedule,
+} from './calendarHandlers'
 import { Timestamp } from 'firebase/firestore'
 import { updateUserInfo } from 'handleUserInfo'
 import { getCalendarIdsInfo } from 'handleCalendars'
@@ -57,6 +62,7 @@ const getTimeBlocksWithTaskInfo = (timeBlocks, tasksMap) => {
       isWork: timeBlock.isWork,
       name: taskInfo.name,
       description: taskInfo.description,
+      priority: taskInfo.priority,
     }
   })
 }
@@ -251,10 +257,7 @@ export const scheduleCalendar = async (userId) => {
     let algoCalendarEvents = { timeBlocked: [], allDay: [] }
 
     if (userData.calendarId) {
-      const algoCalendarFetchTimeRange = [
-        formattedCreatedAt,
-        moment().startOf('day').add(1, 'days'),
-      ]
+      const algoCalendarFetchTimeRange = [formattedCreatedAt, timeRange[1]]
       const algoCalendarFetchBufferRange = getBufferRange(
         algoCalendarFetchTimeRange,
       )
@@ -361,6 +364,28 @@ export const scheduleCalendar = async (userId) => {
     })
 
     /* allocate the calendar with new event time blocks */
+    const endOfWeek = dayRanges[dayRanges.length - 1][1].clone()
+    const eventsInRange = getEventsInRange(
+      algoCalendarEvents.timeBlocked,
+      now,
+      endOfWeek,
+    )
+
+    await handleEventsOutOfRange(
+      now,
+      endOfWeek,
+      eventsInRange,
+      userData.calendarId,
+    )
+
+    const timeBlocks = timeBlocksWithTaskInfoForWeek.flat()
+
+    await changeAlgoCalendarSchedule(
+      timeBlocks,
+      eventsInRange.between,
+      userData.calendarId,
+    )
+
     /* update tasks with eventIds */
   } catch (error) {
     console.log(error)
