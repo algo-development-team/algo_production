@@ -3,6 +3,9 @@ import { insertEvent, updateEvent, deleteEvent } from 'googleCalendar'
 import { getTaskColorId } from '../../handleColorId'
 import { timeZone } from '../../handleCalendars'
 
+export const EVENT_INSERT = 'EVENT_INSERT'
+export const EVENT_UPDATE = 'EVENT_UPDATE'
+
 export const getEventsInRange = (events, start, end) => {
   const between = []
   const startOuter = []
@@ -39,12 +42,16 @@ export const getEventsInRange = (events, start, end) => {
   }
 }
 
+/***
+ * mutates taskToNewEventIdsMap
+ * ***/
 export const handleEventsOutOfRange = async (
   now,
   endOfWeek,
   eventsInRange,
   calendarId,
 ) => {
+  const duplicatedEventIds = {}
   for (const event of eventsInRange.startOuter) {
     event.end.dateTime = now.toISOString()
     await updateEvent(calendarId, event.id, event)
@@ -56,7 +63,8 @@ export const handleEventsOutOfRange = async (
   }
 
   for (const event of eventsInRange.bothOuter) {
-    await insertEvent(
+    // insert new eventId into taskToNewEventIdsMap
+    const newEvent = await insertEvent(
       calendarId,
       endOfWeek.toISOString(),
       event.end.dateTime,
@@ -67,13 +75,19 @@ export const handleEventsOutOfRange = async (
     )
     event.end.dateTime = now.toISOString()
     await updateEvent(calendarId, event.id, event)
+    duplicatedEventIds[event.id] = newEvent?.id
   }
+  return duplicatedEventIds
 }
 
+/***
+ * mutates taskToNewEventIdsMap
+ * ***/
 export const changeAlgoCalendarSchedule = async (
   timeBlocks,
   events,
   calendarId,
+  taskToNewEventIdsMap,
 ) => {
   for (let i = 0; i < Math.min(events.length, timeBlocks.length); i++) {
     const event = events[i]
@@ -85,7 +99,11 @@ export const changeAlgoCalendarSchedule = async (
     event.summary = timeBlock.name
     event.description = timeBlock.description
     event.colorId = getTaskColorId(timeBlock.priority)
-    await updateEvent(calendarId, event.id, event)
+    const newEvent = await updateEvent(calendarId, event.id, event)
+    taskToNewEventIdsMap[timeBlock.taskId].push({
+      id: newEvent?.id,
+      type: EVENT_UPDATE,
+    })
   }
   if (events.length > timeBlocks.length) {
     for (let i = timeBlocks.length; i < events.length; i++) {
@@ -96,7 +114,7 @@ export const changeAlgoCalendarSchedule = async (
   if (events.length < timeBlocks.length) {
     for (let i = events.length; i < timeBlocks.length; i++) {
       const timeBlock = timeBlocks[i]
-      await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         timeBlock.start.toISOString(),
         timeBlock.end.toISOString(),
@@ -105,6 +123,10 @@ export const changeAlgoCalendarSchedule = async (
         timeBlock.description,
         getTaskColorId(timeBlock.priority),
       )
+      taskToNewEventIdsMap[timeBlock.taskId].push({
+        id: newEvent?.id,
+        type: EVENT_INSERT,
+      })
     }
   }
 }

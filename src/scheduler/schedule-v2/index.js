@@ -18,6 +18,8 @@ import {
   formatTasks,
   getTaskMap,
   getTaskToEventIdsMap,
+  getEventIdToTaskMap,
+  getTaskToNewEventIdsMap,
   getTaskToAllocatedTimeLengthMap,
   categorizeTasks,
 } from './taskHandlers'
@@ -36,12 +38,12 @@ import {
   handleEventsOutOfRange,
   changeAlgoCalendarSchedule,
 } from './calendarHandlers'
+import { modifyTasksToEventIdsMap } from './eventIdsHandlers'
 import { Timestamp } from 'firebase/firestore'
-import { updateUserInfo } from 'handleUserInfo'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { getUserInfo, getUserDefaultData } from 'handleUserInfo'
+import { updateUserInfo, getUserInfo, getUserDefaultData } from 'handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import { getAllUserTasks } from 'handleUserTasks'
+import { getAllUserTasks, updateTask } from 'handleUserTasks'
 import { getAllUserProjects } from 'handleUserProjects'
 import { roundUp15Min } from 'handleMoment'
 import moment from 'moment'
@@ -248,9 +250,9 @@ export const scheduleCalendar = async (userId) => {
       tasksNotPassedDeadline,
     )
 
-    const taskToEventIdsMap = {
-      ...getTaskToEventIdsMap(tasksNotNoneTimeLength),
-    }
+    const taskToEventIdsMap = getTaskToEventIdsMap(tasksNotNoneTimeLength)
+    const eventIdToTaskMap = getEventIdToTaskMap(tasksNotNoneTimeLength)
+    const taskToNewEventIdsMap = getTaskToNewEventIdsMap(tasksNotNoneTimeLength)
 
     /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
     /* create a new Algo calendar if non-exists */
@@ -371,22 +373,36 @@ export const scheduleCalendar = async (userId) => {
       endOfWeek,
     )
 
-    await handleEventsOutOfRange(
+    const timeBlocks = timeBlocksWithTaskInfoForWeek.flat()
+
+    /* duplicatedEventIds: {[eventId]: eventId} */
+    const duplicatedEventIds = await handleEventsOutOfRange(
       now,
       endOfWeek,
       eventsInRange,
       userData.calendarId,
     )
 
-    const timeBlocks = timeBlocksWithTaskInfoForWeek.flat()
-
+    /* taskToNewEventIdsMap: {[taskId]: {id: eventId, type: EVENT_INSERT | EVENT_UPDATE}[]} */
     await changeAlgoCalendarSchedule(
       timeBlocks,
       eventsInRange.between,
       userData.calendarId,
+      taskToNewEventIdsMap,
+    )
+
+    modifyTasksToEventIdsMap(
+      taskToEventIdsMap,
+      eventIdToTaskMap,
+      taskToNewEventIdsMap,
+      duplicatedEventIds,
     )
 
     /* update tasks with eventIds */
+    for (const taskId in taskToEventIdsMap) {
+      const eventIds = taskToEventIdsMap[taskId]
+      await updateTask(userId, taskId, { eventIds: eventIds })
+    }
   } catch (error) {
     console.log(error)
   }

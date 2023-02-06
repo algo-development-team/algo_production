@@ -82,8 +82,8 @@ export const insertEvent = async (
     colorId: colorId,
   }
 
-  const item = await insertCalenderEvent(insertOption)
-  return item
+  const newEvent = await insertCalenderEvent(insertOption)
+  return newEvent
 }
 
 export const updateEvent = async (calendarId, eventId, updatedEvent) => {
@@ -93,8 +93,8 @@ export const updateEvent = async (calendarId, eventId, updatedEvent) => {
     resource: updatedEvent,
   }
 
-  const item = await updateCalenderEvent(updateOption)
-  return item
+  const newEvent = await updateCalenderEvent(updateOption)
+  return newEvent
 }
 
 export const deleteEvent = async (calendarId, eventId) => {

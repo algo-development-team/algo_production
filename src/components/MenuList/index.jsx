@@ -186,7 +186,7 @@ export const MenuList = ({
     const startTime = roundUp15Min(now)
     const endTime = moment(startTime).add(duration, 'minutes')
     if (!loading) {
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         startTime.toISOString(),
         endTime.toISOString(),
@@ -196,10 +196,10 @@ export const MenuList = ({
         getTaskColorId(task.priority),
       )
       // update task's eventId
-      const updatedEventsId = Array.from(task.eventIds)
-      updatedEventsId.push(item.id)
+      const updatedEventIds = Array.from(task.eventIds)
+      updatedEventIds.push(newEvent.id)
       await updateTask(currentUser && currentUser.id, taskId, {
-        eventIds: updatedEventsId,
+        eventIds: updatedEventIds,
       })
     }
   }

@@ -69,6 +69,28 @@ export const getTaskToEventIdsMap = (tasks) => {
   return taskToEventIdsMap
 }
 
+export const getEventIdToTaskMap = (tasks) => {
+  const eventIdToTaskMap = {}
+  for (const task of tasks) {
+    for (const eventId of task.eventIds) {
+      eventIdToTaskMap[eventId] = task.taskId
+    }
+  }
+  return eventIdToTaskMap
+}
+
+/***
+ * requirements:
+ * tasks: task[] (from firestore)
+ * ***/
+export const getTaskToNewEventIdsMap = (tasks) => {
+  const taskToNewEventIdsMap = {}
+  for (const task of tasks) {
+    taskToNewEventIdsMap[task.taskId] = []
+  }
+  return taskToNewEventIdsMap
+}
+
 /***
  * requirements:
  * tasks: { priority, startDate, date, allocatableTimeLength, taskId, name, description }[]
