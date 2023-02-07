@@ -2,14 +2,6 @@ import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useThemeContextValue } from 'context'
 import { useTaskEditorContextValue } from 'context/board-task-editor-context'
 import {
-  addDoc,
-  collection,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
-import {
   useAuth,
   useProjects,
   useScheduleCreated,
@@ -20,15 +12,14 @@ import moment from 'moment'
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { generatePushId } from 'utils'
-import { db } from '_firebase'
 import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
-import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+import { getTaskDocsInProjectColumnNotCompleted, check, addTask, updateFireStore } from '../../backend/handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
-import { updateUserInfo } from 'handleUserInfo'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import useScreenType from 'react-screentype-hook'
 
@@ -92,20 +83,6 @@ export const TaskEditor = ({
     }
   }
 
-  const getValidStartDate = (startDate, endDate) => {
-    if (startDate === '') {
-      return ''
-    } else {
-      if (
-        moment(startDate, 'DD-MM-YYYY').isAfter(moment(endDate, 'DD-MM-YYYY'))
-      ) {
-        return endDate
-      } else {
-        return startDate
-      }
-    }
-  }
-
   const addTaskToFirestore = async (event) => {
     event.preventDefault()
     const taskId = generatePushId()
@@ -113,15 +90,7 @@ export const TaskEditor = ({
 
     let index = 0
     if (defaultGroup === 'Checklist') {
-      try {
-        const newChecklist = Array.from(checklist)
-        newChecklist.push(taskId)
-        await updateUserInfo(currentUser && currentUser.id, {
-          checklist: newChecklist,
-        })
-      } catch (error) {
-        console.log(error)
-      }
+      await check(checklist, currentUser && currentUser.id, taskId)
     } else if (defaultGroup === 'Scheduled') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
         currentUser && currentUser.id,
@@ -141,36 +110,11 @@ export const TaskEditor = ({
       index = getMaxIndex(tasks, boardStatus) + 1
     }
     // UPDATE TASK INDEX HERE (COMPLETED)
-    try {
-      resetForm()
+    
+    resetForm()
 
-      await addDoc(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        {
-          projectId: project.selectedProjectId || '',
-          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
-          date: endSchedule.date,
-          name: taskName,
-          taskId: taskId,
-          completed: false,
-          boardStatus: boardStatus,
-          important: defaultGroup === 'Important' ? true : false,
-          description: taskDescription ? taskDescription : '', // string
-          priority: taskPriority, // number (int) (range: 1-3)
-          timeLength: taskTimeLength, // number (int) (range: 15-480)
-          eventIds: [],
-          index: index,
-        },
-      )
-      // UPDATE TASK INDEX HERE (COMPLETED)
-      if (scheduleCreated) {
-        updateUserInfo(currentUser && currentUser.id, {
-          scheduleCreated: false,
-        })
-      }
-    } catch (error) {
-      console.log(error)
-    }
+    await addTask(currentUser && currentUser.id, project.selectedProjectId, startSchedule.date, endSchedule.date, taskName, taskId,
+      boardStatus, defaultGroup, taskDescription, taskPriority, taskTimeLength, index, scheduleCreated)
   }
 
   const resetForm = (event) => {
@@ -200,116 +144,11 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
-  const getNewProjectId = () => {
-    if (defaultGroup === 'Checklist' || defaultGroup === 'Scheduled') {
-      return task.projectId
-    } else if (project.selectedProjectName !== task.projectId) {
-      return project.selectedProjectId
-    } else {
-      return task.projectId
-    }
-  }
-
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    try {
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', task.taskId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      const newProjectId = getNewProjectId()
-      // UPDATE BOARDSTATUS HERE (COMPLETED)
-      let newBoardStatus = task.boardStatus
-      let newIndex = task.index
-
-      if (task.projectId !== newProjectId) {
-        const newProjectIsInbox = newProjectId === ''
-
-        if (newProjectIsInbox) {
-          newBoardStatus = 'NOSECTION'
-        } else {
-          const currentProject = projects.find(
-            (project) => project.projectId === task.projectId,
-          )
-          const newProject = projects.find(
-            (project) => project.projectId === newProjectId,
-          )
-          let currentColumnTitle = '(No Section)'
-          if (task.projectId !== '') {
-            currentColumnTitle = currentProject.columns.find(
-              (column) => column.id === task.boardStatus,
-            ).title
-          }
-          const columnTitleInNewProject = newProject.columns
-            .map((column) => column.title)
-            .includes(currentColumnTitle)
-          if (!columnTitleInNewProject) {
-            newBoardStatus = 'NOSECTION'
-          } else {
-            newBoardStatus = newProject.columns.find(
-              (column) => column.title === currentColumnTitle,
-            ).id
-          }
-        }
-
-        const newProjectTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-          currentUser && currentUser.id,
-          newProjectId,
-          newBoardStatus,
-        )
-
-        const newProjectTasks = []
-        newProjectTaskDocs.forEach((taskDoc) => {
-          newProjectTasks.push(taskDoc.data())
-        })
-
-        newIndex = 0
-        if (newProjectTasks.length > 0) {
-          const maxIndex = Math.max(
-            ...newProjectTasks.map((task) => task.index),
-          )
-          newIndex = maxIndex + 1
-        }
-
-        const currentProjectTaskDocs =
-          await getTaskDocsInProjectColumnNotCompleted(
-            currentUser && currentUser.id,
-            task.projectId,
-            task.boardStatus,
-          )
-
-        currentProjectTaskDocs.forEach(async (taskDoc) => {
-          if (taskDoc.data().index > task.index) {
-            await updateDoc(taskDoc.ref, {
-              index: taskDoc.data().index - 1,
-            })
-          }
-        })
-      }
-
-      taskDocs.forEach(async (taskDoc) => {
-        await updateDoc(taskDoc.ref, {
-          name: taskName,
-          startDate: getValidStartDate(startSchedule.date, endSchedule.date),
-          date: endSchedule.date,
-          projectId: newProjectId,
-          description: taskDescription, // string
-          priority: taskPriority, // number (int) (range: 1-3)
-          timeLength: taskTimeLength, // number (int) (range: 15-480)
-          boardStatus: newBoardStatus,
-          index: newIndex,
-        })
-      })
-
-      if (scheduleCreated) {
-        updateUserInfo(currentUser && currentUser.id, {
-          scheduleCreated: false,
-        })
-      }
-    } catch (error) {
-      console.log(error)
-    }
+    await updateFireStore(currentUser && currentUser.id, task.taskId, task.projectId, task.boardStatus, task.index, projects, taskName, 
+                          taskDescription, taskPriority, taskTimeLength, scheduleCreated, endSchedule.date, startSchedule.date, 
+                          defaultGroup, task.projectId, project.selectedProjectName, project.selectedProjectId)
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }

@@ -14,7 +14,7 @@ import {
   getUserInfo,
   getDefaultUserInfo,
   initializeUserInfo,
-} from 'handleUserInfo'
+} from 'backend/handleUserInfo'
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {

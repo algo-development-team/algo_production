@@ -11,10 +11,10 @@ import './styles/listview.scss'
 import { Task } from './task'
 import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
-import { updateUserInfo } from 'handleUserInfo'
-import { updateDoc } from 'firebase/firestore'
-import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 import moment from 'moment/moment'
+import { dragEnds } from '../../backend/handleUserProjects'
+
 
 // UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)
 
@@ -162,47 +162,13 @@ export const TaskList = () => {
       const [removed] = newTasklist.splice(source.index, 1)
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
-      if (defaultGroup === 'Inbox') {
-        const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-          currentUser && currentUser.id,
-          '',
-          'NOSECTION',
-        )
+      // drag ends
+      await dragEnds(defaultGroup, currentUser && currentUser.id, source.index, destination.index)
 
-        if (source.index > destination.index) {
-          inboxTaskDocs.forEach(async (taskDoc) => {
-            if (taskDoc.data().index === source.index) {
-              await updateDoc(taskDoc.ref, {
-                index: destination.index,
-              })
-            } else if (
-              taskDoc.data().index >= destination.index &&
-              taskDoc.data().index < source.index
-            ) {
-              await updateDoc(taskDoc.ref, {
-                index: taskDoc.data().index + 1,
-              })
-            }
-          })
-        } else {
-          inboxTaskDocs.forEach(async (taskDoc) => {
-            if (taskDoc.data().index === source.index) {
-              await updateDoc(taskDoc.ref, {
-                index: destination.index,
-              })
-            } else if (
-              taskDoc.data().index > source.index &&
-              taskDoc.data().index <= destination.index
-            ) {
-              await updateDoc(taskDoc.ref, {
-                index: taskDoc.data().index - 1,
-              })
-            }
-          })
-        }
-      }
+
       // UPDATE TASK INDEX HERE (COMPLETED)
-    } else {
+    }
+    else {
       const filteredTasklist = filterAndIndexMapTasks(tasklist)
       const mappedSourceIndex = filteredTasklist[source.index][1]
       const mappedDestinationIndex = filteredTasklist[destination.index][1]

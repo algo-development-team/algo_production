@@ -1,10 +1,9 @@
 import { useThemeContextValue } from 'context'
-import { collection, getDocs, query, updateDoc } from 'firebase/firestore'
 import { useAuth, useUserInfo } from 'hooks'
 import React, { useEffect, useState } from 'react'
-import { db } from '_firebase'
 import './styles/main.scss'
 import './styles/light.scss'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 import { TimeToggler } from './time-toggler'
 import { colorIdToHexCode } from 'constants'
 import { timeRangeType } from '../../enums'
@@ -183,17 +182,8 @@ export const SettingEditor = ({ closeOverlay }) => {
       beforeSleepBufferTime: beforeSleepBufferTime,
       afterSleepBufferTime: afterSleepBufferTime,
     }
-    try {
-      const userInfoQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/userInfo`),
-      )
-      const userInfoDocs = await getDocs(userInfoQuery)
-      userInfoDocs.forEach(async (userInfoDoc) => {
-        await updateDoc(userInfoDoc.ref, updatedUserInfo)
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    await updateUserInfo(currentUser && currentUser.id, updatedUserInfo)
+    // USER INFO UPDATE CODE
     closeOverlay()
   }
 

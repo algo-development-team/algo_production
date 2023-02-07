@@ -1,27 +1,20 @@
-import {
-  collection,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
 import { useColumnEditorContextValue } from 'context'
 import { useAuth, useBoardData, useProjects, useSelectedProject } from 'hooks'
 import { useEffect, useState } from 'react'
 import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { useParams } from 'react-router-dom'
-import { db } from '_firebase'
 import { ViewHeader } from '../ViewHeader'
 import { BoardColumn } from './column'
 import './styles/light.scss'
 import './styles/main.scss'
 import { generatePushId } from 'utils'
-import { getTaskDocsInProjectColumnNotCompleted } from '../../handleUserTasks'
-
+import { updateBoardStatus } from '../../backend/handleUserTasks'
+import { updateProjectColumns, dragEnd } from '../../backend/handleUserProjects'
+import { getTaskDocInColumnNotCompleted } from '../../backend/handleUserProjects'
 export const Board = () => {
   const params = useParams()
   const { projects } = useProjects()
-  const { setSelectedProject, selectedProject } = useSelectedProject(
+  const { selectedProject, setSelectedProject } = useSelectedProject(
     params,
     projects,
   )
@@ -50,22 +43,10 @@ export const Board = () => {
       title: newColumnName,
     })
 
-    try {
-      const projectQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-        where('projectId', '==', selectedProject.selectedProjectId),
-      )
-      const projectDocs = await getDocs(projectQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await updateDoc(projectDoc.ref, {
-          columns: newSelectedProjectColumns,
-        })
-      })
-    } catch (error) {
-      console.log(error)
-    }
-  }
+    // add new column to selected project
 
+    await updateProjectColumns(currentUser && currentUser.id, selectedProject.selectedProjectId, newSelectedProjectColumns)
+  }
   const handleUpdateColumn = async (e, columnId) => {
     e.preventDefault()
 
@@ -81,37 +62,13 @@ export const Board = () => {
       }
     }
 
-    try {
-      const projectQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-        where('projectId', '==', selectedProject.selectedProjectId),
-      )
-      const projectDocs = await getDocs(projectQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await updateDoc(projectDoc.ref, {
-          columns: updatedSelectedProjectColumns,
-        })
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    // update selected project columns
+    await updateProjectColumns(currentUser && currentUser.id, selectedProject.selectedProjectId, updatedSelectedProjectColumns)
 
     setNewColumnName('')
     setColumnEditorToShow(null)
   }
 
-  const getNewColumns = (columnOrder, columns) => {
-    const newColumns = []
-    for (const columnId of columnOrder) {
-      if (columnId === 'NOSECTION') {
-        newColumns.push({ id: 'NOSECTION', title: '(No Section)' })
-      } else {
-        const column = columns.find((column) => column.id === columnId)
-        newColumns.push(column)
-      }
-    }
-    return newColumns
-  }
 
   const onDragEnd = async (result) => {
     const { destination, source, draggableId, type } = result
@@ -138,25 +95,8 @@ export const Board = () => {
 
       setBoardState(newState)
 
-      try {
-        const projectQuery = await query(
-          collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-          where('projectId', '==', selectedProject.selectedProjectId),
-        )
-        const projectDocs = await getDocs(projectQuery)
-        projectDocs.forEach(async (projectDoc) => {
-          const newColumns = getNewColumns(
-            newColumnOrder,
-            projectDoc.data().columns,
-          )
-          await updateDoc(projectDoc.ref, {
-            columns: newColumns,
-          })
-        })
-      } catch (error) {
-        console.log(error)
-      }
-
+      // Drag End
+     await dragEnd(currentUser && currentUser.id, selectedProject.selectedProjectId, newColumnOrder)
       return
     }
 
@@ -187,43 +127,9 @@ export const Board = () => {
 
       setBoardState(newState)
 
-      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        selectedProject.selectedProjectId,
-        destination.droppableId,
-      )
-
-      if (source.index > destination.index) {
-        columnTaskDocs.forEach(async (taskDoc) => {
-          if (taskDoc.data().index === source.index) {
-            await updateDoc(taskDoc.ref, {
-              index: destination.index,
-            })
-          } else if (
-            taskDoc.data().index >= destination.index &&
-            taskDoc.data().index < source.index
-          ) {
-            await updateDoc(taskDoc.ref, {
-              index: taskDoc.data().index + 1,
-            })
-          }
-        })
-      } else {
-        columnTaskDocs.forEach(async (taskDoc) => {
-          if (taskDoc.data().index === source.index) {
-            await updateDoc(taskDoc.ref, {
-              index: destination.index,
-            })
-          } else if (
-            taskDoc.data().index > source.index &&
-            taskDoc.data().index <= destination.index
-          ) {
-            await updateDoc(taskDoc.ref, {
-              index: taskDoc.data().index - 1,
-            })
-          }
-        })
-      }
+      // getTaskDocInColoumnNotCompleted
+      await getTaskDocInColumnNotCompleted(currentUser && currentUser.id, selectedProject.selectedProjectId, destination.droppableId, source.index, destination.index)
+      
       // UPDATE TASK INDEX HERE (COMPLETED)
       return
     }
@@ -253,51 +159,11 @@ export const Board = () => {
 
     const oldState = boardState
 
-    try {
+    const updateBoardStatusResult = await updateBoardStatus(currentUser && currentUser.id, draggableId, selectedProject.selectedProjectId, source.droppableId, source.index, destination.droppableId, destination.index)
+
+    if (updateBoardStatusResult) {
       setBoardState(newState)
-
-      const oldColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        selectedProject.selectedProjectId,
-        source.droppableId,
-      )
-
-      oldColumnTaskDocs.forEach(async (taskDoc) => {
-        if (taskDoc.data().index > source.index) {
-          await updateDoc(taskDoc.ref, {
-            index: taskDoc.data().index - 1,
-          })
-        }
-      })
-
-      const newColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        selectedProject.selectedProjectId,
-        destination.droppableId,
-      )
-
-      newColumnTaskDocs.forEach(async (taskDoc) => {
-        if (taskDoc.data().index >= destination.index) {
-          await updateDoc(taskDoc.ref, {
-            index: taskDoc.data().index + 1,
-          })
-        }
-      })
-
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', draggableId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await updateDoc(taskDoc.ref, {
-          boardStatus: destination.droppableId,
-          index: destination.index,
-        })
-      })
-      // UPDATE TASK INDEX HERE (COMPLETED)
-    } catch (error) {
-      console.log(error)
+    } else {
       setBoardState(oldState)
     }
   }

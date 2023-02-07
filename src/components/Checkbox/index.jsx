@@ -1,17 +1,8 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
-import {
-  collection,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
 import { useAuth } from 'hooks'
-import { db } from '_firebase'
 import {
-  getTaskDocsInProjectColumnNotCompleted,
-  getTaskDocsInProjectColumnCompleted,
-} from '../../handleUserTasks'
+  completeTask,
+} from '../../backend/handleUserTasks'
 
 export const TaskCheckbox = ({
   projectId,
@@ -25,56 +16,7 @@ export const TaskCheckbox = ({
   const completeTaskHandler = async (event) => {
     event.preventDefault()
     event.stopPropagation()
-    try {
-      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        projectId,
-        columnId,
-      )
-
-      columnTaskDocs.forEach(async (taskDoc) => {
-        if (taskDoc.data().index > taskIndex) {
-          await updateDoc(taskDoc.ref, {
-            index: taskDoc.data().index - 1,
-          })
-        }
-      })
-
-      const columnTasksDocsCompleted =
-        await getTaskDocsInProjectColumnCompleted(
-          currentUser && currentUser.id,
-          projectId,
-          columnId,
-        )
-
-      const columnTasksCompleted = []
-      columnTasksDocsCompleted.forEach((taskDoc) => {
-        columnTasksCompleted.push(taskDoc.data())
-      })
-
-      let newIndex = 0
-      if (columnTasksCompleted.length > 0) {
-        const maxIndex = Math.max(
-          ...columnTasksCompleted.map((task) => task.index),
-        )
-        newIndex = maxIndex + 1
-      }
-
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', taskId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await updateDoc(taskDoc.ref, {
-          completed: true,
-          index: newIndex,
-        })
-      })
-      // TASK INDEX HERE (COMPLETED)
-    } catch (error) {
-      console.log(error)
-    }
+    await completeTask(currentUser && currentUser.id, projectId, columnId, taskId, taskIndex)
   }
 
   const getBorderColor = (priority) => {

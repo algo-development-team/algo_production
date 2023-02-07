@@ -78,7 +78,6 @@ export const LandingPage = () => {
     
       <section className='section__content'>
            <DescriptionBoxRight
-             title = "What is Algo?"
              imagesrc = {algoScreenshot} 
              description = " Algo is a next-generation task management platform that
               automatically generates schedules for you.Using Algo for your schedule management can dramatically boost your
@@ -86,14 +85,12 @@ export const LandingPage = () => {
               work performance and improved work-life balance."  />
 
            <DescriptionBoxLeft
-             title = "How do you use it?"
              imagesrc = {calendar}
              description = 'You simply need to add your tasks and click the "Generate Schedule"
               button, and our schedule generator algorithm will create a daily
               schedule in your Google Calendar within 2 seconds.'  />
 
            <DescriptionBoxRight
-             title = "How does it work?"
              imagesrc = {inboxScreenshot}
              description = "The schedule generator algorithm reads events in your Google
              Calendar to identify empty time ranges, and it assigns your tasks
@@ -101,7 +98,7 @@ export const LandingPage = () => {
              task's relative priority and your preference in the setting. The schedule generator algorithm schedules both your work and
              personal tasks."  />
         <div style={{ width: '100%', display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
-          <div style={{  width: "650px", height: "390px", padding: "25px", border: "4px solid grey", borderRadius: "20px", justifyContent: "center"}}>
+          <div style={{  width: "650px", height: "390px", padding: "25px", border: "4px solid #0504aa", borderRadius: "20px", justifyContent: "center"}}>
             <h1 style={{ textAlign: "center", fontSize: "30px" }}>Features</h1>
             <ul style={{ fontSize: "18px" , font: "500 100%/1.5 system-ui"}}>
               <li>✅ Keep track of your tasks using "Checklist".</li>

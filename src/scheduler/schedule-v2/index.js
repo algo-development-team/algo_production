@@ -41,10 +41,14 @@ import {
 import { modifyTasksToEventIdsMap } from './eventIdsHandlers'
 import { Timestamp } from 'firebase/firestore'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { updateUserInfo, getUserInfo, getUserDefaultData } from 'handleUserInfo'
+import {
+  updateUserInfo,
+  getUserInfo,
+  getUserDefaultData,
+} from '../../backend/handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import { getAllUserTasks, updateTask } from 'handleUserTasks'
-import { getAllUserProjects } from 'handleUserProjects'
+import { getAllUserTasks, updateTask } from '../../backend/handleUserTasks'
+import { getAllUserProjects } from '../../backend/handleUserProjects'
 import { roundUp15Min } from 'handleMoment'
 import moment from 'moment'
 
