@@ -2,6 +2,8 @@ import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
 import { timeType } from 'enums'
 
+const MAX_NUM_CHUNKS = 8 // 2h
+
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
 /* parameter: sleepTimeRange: string (HH:MM-HH:MM), workTimeRange: string (HH:MM-HH:MM), */
@@ -175,6 +177,22 @@ export const getEventIdToAllocatedTimeLengthMap = (events, now) => {
 
 /***
  * requirements:
+ * workRanges: [moment.Moment, moment.Moment][]
+ * workDays: boolean[] (len: 7)
+ * ***/
+export const getFilteredWorkRanges = (workRanges, workDays) => {
+  const filteredWorkRanges = []
+  for (const workRange of workRanges) {
+    const day = workRange[0].day()
+    if (workDays[day]) {
+      filteredWorkRanges.push([workRange[0].clone(), workRange[1].clone()])
+    }
+  }
+  return filteredWorkRanges
+}
+
+/***
+ * requirements:
  * events must not be all day events (must have start.dateTime and end.dateTime)
  * startBufferAmount and endBufferAmount must be in minutes
  * ***/
@@ -214,8 +232,12 @@ export const getBufferRangeForTimeRangesExclusive = (
       .clone()
       .subtract(startBufferAmount, 'minute')
     const bufferEnd = timeRange[1].clone().add(endBufferAmount, 'minute')
-    bufferRanges.push([bufferStart, timeRange[0].clone()])
-    bufferRanges.push([timeRange[1].clone(), bufferEnd])
+    bufferRanges.push({
+      id: null,
+      start: bufferStart,
+      end: timeRange[0].clone(),
+    })
+    bufferRanges.push({ id: null, start: timeRange[1].clone(), end: bufferEnd })
   }
   return bufferRanges
 }
@@ -333,7 +355,7 @@ export const getAvailableTimeRanges = (timesWithInfo) => {
  * timeEndDay: moment object
  * currently only returns available time ranges, can be expanded in future to return blocked time ranges as well
  * ***/
-export const getAvailableTimeRangesSingleDay = async (
+export const getAvailableTimeRangesSingleDay = (
   events,
   timeStartDay,
   timeEndDay,
@@ -395,7 +417,6 @@ const sliceIntoSubarr = (arr, size) => {
  * ***/
 export const groupChunkRangesIntoBlocks = (
   chunkRanges,
-  maxNumChunks,
   workTimeStart,
   workTimeEnd,
   hasWorkTime,
@@ -447,11 +468,11 @@ export const groupChunkRangesIntoBlocks = (
   const workBlocksSliced = []
   const personalBlocksSliced = []
   for (const block of workBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     workBlocksSliced.push(...slicedBlock)
   }
   for (const block of personalBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     personalBlocksSliced.push(...slicedBlock)
   }
   return {

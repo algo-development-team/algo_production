@@ -18,6 +18,7 @@ import moment from 'moment'
 import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
 import { timeZone } from 'handleCalendars'
+import { updateTask } from 'handleUserTasks'
 
 export const MenuList = ({
   closeOverlay,
@@ -125,7 +126,7 @@ export const MenuList = ({
     const startTime = roundUp15Min(now)
     const endTime = moment(startTime).add(duration, 'minutes')
     if (!loading) {
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         startTime.toISOString(),
         endTime.toISOString(),
@@ -134,6 +135,12 @@ export const MenuList = ({
         task.description,
         getTaskColorId(task.priority),
       )
+      // update task's eventId
+      const updatedEventIds = Array.from(task.eventIds)
+      updatedEventIds.push(newEvent.id)
+      await updateTask(currentUser && currentUser.id, taskId, {
+        eventIds: updatedEventIds,
+      })
     }
   }
 

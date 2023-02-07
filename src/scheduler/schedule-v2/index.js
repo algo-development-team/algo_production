@@ -1,3 +1,4 @@
+import { insertCalendar } from 'gapiHandlers'
 import {
   getTodayTimeRanges,
   getWeekTimeRanges,
@@ -5,11 +6,11 @@ import {
   getAvailableTimeRangesSingleDay,
   divideTimeRangeIntoChunkRanges,
   groupChunkRangesIntoBlocks,
-  printBlocks,
   rankBlocks,
   getBufferRangeForEvents,
   getEventIdToAllocatedTimeLengthMap,
   getBufferRangeForTimeRangesExclusive,
+  getFilteredWorkRanges,
 } from './timeRangeHandlers'
 import {
   filterTaskNotPassedDeadline,
@@ -17,21 +18,60 @@ import {
   formatTasks,
   getTaskMap,
   getTaskToEventIdsMap,
+  getEventIdToTaskMap,
+  getTaskToNewEventIdsMap,
   getTaskToAllocatedTimeLengthMap,
+  categorizeTasks,
 } from './taskHandlers'
 import {
   allocateWorkTimeBlocks,
   allocatePersonalTimeBlocks,
+} from './taskIdAllocationHandlers'
+import {
+  groupChunksByTaskId,
+  formatTimeBlocks,
+  getTimeBlocksSorted,
+  filterTimeBlocks,
 } from './timeBlockHandlers'
+import {
+  getEventsInRange,
+  handleEventsOutOfRange,
+  changeAlgoCalendarSchedule,
+} from './calendarHandlers'
+import { modifyTasksToEventIdsMap } from './eventIdsHandlers'
+import { Timestamp } from 'firebase/firestore'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { getUserInfo, getUserDefaultData } from '../../backend/handleUserInfo'
+import {
+  updateUserInfo,
+  getUserInfo,
+  getUserDefaultData,
+} from '../../backend/handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import { getAllUserTasks } from '../../backend/handleUserTasks'
+import { getAllUserTasks, updateTask } from '../../backend/handleUserTasks'
 import { getAllUserProjects } from '../../backend/handleUserProjects'
 import { roundUp15Min } from 'handleMoment'
 import moment from 'moment'
 
-const MAX_NUM_CHUNKS = 8 // 2h
+/***
+ * requirements:
+ * timeBlocks: { start, end, preference, taskId, isWork }[]
+ * taskMap: { taskId: { priority, deadline, timeLength, preference, taskId, name, description } }
+ * ***/
+const getTimeBlocksWithTaskInfo = (timeBlocks, tasksMap) => {
+  return timeBlocks.map((timeBlock) => {
+    const taskId = timeBlock.taskId
+    const taskInfo = tasksMap[taskId]
+    return {
+      taskId: taskId,
+      start: timeBlock.start,
+      end: timeBlock.end,
+      isWork: timeBlock.isWork,
+      name: taskInfo.name,
+      description: taskInfo.description,
+      priority: taskInfo.priority,
+    }
+  })
+}
 
 /* returns true if calendar is scheduled properly, else false */
 export const scheduleCalendar = async (userId) => {
@@ -58,7 +98,7 @@ export const scheduleCalendar = async (userId) => {
     const calendarIdsInfo = await getCalendarIdsInfo(userData.calendarIds)
     const selectedCalendarIds = calendarIdsInfo
       .filter((calendarIdInfo) => calendarIdInfo.selected)
-      .filter((calendarIdsInfo) => calendarIdsInfo.id !== userData.calendarId)
+      .filter((calendarIdInfo) => calendarIdInfo.id !== userData.calendarId)
       .map((calendarIdInfo) => calendarIdInfo.id)
 
     /* initializing time ranges variables */
@@ -101,6 +141,7 @@ export const scheduleCalendar = async (userId) => {
       sleepRanges = weekTimeRanges.sleepRanges
       bufferRange = weekBufferRange
     }
+
     const eventsByType = await fetchAllEventsByType(
       bufferRange[0].toISOString(),
       bufferRange[1].toISOString(),
@@ -110,7 +151,7 @@ export const scheduleCalendar = async (userId) => {
     /* gets time ranges of non-blocked times */
     const timeRangesMultDays = []
     for (const dayRange of dayRanges) {
-      const timeRangesSingleDay = await getAvailableTimeRangesSingleDay(
+      const timeRangesSingleDay = getAvailableTimeRangesSingleDay(
         eventsByType.timeBlocked,
         dayRange[0],
         dayRange[1],
@@ -129,12 +170,11 @@ export const scheduleCalendar = async (userId) => {
     /* groups 15 min chunks into 2h blocks, each block containing 8 chunks */
     const blocksMultDays = []
     for (let i = 0; i < chunkRangesMultDays.length; i++) {
-      const hasWorkTime = userData.workDays[workRanges[i][1].day()]
+      const hasWorkTime = userData.workDays[workRanges[i][0].day()]
 
       /* filter out meeting buffer times */
       const blocksSingleDay = groupChunkRangesIntoBlocks(
         chunkRangesMultDays[i],
-        MAX_NUM_CHUNKS,
         workRanges[i][0],
         workRanges[i][1],
         hasWorkTime,
@@ -173,8 +213,12 @@ export const scheduleCalendar = async (userId) => {
     )
 
     /* calculates buffer ranges for work hours */
-    const workBufferRanges = getBufferRangeForTimeRangesExclusive(
+    const filteredWorkRanges = getFilteredWorkRanges(
       workRanges,
+      userData.workDays,
+    )
+    const workBufferRanges = getBufferRangeForTimeRangesExclusive(
+      filteredWorkRanges,
       userData.beforeWorkBufferTime,
       userData.afterWorkBufferTime,
     )
@@ -192,20 +236,10 @@ export const scheduleCalendar = async (userId) => {
       ...sleepBufferRanges,
     ]
 
-    // const sleepBufferRanges = getBufferRangeForEvents(
-    //   sleepRanges,
-    //   userData.beforeSleepBufferTime,
-    //   userData.afterSleepBufferTime,
-    // )
-
-    /* prints the blocks to console */
-    // for (let i = 0; i < rankedBlocksMultDay.length; i++) {
-    //   console.log(
-    //     timeRange[0].clone().add(i, 'day').format('dddd, MMMM Do YYYY'),
-    //   ) // DEBUGGING
-    //   printBlocks(rankedBlocksMultDay[i].work, 'Work') // DEBUGGING
-    //   printBlocks(rankedBlocksMultDay[i].personal, 'Personal') // DEBUGGING
-    // }
+    /* get rest hours for personal time */
+    const restHours = userData.personalPreferences.map((personalPreference) =>
+      personalPreference === 1 ? true : false,
+    )
 
     /* fetch tasks and projects */
     const tasks = await getAllUserTasks(userId)
@@ -220,31 +254,30 @@ export const scheduleCalendar = async (userId) => {
       tasksNotPassedDeadline,
     )
 
-    const taskToEventIdsMap = {
-      ...getTaskToEventIdsMap(tasksNotNoneTimeLength),
-    }
-
-    /* update the format tasks to accomodate for newly added fields */
-    const formattedTasks = formatTasks(tasksNotNoneTimeLength, projects)
-
-    const taskMap = {
-      ...getTaskMap(formattedTasks.work),
-      ...getTaskMap(formattedTasks.personal),
-    }
+    const taskToEventIdsMap = getTaskToEventIdsMap(tasksNotNoneTimeLength)
+    const eventIdToTaskMap = getEventIdToTaskMap(tasksNotNoneTimeLength)
+    const taskToNewEventIdsMap = getTaskToNewEventIdsMap(tasksNotNoneTimeLength)
 
     /* fetches all events in the Algo calendar (from account createdAt time to start of tomorrow) */
-    const algoCalendarFetchTimeRange = [
-      formattedCreatedAt,
-      moment().startOf('day').add(1, 'days'),
-    ]
-    const algoCalendarFetchBufferRange = getBufferRange(
-      algoCalendarFetchTimeRange,
-    )
-    const algoCalendarEvents = await fetchAllEventsByType(
-      algoCalendarFetchBufferRange[0].toISOString(),
-      algoCalendarFetchBufferRange[1].toISOString(),
-      [userData.calendarId],
-    )
+    /* create a new Algo calendar if non-exists */
+    let algoCalendarEvents = { timeBlocked: [], allDay: [] }
+
+    if (userData.calendarId) {
+      const algoCalendarFetchTimeRange = [formattedCreatedAt, timeRange[1]]
+      const algoCalendarFetchBufferRange = getBufferRange(
+        algoCalendarFetchTimeRange,
+      )
+      algoCalendarEvents = await fetchAllEventsByType(
+        algoCalendarFetchBufferRange[0].toISOString(),
+        algoCalendarFetchBufferRange[1].toISOString(),
+        [userData.calendarId],
+      )
+    } else {
+      const result = await insertCalendar('Algo')
+      userData.calendarId = result.id
+      await updateUserInfo(userId, { calendarId: result.id })
+    }
+
     const algoCalendarEventIdToAllocatedTimeLengthMap =
       getEventIdToAllocatedTimeLengthMap(algoCalendarEvents.timeBlocked, now)
 
@@ -254,22 +287,126 @@ export const scheduleCalendar = async (userId) => {
       algoCalendarEventIdToAllocatedTimeLengthMap,
     )
 
+    /* update the format tasks to accomodate for newly added fields */
+    const formattedTasks = formatTasks(
+      tasksNotNoneTimeLength,
+      taskToAllocatedTimeLengthMap,
+      projects,
+    )
+
+    const categorizedTasks = {
+      work: categorizeTasks(formattedTasks.work, timeRange),
+      personal: categorizeTasks(formattedTasks.personal, timeRange),
+    }
+
+    const formattedTasksMap = {
+      ...getTaskMap(formattedTasks.work),
+      ...getTaskMap(formattedTasks.personal),
+    }
+
     /* allocate a task (or leave empty) for each chunk in each block for work and personal */
     /* mutates rankedWorkBlocks, rankedPersonalBlocks, and formattedTasks */
     allocateWorkTimeBlocks(
       rankedWorkBlocks,
-      formattedTasks.work,
-      taskToAllocatedTimeLengthMap,
+      categorizedTasks.work,
+      formattedTasksMap,
       bufferRanges,
       now,
     )
     allocatePersonalTimeBlocks(
       rankedPersonalBlocks,
-      formattedTasks.personal,
-      taskToAllocatedTimeLengthMap,
+      categorizedTasks.personal,
+      formattedTasksMap,
       bufferRanges,
+      workRanges,
+      restHours,
       now,
     )
+
+    /* format time blocks */
+    const timeBlocksWithTaskInfoForWeek = []
+    for (let i = 0; i < rankedWorkBlocks.length; i++) {
+      const workTimeBlocksForDay = groupChunksByTaskId(rankedWorkBlocks[i])
+      const personalTimeBlocksForDay = groupChunksByTaskId(
+        rankedPersonalBlocks[i],
+      )
+      const formattedTimeBlocksForDay = [
+        ...formatTimeBlocks(workTimeBlocksForDay, true),
+        ...formatTimeBlocks(personalTimeBlocksForDay, false),
+      ]
+      const filteredTimeBlocks = filterTimeBlocks(formattedTimeBlocksForDay)
+      const sortedTimeBlocks = getTimeBlocksSorted(filteredTimeBlocks)
+      const timeBlocksWithTaskInfo = getTimeBlocksWithTaskInfo(
+        sortedTimeBlocks,
+        formattedTasksMap,
+      )
+      timeBlocksWithTaskInfoForWeek.push(timeBlocksWithTaskInfo)
+    }
+
+    /* get checklist */
+    const weeklyChecklist = {}
+    for (let i = 0; i < timeBlocksWithTaskInfoForWeek.length; i++) {
+      const newChecklist = timeBlocksWithTaskInfoForWeek[i].map(
+        (timeBlock) => timeBlock.taskId,
+      )
+      if (newChecklist.length > 0) {
+        const newChecklistWithoutDuplicates = [...new Set(newChecklist)]
+        const curDate = timeRange[0].clone().add(i, 'days')
+        const curDateUnixTime = curDate.unix()
+        // format curDate as valid firebase timestamp
+        const curDateTimestamp = new Timestamp(curDateUnixTime, 0)
+        weeklyChecklist[curDateTimestamp] = newChecklistWithoutDuplicates
+      }
+    }
+
+    const filteredCalendarIdsInfo = calendarIdsInfo.filter(
+      (calendarIdInfo) => calendarIdInfo.id !== userData.calendarId,
+    )
+
+    /* update userInfo doc with new weeklyChecklist and calendarIds fields */
+    await updateUserInfo(userId, {
+      calendarIds: filteredCalendarIdsInfo,
+      weeklyChecklist: weeklyChecklist,
+    })
+
+    /* allocate the calendar with new event time blocks */
+    const endOfWeek = dayRanges[dayRanges.length - 1][1].clone()
+    const eventsInRange = getEventsInRange(
+      algoCalendarEvents.timeBlocked,
+      now,
+      endOfWeek,
+    )
+
+    const timeBlocks = timeBlocksWithTaskInfoForWeek.flat()
+
+    /* duplicatedEventIds: {[eventId]: eventId} */
+    const duplicatedEventIds = await handleEventsOutOfRange(
+      now,
+      endOfWeek,
+      eventsInRange,
+      userData.calendarId,
+    )
+
+    /* taskToNewEventIdsMap: {[taskId]: {id: eventId, type: EVENT_INSERT | EVENT_UPDATE}[]} */
+    await changeAlgoCalendarSchedule(
+      timeBlocks,
+      eventsInRange.between,
+      userData.calendarId,
+      taskToNewEventIdsMap,
+    )
+
+    modifyTasksToEventIdsMap(
+      taskToEventIdsMap,
+      eventIdToTaskMap,
+      taskToNewEventIdsMap,
+      duplicatedEventIds,
+    )
+
+    /* update tasks with eventIds */
+    for (const taskId in taskToEventIdsMap) {
+      const eventIds = taskToEventIdsMap[taskId]
+      await updateTask(userId, taskId, { eventIds: eventIds })
+    }
   } catch (error) {
     console.log(error)
   }

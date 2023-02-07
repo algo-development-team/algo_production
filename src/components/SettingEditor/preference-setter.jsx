@@ -21,16 +21,16 @@ export const PreferenceSetter = ({
     if (type === 'work') {
       return (
         <>
-          <option value={0}>Urgent Work (ex: Work Due Today)</option>
-          <option value={1}>Focus Work (ex: Coding)</option>
-          <option value={2}>Easy Work (ex: Check Emails)</option>
+          <option value={0}>No Preference</option>
+          <option value={1}>Hard Work</option>
+          <option value={2}>Easy Work</option>
         </>
       )
     } else if (type === 'personal') {
       return (
         <>
-          <option value={0}>Personal Work</option>
-          <option value={1}>No Work</option>
+          <option value={0}>Personal Task</option>
+          <option value={1}>Rest</option>
         </>
       )
     }
@@ -39,12 +39,12 @@ export const PreferenceSetter = ({
   const getTextColor = (type, preference) => {
     if (type === 'work') {
       return preference === 0
-        ? '__urgent'
+        ? '__none'
         : preference === 1
-        ? '__deep'
-        : '__shallow'
+        ? '__orange'
+        : '__green'
     } else if (type === 'personal') {
-      return preference === 0 ? '__personal' : '__no-work'
+      return preference === 0 ? '__green' : '__none'
     }
   }
 
