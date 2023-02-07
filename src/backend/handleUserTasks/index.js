@@ -1,4 +1,13 @@
-import { collection, getDocs, updateDoc, query, where, orderBy, deleteDoc, addDoc } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  updateDoc,
+  query,
+  where,
+  orderBy,
+  deleteDoc,
+  addDoc,
+} from 'firebase/firestore'
 import { db } from '_firebase'
 import { updateUserInfo } from '../handleUserInfo'
 import moment from 'moment'
@@ -11,6 +20,21 @@ export const getTask = async (userId, taskId) => {
     )
     const taskDocs = await getDocs(taskQuery)
     return taskDocs.docs[0].data()
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const updateTask = async (userId, taskId, task) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (taskDoc) => {
+      await updateDoc(taskDoc.ref, task)
+    })
   } catch (error) {
     console.log(error)
   }
@@ -92,7 +116,13 @@ export const getTaskDocsInProjectColumnCompleted = async (
   return projectColumnTaskDocs
 }
 
-export const completeTask = async (userId, projectId, columnId, taskId, taskIndex) => {
+export const completeTask = async (
+  userId,
+  projectId,
+  columnId,
+  taskId,
+  taskIndex,
+) => {
   try {
     const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
       userId,
@@ -108,12 +138,11 @@ export const completeTask = async (userId, projectId, columnId, taskId, taskInde
       }
     })
 
-    const columnTasksDocsCompleted =
-      await getTaskDocsInProjectColumnCompleted(
-        userId,
-        projectId,
-        columnId,
-      )
+    const columnTasksDocsCompleted = await getTaskDocsInProjectColumnCompleted(
+      userId,
+      projectId,
+      columnId,
+    )
 
     const columnTasksCompleted = []
     columnTasksDocsCompleted.forEach((taskDoc) => {
@@ -145,7 +174,15 @@ export const completeTask = async (userId, projectId, columnId, taskId, taskInde
   }
 }
 
-export const updateBoardStatus = async (userId, draggableId, selectedProjectId, sourceDroppableId, sourceIndex, destinationDroppableId, destinationIndex) => {
+export const updateBoardStatus = async (
+  userId,
+  draggableId,
+  selectedProjectId,
+  sourceDroppableId,
+  sourceIndex,
+  destinationDroppableId,
+  destinationIndex,
+) => {
   try {
     const oldColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
       userId,
@@ -195,7 +232,7 @@ export const updateBoardStatus = async (userId, draggableId, selectedProjectId, 
   }
 }
 
-export const columnTaskDelete = async(userId, projectId, columnId) => {
+export const columnTaskDelete = async (userId, projectId, columnId) => {
   try {
     const taskQuery = await query(
       collection(db, 'user', `${userId}/tasks`),
@@ -211,7 +248,13 @@ export const columnTaskDelete = async(userId, projectId, columnId) => {
   }
 }
 
-export const taskDelete = async(userId, projectId, columnId, taskIndex, taskId) => {
+export const taskDelete = async (
+  userId,
+  projectId,
+  columnId,
+  taskIndex,
+  taskId,
+) => {
   try {
     const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
       userId,
@@ -240,7 +283,7 @@ export const taskDelete = async(userId, projectId, columnId, taskIndex, taskId) 
   }
 }
 
-export const check = async(checklist, userId, taskId) => {
+export const check = async (checklist, userId, taskId) => {
   try {
     const newChecklist = Array.from(checklist)
     newChecklist.push(taskId)
@@ -252,26 +295,36 @@ export const check = async(checklist, userId, taskId) => {
   }
 }
 
-export const addTask = async(userId, selectedProjectId, startScheduleDate, endScheduleDate, taskName, taskId,
-                            boardStatus, defaultGroup, taskDescription, taskPriority, taskTimeLength, index, scheduleCreated) => {
+export const addTask = async (
+  userId,
+  selectedProjectId,
+  startScheduleDate,
+  endScheduleDate,
+  taskName,
+  taskId,
+  boardStatus,
+  defaultGroup,
+  taskDescription,
+  taskPriority,
+  taskTimeLength,
+  index,
+  scheduleCreated,
+) => {
   try {
-    await addDoc(
-      collection(db, 'user', `${userId}/tasks`),
-      {
-        projectId: selectedProjectId || '',
-        startDate: getValidStartDate(startScheduleDate, endScheduleDate),
-        date: endScheduleDate,
-        name: taskName,
-        taskId: taskId,
-        completed: false,
-        boardStatus: boardStatus,
-        important: defaultGroup === 'Important' ? true : false,
-        description: taskDescription ? taskDescription : '', // string
-        priority: taskPriority, // number (int) (range: 1-3)
-        timeLength: taskTimeLength, // number (int) (range: 15-480)
-        index: index,
-      },
-    )
+    await addDoc(collection(db, 'user', `${userId}/tasks`), {
+      projectId: selectedProjectId || '',
+      startDate: getValidStartDate(startScheduleDate, endScheduleDate),
+      date: endScheduleDate,
+      name: taskName,
+      taskId: taskId,
+      completed: false,
+      boardStatus: boardStatus,
+      important: defaultGroup === 'Important' ? true : false,
+      description: taskDescription ? taskDescription : '', // string
+      priority: taskPriority, // number (int) (range: 1-3)
+      timeLength: taskTimeLength, // number (int) (range: 15-480)
+      index: index,
+    })
     // UPDATE TASK INDEX HERE (COMPLETED)
     if (scheduleCreated) {
       updateUserInfo(userId, {
@@ -282,8 +335,13 @@ export const addTask = async(userId, selectedProjectId, startScheduleDate, endSc
     console.log(error)
   }
 }
-  
-const getNewProjectId = (defaultGroup, projectId, selectedProjectName, selectedProjectId) => {
+
+const getNewProjectId = (
+  defaultGroup,
+  projectId,
+  selectedProjectName,
+  selectedProjectId,
+) => {
   if (defaultGroup === 'Checklist' || defaultGroup === 'Scheduled') {
     return projectId
   } else if (selectedProjectName !== projectId) {
@@ -293,16 +351,36 @@ const getNewProjectId = (defaultGroup, projectId, selectedProjectName, selectedP
   }
 }
 
-export const updateFireStore = async(userId, taskId, projectId, boardStatus, index, projects, taskName, 
-                                      taskDescription, taskPriority, taskTimeLength, scheduleCreated, endScheduleDate, startScheduleDate,
-                                      defaultGroup, selectedProjectName, selectedProjectId) => {
+export const updateFireStore = async (
+  userId,
+  taskId,
+  projectId,
+  boardStatus,
+  index,
+  projects,
+  taskName,
+  taskDescription,
+  taskPriority,
+  taskTimeLength,
+  scheduleCreated,
+  endScheduleDate,
+  startScheduleDate,
+  defaultGroup,
+  selectedProjectName,
+  selectedProjectId,
+) => {
   try {
     const taskQuery = await query(
       collection(db, 'user', `${userId}/tasks`),
       where('taskId', '==', taskId),
     )
     const taskDocs = await getDocs(taskQuery)
-    const newProjectId = getNewProjectId(defaultGroup, projectId, selectedProjectName, selectedProjectId)
+    const newProjectId = getNewProjectId(
+      defaultGroup,
+      projectId,
+      selectedProjectName,
+      selectedProjectId,
+    )
     // UPDATE BOARDSTATUS HERE (COMPLETED)
     let newBoardStatus = boardStatus
     let newIndex = index
@@ -350,9 +428,7 @@ export const updateFireStore = async(userId, taskId, projectId, boardStatus, ind
 
       newIndex = 0
       if (newProjectTasks.length > 0) {
-        const maxIndex = Math.max(
-          ...newProjectTasks.map((task) => task.index),
-        )
+        const maxIndex = Math.max(...newProjectTasks.map((task) => task.index))
         newIndex = maxIndex + 1
       }
 
