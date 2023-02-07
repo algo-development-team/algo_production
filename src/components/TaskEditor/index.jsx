@@ -16,7 +16,7 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
-import { getTaskDocsInProjectColumnNotCompleted, check, addTask, updateFireStore } from '../../backend/handleUserTasks'
+import { getTaskDocsInProjectColumnNotCompleted, check, addTask, updateFireStore } from '../../backend/handleTasks'
 import './styles/main.scss'
 import './styles/light.scss'
 import { updateUserInfo } from '../../backend/handleUserInfo'
@@ -93,7 +93,6 @@ export const TaskEditor = ({
       await check(checklist, currentUser && currentUser.id, taskId)
     } else if (defaultGroup === 'Scheduled') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
         '',
         'NOSECTION',
       )

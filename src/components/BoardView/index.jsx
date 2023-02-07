@@ -8,9 +8,9 @@ import { BoardColumn } from './column'
 import './styles/light.scss'
 import './styles/main.scss'
 import { generatePushId } from 'utils'
-import { updateBoardStatus } from '../../backend/handleUserTasks'
-import { updateProjectColumns, dragEnd } from '../../backend/handleUserProjects'
-import { getTaskDocInColumnNotCompleted } from '../../backend/handleUserProjects'
+import { updateBoardStatus } from '../../backend/handleTasks'
+import { updateProjectColumns, dragEnd } from '../../backend/handleProjects'
+import { getTaskDocInColumnNotCompleted } from '../../backend/handleProjects'
 export const Board = () => {
   const params = useParams()
   const { projects } = useProjects()
@@ -159,7 +159,7 @@ export const Board = () => {
 
     const oldState = boardState
 
-    const updateBoardStatusResult = await updateBoardStatus(currentUser && currentUser.id, draggableId, selectedProject.selectedProjectId, source.droppableId, source.index, destination.droppableId, destination.index)
+    const updateBoardStatusResult = await updateBoardStatus(draggableId, selectedProject.selectedProjectId, source.droppableId, source.index, destination.droppableId, destination.index)
 
     if (updateBoardStatusResult) {
       setBoardState(newState)

@@ -2,14 +2,14 @@ import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { useChecklist, useCalendarInfo } from 'hooks'
 import { updateUserInfo } from '../../backend/handleUserInfo'
-import { updateProjectColumns } from '../../backend/handleUserProjects'
+import { updateProjectColumns } from '../../backend/handleProjects'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
   useColumnEditorContextValue,
 } from 'context'
 import { useAuth } from 'hooks'
-import { columnTaskDelete, taskDelete, getTask } from '../../backend/handleUserTasks'
+import { columnTaskDelete, taskDelete, getTask } from '../../backend/handleTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
@@ -54,11 +54,11 @@ export const MenuList = ({
 
   const handleColumnTasksDelete = async () => {
     // column task delete
-    await columnTaskDelete(currentUser && currentUser.id, projectId, columnId)
+    await columnTaskDelete(projectId, columnId)
   }
 
   const handleTaskDelete = async () => {
-    await taskDelete(currentUser && currentUser.id, projectId, columnId, taskIndex, taskId)
+    await taskDelete(projectId, columnId, taskIndex, taskId)
   }
 
   const deleteHandler = async (e) => {
@@ -119,7 +119,7 @@ export const MenuList = ({
 
   /* inserts the task as time block at current time in Google Calendar */
   const doNowAtCalendar = async (e) => {
-    const task = await getTask(currentUser && currentUser.id, taskId)
+    const task = await getTask(taskId)
     const duration = Math.min(task.timeLength, 120) // duration set to 2 hours max
     const now = moment.now()
     const startTime = roundUp15Min(now)

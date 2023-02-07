@@ -1,15 +1,45 @@
-import { collection, getDocs, query, updateDoc, where, deleteDoc, addDoc} from 'firebase/firestore'
+import { collection, getDocs, query, updateDoc, where, deleteDoc, addDoc } from 'firebase/firestore'
 import { db } from '_firebase'
-import { getTaskDocsInProjectColumnNotCompleted } from '../handleUserTasks'
+import { getTaskDocsInProjectColumnNotCompleted } from '../handleTasks'
+import { getUserTeams } from '../handleTeams'
+
+export const getProject = async (projectId) => {
+  // Reference to the document
+  const docRef = db.collection("project").doc(projectId)
+
+  // Fetch the document
+  docRef.get().then((doc) => {
+    if (doc.exists) {
+      // Document data is available
+      return doc.data()
+    } else {
+      // Document is not found
+      return null
+    }
+  }).catch(function(error) {
+    console.log(error);
+    return null
+  });
+}
 
 export const getAllUserProjects = async (userId) => {
-  const projectQuery = await query(collection(db, 'user', `${userId}/projects`))
-  const projectDocs = await getDocs(projectQuery)
-  const projects = []
-  projectDocs.forEach((projectDoc) => {
-    projects.push(projectDoc.data())
-  })
-  return projects
+  // const projectQuery = await query(collection(db, 'user', `${userId}/projects`))
+  // const projectDocs = await getDocs(projectQuery)
+  // const projects = []
+  // projectDocs.forEach((projectDoc) => {
+  //   projects.push(projectDoc.data())
+  // })
+  // return projects
+  const userTeams = getUserTeams(userId);
+  const userProjectIds = []
+  for (const userTeam of userTeams) {
+    userProjectIds = userProjectIds.concat(userTeam.projects)
+  }
+  const allUserProjects = [] 
+  for (const projectId of userProjectIds) {
+   allUserProjects.push(getProject(projectId))
+  }
+  return allUserProjects
 }
 
 export const updateProjectColumns = async (userId, selectedProjectId, newSelectedProjectColumns) => {
@@ -29,10 +59,11 @@ export const updateProjectColumns = async (userId, selectedProjectId, newSelecte
   } 
 }
 
+/* CONVERTED */
 export const projectDelete = async (userId, projectId) => {
-try {
+  try {
     const q = await query(
-      collection(db, 'user', `${userId}/projects`),
+      collection(db, 'projects'),
       where('projectId', '==', projectId),
     )
     const docs = await getDocs(q)
@@ -101,7 +132,6 @@ export const dragEnd = async(userId, selectedProjectId, newColumnOrder) => {
 
 export const getTaskDocInColumnNotCompleted = async (userId, selectedProjectId, droppableId, sourceIndex, destinationIndex) => {
   const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-    userId,
     selectedProjectId,
     droppableId,
   )
@@ -147,7 +177,6 @@ export const dragEnds = async(defaultGroup, userId, sourceIndex, destinationInde
   try{
     if (defaultGroup === 'Inbox') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        userId,
         '',
         'NOSECTION',
       )

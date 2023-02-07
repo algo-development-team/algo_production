@@ -2,7 +2,7 @@ import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useAuth } from 'hooks'
 import {
   completeTask,
-} from '../../backend/handleUserTasks'
+} from '../../backend/handleTasks'
 
 export const TaskCheckbox = ({
   projectId,
@@ -16,7 +16,7 @@ export const TaskCheckbox = ({
   const completeTaskHandler = async (event) => {
     event.preventDefault()
     event.stopPropagation()
-    await completeTask(currentUser && currentUser.id, projectId, columnId, taskId, taskIndex)
+    await completeTask(projectId, columnId, taskId, taskIndex)
   }
 
   const getBorderColor = (priority) => {

@@ -16,6 +16,8 @@ export const BoardTask = ({ task, index }) => {
   const taskProject = getProjectInfo(projects, task.projectId)
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
+  console.log('projects', projects) // DEBUGGING
+
   return (
     <Draggable draggableId={task.taskId} index={index}>
       {(provided) => (

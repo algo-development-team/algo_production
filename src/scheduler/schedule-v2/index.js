@@ -24,10 +24,10 @@ import {
   allocatePersonalTimeBlocks,
 } from './timeBlockHandlers'
 import { getCalendarIdsInfo } from 'handleCalendars'
-import { getUserInfo, getUserDefaultData } from '../../backend/handleUserInfo'
+import { getUserInfoOld, getUserDefaultData } from '../../backend/handleUserInfo'
 import { fetchAllEventsByType } from 'googleCalendar'
-import { getAllUserTasks } from '../../backend/handleUserTasks'
-import { getAllUserProjects } from '../../backend/handleUserProjects'
+import { getAllUserTasks } from '../../backend/handleTasks'
+import { getAllUserProjects } from '../../backend/handleProjects'
 import { roundUp15Min } from 'handleMoment'
 import moment from 'moment'
 
@@ -37,7 +37,7 @@ const MAX_NUM_CHUNKS = 8 // 2h
 export const scheduleCalendar = async (userId) => {
   try {
     /* fetches user data */
-    const userInfo = await getUserInfo(userId)
+    const userInfo = await getUserInfoOld(userId)
     if (userInfo.empty === true || userInfo.failed === true) {
       return false
     }

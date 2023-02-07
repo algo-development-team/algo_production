@@ -10,11 +10,11 @@ import {
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo, updateUserInfo } from 'backend/handleUserInfo'
+import { getUserInfoOld, updateUserInfo } from 'backend/handleUserInfo'
 import moment from 'moment'
 import { timeType } from '../../enums'
-import { getAllUserTasks } from '../../backend/handleUserTasks'
-import { getAllUserProjects } from '../../backend/handleUserProjects'
+import { getAllUserTasks } from '../../backend/handleTasks'
+import { getAllUserProjects } from '../../backend/handleProjects'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
@@ -45,7 +45,7 @@ export const scheduleToday = async (userId) => {
   try {
     // const t1 = new Date() // DEBUGGING
     //*** GETTING AVAILABLE TIME RANGES START ***//
-    const userInfo = await getUserInfo(userId)
+    const userInfo = await getUserInfoOld(userId)
     if (userInfo.empty === true || userInfo.failed === true) {
       return { checklist: [], failed: true }
     }

@@ -3,7 +3,7 @@ import { db } from '_firebase'
 import { updateUserInfo } from '../handleUserInfo'
 import moment from 'moment'
 
-export const getTask = async (userId, taskId) => {
+/* export const getTask = async (userId, taskId) => {
   try {
     const taskQuery = await query(
       collection(db, 'user', `${userId}/tasks`),
@@ -14,8 +14,19 @@ export const getTask = async (userId, taskId) => {
   } catch (error) {
     console.log(error)
   }
-}
+} */
 
+export const getTask = async (taskId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'task', `${taskId}`),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    return taskDocs.docs[0].data()
+  } catch (error) {
+    console.log(error)
+  }
+}
 const getValidStartDate = (startDate, endDate) => {
   if (startDate === '') {
     return ''
@@ -30,7 +41,7 @@ const getValidStartDate = (startDate, endDate) => {
   }
 }
 
-export const getAllUserTasks = async (userId) => {
+/* export const getAllUserTasks = async (userId) => {
   const taskQuery = await query(
     collection(db, 'user', `${userId}/tasks`),
     orderBy('index', 'asc'),
@@ -50,6 +61,59 @@ export const getAllUserTasks = async (userId) => {
     nonCompleted: nonCompletedTasks,
     completed: completedTasks,
   }
+} */
+
+export const getAllUserTasks = async (userId) => {
+  const nonCompletedTasks = []
+  const completedTasks = []
+  const userQuery = query(
+    collection(db, 'user', `${userId}`),
+  )
+  const userDocs = await getDocs(userQuery)
+  userDocs.forEach(async (userDoc) => {
+    const userData = userDoc.data()
+    const userId = userData.userId
+    const teams = userData.teams
+    const teamIds = [...teams, userId]
+    for (const teamId of teamIds) {
+      const teamQuery = query(
+        collection(db, 'team', `${teamId}`),
+      ) 
+      const teamDocs = await getDocs(teamQuery)
+      teamDocs.forEach(async (teamDoc) => {
+        const teamData = teamDoc.data()
+        const projects = teamData.projects
+        for (const projectId of projects) {
+          const projectQuery = query(
+            collection(db, 'project', `${projectId}`),
+          )
+          const projectDocs = await getDocs(projectQuery)
+          projectDocs.forEach(async (projectDoc) => {
+            const projectData = projectDoc.data()
+            const tasks = projectData.projects
+            for (const taskId of tasks) {
+              const taskQuery = query(
+                collection(db, 'task', `${taskId}`),
+              )
+              const taskDocs = await getDocs(taskQuery)
+              taskDocs.forEach((taskDoc) => {
+                const task = taskDoc.data()
+                if (!task.completed) {
+                  nonCompletedTasks.push(task)
+                } else {
+                  completedTasks.push(task)
+                }
+              })
+            }
+          })
+        }
+      })
+    }
+  })
+  return {
+    nonCompleted: nonCompletedTasks,
+    completed: completedTasks,
+  }
 }
 
 /*
@@ -57,7 +121,7 @@ export const getAllUserTasks = async (userId) => {
  * Return Type: taskDoc[]
  * task: firestore task document
  */
-export const getTaskDocsInProjectColumnNotCompleted = async (
+/* export const getTaskDocsInProjectColumnNotCompleted = async (
   userId,
   projectId,
   boardStatus,
@@ -70,7 +134,21 @@ export const getTaskDocsInProjectColumnNotCompleted = async (
   )
   const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
   return projectColumnTaskDocs
-}
+} */
+
+export const getTaskDocsInProjectColumnNotCompleted = async (
+  projectId,
+  boardStatus,
+) => {
+  const projectColumnTaskQuery = await query(
+    collection(db, 'task'),
+    where('projectId', '==', projectId),
+    where('boardStatus', '==', boardStatus),
+    where('completed', '==', false),
+  )
+  const projectColumnTaskDocs = await getDocs(projectColumnTaskQuery)
+  return projectColumnTaskDocs
+} 
 
 /*
  * Description: fetches all taskDocs in a project column that are completed
@@ -78,12 +156,11 @@ export const getTaskDocsInProjectColumnNotCompleted = async (
  * task: firestore task document
  */
 export const getTaskDocsInProjectColumnCompleted = async (
-  userId,
   projectId,
   boardStatus,
 ) => {
   const projectColumnTaskQuery = await query(
-    collection(db, 'user', `${userId}/tasks`),
+    collection(db, 'task'),
     where('projectId', '==', projectId),
     where('boardStatus', '==', boardStatus),
     where('completed', '==', true),
@@ -92,10 +169,9 @@ export const getTaskDocsInProjectColumnCompleted = async (
   return projectColumnTaskDocs
 }
 
-export const completeTask = async (userId, projectId, columnId, taskId, taskIndex) => {
+export const completeTask = async (projectId, columnId, taskId, taskIndex) => {
   try {
     const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-      userId,
       projectId,
       columnId,
     )
@@ -110,7 +186,6 @@ export const completeTask = async (userId, projectId, columnId, taskId, taskInde
 
     const columnTasksDocsCompleted =
       await getTaskDocsInProjectColumnCompleted(
-        userId,
         projectId,
         columnId,
       )
@@ -129,7 +204,8 @@ export const completeTask = async (userId, projectId, columnId, taskId, taskInde
     }
 
     const taskQuery = await query(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
+      // changed above line
       where('taskId', '==', taskId),
     )
     const taskDocs = await getDocs(taskQuery)
@@ -145,10 +221,9 @@ export const completeTask = async (userId, projectId, columnId, taskId, taskInde
   }
 }
 
-export const updateBoardStatus = async (userId, draggableId, selectedProjectId, sourceDroppableId, sourceIndex, destinationDroppableId, destinationIndex) => {
+export const updateBoardStatus = async (draggableId, selectedProjectId, sourceDroppableId, sourceIndex, destinationDroppableId, destinationIndex) => {
   try {
     const oldColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-      userId,
       selectedProjectId,
       sourceDroppableId,
     )
@@ -162,7 +237,6 @@ export const updateBoardStatus = async (userId, draggableId, selectedProjectId, 
     })
 
     const newColumnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-      userId,
       selectedProjectId,
       destinationDroppableId,
     )
@@ -176,7 +250,8 @@ export const updateBoardStatus = async (userId, draggableId, selectedProjectId, 
     })
 
     const taskQuery = await query(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
+      // changed above line
       where('taskId', '==', draggableId),
     )
     const taskDocs = await getDocs(taskQuery)
@@ -195,10 +270,11 @@ export const updateBoardStatus = async (userId, draggableId, selectedProjectId, 
   }
 }
 
-export const columnTaskDelete = async(userId, projectId, columnId) => {
+export const columnTaskDelete = async(projectId, columnId) => {
   try {
     const taskQuery = await query(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
+      // changed above line
       where('projectId', '==', projectId),
       where('boardStatus', '==', columnId),
     )
@@ -211,10 +287,9 @@ export const columnTaskDelete = async(userId, projectId, columnId) => {
   }
 }
 
-export const taskDelete = async(userId, projectId, columnId, taskIndex, taskId) => {
+export const taskDelete = async(projectId, columnId, taskIndex, taskId) => {
   try {
     const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-      userId,
       projectId,
       columnId,
     )
@@ -228,7 +303,8 @@ export const taskDelete = async(userId, projectId, columnId, taskIndex, taskId) 
     })
     // UPDATE TASK INDEX HERE (COMPLETED)
     const q = await query(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
+      // changed above line
       where('taskId', '==', taskId),
     )
     const taskDocs = await getDocs(q)
@@ -256,9 +332,9 @@ export const addTask = async(userId, selectedProjectId, startScheduleDate, endSc
                             boardStatus, defaultGroup, taskDescription, taskPriority, taskTimeLength, index, scheduleCreated) => {
   try {
     await addDoc(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
       {
-        projectId: selectedProjectId || '',
+        projectId: selectedProjectId || userId,
         startDate: getValidStartDate(startScheduleDate, endScheduleDate),
         date: endScheduleDate,
         name: taskName,
@@ -298,7 +374,7 @@ export const updateFireStore = async(userId, taskId, projectId, boardStatus, ind
                                       defaultGroup, selectedProjectName, selectedProjectId) => {
   try {
     const taskQuery = await query(
-      collection(db, 'user', `${userId}/tasks`),
+      collection(db, 'task'),
       where('taskId', '==', taskId),
     )
     const taskDocs = await getDocs(taskQuery)
@@ -338,7 +414,6 @@ export const updateFireStore = async(userId, taskId, projectId, boardStatus, ind
       }
 
       const newProjectTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        userId,
         newProjectId,
         newBoardStatus,
       )
@@ -358,7 +433,6 @@ export const updateFireStore = async(userId, taskId, projectId, boardStatus, ind
 
       const currentProjectTaskDocs =
         await getTaskDocsInProjectColumnNotCompleted(
-          userId,
           projectId,
           boardStatus,
         )

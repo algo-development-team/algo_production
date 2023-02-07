@@ -9,7 +9,8 @@ export const useProjects = () => {
   const { currentUser } = useAuth();
   useEffect(() => {
     setLoading(true);
-    const unsub = onSnapshot(collection(db, "user", `${currentUser && currentUser.id}/projects`), (snapshot) => {
+    
+    const unsub = onSnapshot(collection(db, "user", `${currentUser && currentUser.id}/userInfo`), (snapshot) => {
       const allProjects = snapshot.docs.map((project) => ({
         ...project.data(),
         docId: project.id,

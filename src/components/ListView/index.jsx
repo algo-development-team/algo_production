@@ -13,7 +13,7 @@ import { DragDropContext } from 'react-beautiful-dnd'
 import { Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from '../../backend/handleUserInfo'
 import moment from 'moment/moment'
-import { dragEnds } from '../../backend/handleUserProjects'
+import { dragEnds } from '../../backend/handleProjects'
 
 
 // UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)

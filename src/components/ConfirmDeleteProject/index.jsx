@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { getProjectTitle } from 'utils'
 import './light.scss'
 import './main.scss'
-import { projectDelete } from '../../backend/handleUserProjects'
+import { projectDelete } from '../../backend/handleProjects'
 import { projectTasksDelete } from '../../backend/handleUserInfo'
 
 export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {

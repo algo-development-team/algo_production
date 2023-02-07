@@ -6,7 +6,7 @@ import { generatePushId } from 'utils/index'
 import { SetProjectColourDropdown } from './set-project-colour'
 import './styles/add-project.scss'
 import './styles/light.scss'
-import { updatedProject, addProject } from '../../../backend/handleUserProjects'
+import { updatedProject, addProject } from '../../../backend/handleProjects'
 
 export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { currentUser } = useAuth()
