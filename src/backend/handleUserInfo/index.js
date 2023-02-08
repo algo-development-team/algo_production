@@ -14,7 +14,7 @@ import { db } from '_firebase'
 
 /* CONVERTED */
 export const createUserDoc = async (userId) => {
-  const userRef = doc(db, 'userInfo', userId)
+  const userRef = doc(db, 'userInfo')
   return userRef
 }
 
@@ -62,7 +62,7 @@ export const getUserInfo = async (userId) => {
 /* CONVERTED */
 export const getUserDefaultData = async (userId) => {
   try {
-    const userRef = doc(db, 'userInfo', userId)
+    const userRef = doc(db, 'userInfo')
     const userSnapshot = await getDoc(userRef)
     if (userSnapshot.exists()) {
       const userDefaultData = userSnapshot.data()

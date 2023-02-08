@@ -38,7 +38,7 @@ const getValidStartDate = (startDate, endDate) => {
 export const getAllUserTasks = async (userId) => {
   const nonCompletedTasks = []
   const completedTasks = []
-  const userQuery = query(collection(db, 'userInfo', `${userId}`))
+  const userQuery = query(collection(db, 'userInfo'))
   const userDocs = await getDocs(userQuery)
   userDocs.forEach(async (userDoc) => {
     const userData = userDoc.data()
