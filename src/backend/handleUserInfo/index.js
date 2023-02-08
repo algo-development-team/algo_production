@@ -59,7 +59,6 @@ export const getDefaultUserInfo = (email) => {
     isSetup: false,
     calendarId: null,
     calendarIds: [{ id: email, selected: true, summary: email, colorId: 7 }],
-    timeZone: timeZone,
     checklist: [],
     scheduleCreated: false,
     isGrouping: true,
@@ -110,4 +109,5 @@ export const projectTasksDelete = async (userId, projectId) => {
     })
   } catch (error) {
     console.log(error)
-  }}
+  }
+}

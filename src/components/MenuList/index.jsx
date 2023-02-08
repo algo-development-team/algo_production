@@ -9,7 +9,11 @@ import {
   useColumnEditorContextValue,
 } from 'context'
 import { useAuth } from 'hooks'
-import { columnTaskDelete, taskDelete, getTask } from '../../backend/handleUserTasks'
+import {
+  columnTaskDelete,
+  taskDelete,
+  getTask,
+} from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
@@ -59,7 +63,13 @@ export const MenuList = ({
   }
 
   const handleTaskDelete = async () => {
-    await taskDelete(currentUser && currentUser.id, projectId, columnId, taskIndex, taskId)
+    await taskDelete(
+      currentUser && currentUser.id,
+      projectId,
+      columnId,
+      taskIndex,
+      taskId,
+    )
   }
 
   const deleteHandler = async (e) => {
@@ -69,7 +79,11 @@ export const MenuList = ({
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
       const newColumns = columns.filter((column) => column.id !== columnId)
-      await updateProjectColumns(currentUser && currentUser.id, projectId, newColumns)
+      await updateProjectColumns(
+        currentUser && currentUser.id,
+        projectId,
+        newColumns,
+      )
       await handleColumnTasksDelete()
     } else {
       await handleTaskDelete()
