@@ -42,10 +42,10 @@ export const getAllUserProjects = async (userId) => {
   return allUserProjects
 }
 
-export const updateProjectColumns = async (userId, selectedProjectId, newSelectedProjectColumns) => {
+export const updateProjectColumns = async (selectedProjectId, newSelectedProjectColumns) => {
   try {
     const projectQuery = await query(
-      collection(db, 'user', `${userId}/projects`),
+      collection(db, 'projects'),
       where('projectId', '==', selectedProjectId),
     )
     const projectDocs = await getDocs(projectQuery)
@@ -60,7 +60,7 @@ export const updateProjectColumns = async (userId, selectedProjectId, newSelecte
 }
 
 /* CONVERTED */
-export const projectDelete = async (userId, projectId) => {
+export const projectDelete = async (projectId) => {
   try {
     const q = await query(
       collection(db, 'projects'),
@@ -75,10 +75,10 @@ export const projectDelete = async (userId, projectId) => {
   }
 }
 
-export const updatedProject = async (userId, projectId, projectName, projectColour, projectIsList, projectIsWork) => {
+export const updatedProject = async (projectId, projectName, projectColour, projectIsList, projectIsWork) => {
     try{
       const projectQuery = await query(
-        collection(db, 'user', `${userId}/projects`),
+        collection(db, 'projects'),
         where('projectId', '==', projectId),
       )
       const projectDocs = await getDocs(projectQuery)
@@ -109,10 +109,10 @@ const getNewColumns = (columnOrder, columns) => {
   return newColumns
 }
 
-export const dragEnd = async(userId, selectedProjectId, newColumnOrder) => {
+export const dragEnd = async(selectedProjectId, newColumnOrder) => {
   try {
     const projectQuery = await query(
-      collection(db, 'user', `${userId}/projects`),
+      collection(db, 'projects'),
       where('projectId', '==', selectedProjectId),
     )
     const projectDocs = await getDocs(projectQuery)
@@ -218,9 +218,29 @@ export const dragEnds = async(defaultGroup, userId, sourceIndex, destinationInde
   }
 }
 
+const createDefaultProjectDoc = async (projectId) => {
+  const userRef = doc(db, 'project', projectId)
+  return userRef
+}
+
+const getDefaultProject = (projectId) => {
+  const defaultTeam = {
+    projectId: projectId,
+    projects: [],
+  }
+  return defaultTeam
+}
+
+const initializeDefaultProject = async (projectRef, newProject) => {
+  setDoc(projectRef, newProject)
+  .finally(() => console.log('project initialized'))
+  .catch((error) => console.log(error))
+}
+
 export const addProject = async(userId, newProject) => {
-  await addDoc(
-    collection(db, 'user', `${userId}/projects`),
-    newProject,
-  )
+  const teamRef = await createDefaultProjectDoc(userAuth.uid)
+        onSnapshot(teamRef, async (snapshot) => {
+          const defaultTeam = getDefaultProject(snapshot.id)
+          await initializeDefaultProject(teamRef, defaultTeam)
+        })
 }

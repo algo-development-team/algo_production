@@ -12,25 +12,25 @@ export const useTasksCount = (isDefaultGroup, projectId, name) => {
     let q = null
     if (!isDefaultGroup) {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('projectId', '==', projectId),
         where('completed', '==', false),
       )
     } else if (isDefaultGroup && name === 'Inbox') {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('projectId', '==', ''),
         where('completed', '==', false),
       )
     } else if (isDefaultGroup && name === 'Important') {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('important', '==', true),
         where('completed', '==', false),
       )
     } else {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('completed', '==', false),
       )
     }

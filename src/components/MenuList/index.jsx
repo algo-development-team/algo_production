@@ -49,7 +49,7 @@ export const MenuList = ({
 
   const handleColumnDelete = async () => {
     const newColumns = columns.filter((column) => column.id !== columnId)
-    await updateProjectColumns(currentUser.id, projectId, newColumns)
+    await updateProjectColumns(projectId, newColumns)
   }
 
   const handleColumnTasksDelete = async () => {
@@ -68,7 +68,7 @@ export const MenuList = ({
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
       const newColumns = columns.filter((column) => column.id !== columnId)
-      await updateProjectColumns(currentUser && currentUser.id, projectId, newColumns)
+      await updateProjectColumns(projectId, newColumns)
       await handleColumnTasksDelete()
     } else {
       await handleTaskDelete()

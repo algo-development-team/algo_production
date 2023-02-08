@@ -27,25 +27,25 @@ export const useTasks = () => {
     let q = null
     if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('projectId', '==', selectedProject),
         orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('projectId', '==', ''),
         orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Important') {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         where('important', '==', true),
         orderBy('index', 'asc'),
       )
     } else {
       q = query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        collection(db, 'project'),
         orderBy('index', 'asc'),
       )
     }

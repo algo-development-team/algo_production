@@ -45,7 +45,7 @@ export const Board = () => {
 
     // add new column to selected project
 
-    await updateProjectColumns(currentUser && currentUser.id, selectedProject.selectedProjectId, newSelectedProjectColumns)
+    await updateProjectColumns(selectedProject.selectedProjectId, newSelectedProjectColumns)
   }
   const handleUpdateColumn = async (e, columnId) => {
     e.preventDefault()
@@ -63,7 +63,8 @@ export const Board = () => {
     }
 
     // update selected project columns
-    await updateProjectColumns(currentUser && currentUser.id, selectedProject.selectedProjectId, updatedSelectedProjectColumns)
+    await updateProjectColumns(selectedProject.selectedProjectId, updatedSelectedProjectColumns)
+    // changed above line
 
     setNewColumnName('')
     setColumnEditorToShow(null)
@@ -96,7 +97,7 @@ export const Board = () => {
       setBoardState(newState)
 
       // Drag End
-     await dragEnd(currentUser && currentUser.id, selectedProject.selectedProjectId, newColumnOrder)
+     await dragEnd(selectedProject.selectedProjectId, newColumnOrder)
       return
     }
 

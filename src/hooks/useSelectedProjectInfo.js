@@ -9,7 +9,7 @@ export const useSelectedProjectInfo = (projectId) => {
 
   useEffect(() => {
     if (projectId) {
-      const projectQuery = query(collection(db, "user", `${currentUser && currentUser.id}/projects`), where("projectId", "==", projectId));
+      const projectQuery = query(collection(db, 'projects'), where("projectId", "==", projectId));
       const unsubscribe = onSnapshot(projectQuery, (querySnapshot) => {
         let project = querySnapshot.docs.map((project) => ({
           ...project.data(),

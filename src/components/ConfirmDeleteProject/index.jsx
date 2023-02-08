@@ -13,7 +13,7 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   const navigate = useNavigate()
 
   const handleProjectDelete = async () => {
-    await projectDelete(currentUser && currentUser.id, projectId)
+    await projectDelete(projectId)
   }
 
   const handleProjectTasksDelete = async () => {
