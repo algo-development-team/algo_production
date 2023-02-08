@@ -1,10 +1,12 @@
 import {
   setDoc,
+  addDoc,
   doc,
   query,
   collection,
   where,
   getDocs,
+  updateDoc,
 } from 'firebase/firestore'
 import { db } from '_firebase'
 import { getUserInfo } from '../handleUserInfo'
@@ -27,8 +29,8 @@ export const getDefaultTeam = (userId) => {
 /* CONVERTED */
 export const initializeDefaultTeam = async (teamRef, newTeam) => {
   setDoc(teamRef, newTeam)
-  .finally(() => console.log('team initialized'))
-  .catch((error) => console.log(error))
+    .finally(() => console.log('team initialized'))
+    .catch((error) => console.log(error))
 }
 
 /* CONVERTED */
@@ -43,7 +45,7 @@ export const getUserTeams = async (userId) => {
     for (const teamId of teamIds) {
       const teamQuery = await query(
         collection(db, 'team'),
-        where("teamId", "==", teamId),
+        where('teamId', '==', teamId),
       )
       const teamDocs = await getDocs(teamQuery)
       const teamList = []
@@ -57,5 +59,27 @@ export const getUserTeams = async (userId) => {
   } catch (error) {
     console.log(error)
     return null
+  }
+}
+
+export const addTeam = async (userId, newTeam) => {
+  await addDoc(collection(db, 'team'), newTeam)
+}
+
+export const updateTeam = async (teamId, teamName, teamDescription) => {
+  try {
+    const teamQuery = await query(
+      collection(db, 'team'),
+      where('teamId', '==', teamId),
+    )
+    const teamDocs = await getDocs(teamQuery)
+    teamDocs.forEach(async (teamDoc) => {
+      await updateDoc(teamDoc.ref, {
+        name: teamName,
+        description: teamDescription,
+      })
+    })
+  } catch (error) {
+    console.log(error)
   }
 }

@@ -8,7 +8,7 @@ import {
   deleteDoc,
   doc,
   getDoc,
-} from "firebase/firestore"
+} from 'firebase/firestore'
 import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
 
@@ -23,7 +23,7 @@ export const getUserInfoOld = async (userId) => {
   try {
     const userInfoQuery = await query(
       collection(db, 'user'),
-      where("userId", "==", userId),
+      where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)
     const userInfoDocList = []
@@ -45,7 +45,7 @@ export const getUserInfo = async (userId) => {
   try {
     const userInfoQuery = await query(
       collection(db, 'user'),
-      where("userId", "==", userId),
+      where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)
     const userInfoList = []
@@ -109,8 +109,8 @@ export const getDefaultUserInfo = (userId, email) => {
 /* CONVERTED */
 export const initializeUserInfo = async (userRef, newUserInfo) => {
   setDoc(userRef, newUserInfo)
-      .finally(() => console.log('user initialized'))
-      .catch((error) => console.log(error))
+    .finally(() => console.log('user initialized'))
+    .catch((error) => console.log(error))
 }
 
 /* CONVERTED */
@@ -118,7 +118,7 @@ export const updateUserInfo = async (userId, newUserInfo) => {
   try {
     const userInfoQuery = await query(
       collection(db, 'user'),
-      where("userId", "==", userId),
+      where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)
     userInfoDocs.forEach(async (userInfo) => {
@@ -134,7 +134,7 @@ export const projectTasksDelete = async (userId, projectId) => {
   try {
     const tasksQuery = await query(
       collection(db, 'task'),
-      where("projectId", "==", projectId),
+      where('projectId', '==', projectId),
     )
     const taskDocs = await getDocs(tasksQuery)
     taskDocs.forEach(async (taskDoc) => {

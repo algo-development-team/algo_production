@@ -11,6 +11,7 @@ import { useOverlayContextValue } from 'context/overlay-context'
 import { useEffect } from 'react'
 import './main.scss'
 import { ProjectEditor } from './ProjectEditor'
+import { TeamEditor } from './TeamEditor'
 import { QuickAddTaskDialog } from './quick-add-task-dialog'
 import { TaskPopup } from './task-popup'
 import { GoogleCalendarAuth } from './google-calendar-auth'
@@ -30,6 +31,8 @@ export const Overlay = () => {
     switch (showDialog) {
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
+      case 'ADD_TEAM':
+        return <TeamEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
         return <QuickAddTaskDialog closeOverlay={closeOverlay} />
       case 'TASK_POPUP':
@@ -133,6 +136,14 @@ export const Overlay = () => {
           <ProjectEditor
             isEdit
             projectToEdit={dialogProps.project}
+            closeOverlay={closeOverlay}
+          />
+        )
+      case 'EDIT_TEAM':
+        return (
+          <TeamEditor
+            isEdit
+            teamToEdit={dialogProps.team}
             closeOverlay={closeOverlay}
           />
         )
