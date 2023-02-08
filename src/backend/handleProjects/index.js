@@ -34,13 +34,6 @@ export const getProject = async (projectId) => {
 }
 
 export const getAllUserProjects = async (userId) => {
-  // const projectQuery = await query(collection(db, 'user', `${userId}/projects`))
-  // const projectDocs = await getDocs(projectQuery)
-  // const projects = []
-  // projectDocs.forEach((projectDoc) => {
-  //   projects.push(projectDoc.data())
-  // })
-  // return projects
   const userTeams = getUserTeams(userId)
   let userProjectIds = []
   for (const userTeam of userTeams) {
@@ -60,7 +53,7 @@ export const updateProjectColumns = async (
 ) => {
   try {
     const projectQuery = await query(
-      collection(db, 'projects'),
+      collection(db, 'project'),
       where('projectId', '==', selectedProjectId),
     )
     const projectDocs = await getDocs(projectQuery)
@@ -78,7 +71,7 @@ export const updateProjectColumns = async (
 export const projectDelete = async (projectId) => {
   try {
     const q = await query(
-      collection(db, 'projects'),
+      collection(db, 'project'),
       where('projectId', '==', projectId),
     )
     const docs = await getDocs(q)
@@ -100,7 +93,7 @@ export const updatedProject = async (
 ) => {
   try {
     const projectQuery = await query(
-      collection(db, 'projects'),
+      collection(db, 'project'),
       where('projectId', '==', projectId),
     )
     const projectDocs = await getDocs(projectQuery)
@@ -133,7 +126,7 @@ const getNewColumns = (columnOrder, columns) => {
 export const dragEnd = async (userId, selectedProjectId, newColumnOrder) => {
   try {
     const projectQuery = await query(
-      collection(db, 'projects'),
+      collection(db, 'project'),
       where('projectId', '==', selectedProjectId),
     )
     const projectDocs = await getDocs(projectQuery)

@@ -14,7 +14,7 @@ import { db } from '_firebase'
 
 /* CONVERTED */
 export const createUserDoc = async (userId) => {
-  const userRef = doc(db, 'user', userId)
+  const userRef = doc(db, 'userInfo', userId)
   return userRef
 }
 
@@ -22,7 +22,7 @@ export const createUserDoc = async (userId) => {
 export const getUserInfoOld = async (userId) => {
   try {
     const userInfoQuery = await query(
-      collection(db, 'user'),
+      collection(db, 'userInfo'),
       where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)
@@ -44,7 +44,7 @@ export const getUserInfoOld = async (userId) => {
 export const getUserInfo = async (userId) => {
   try {
     const userInfoQuery = await query(
-      collection(db, 'user'),
+      collection(db, 'userInfo'),
       where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)
@@ -62,7 +62,7 @@ export const getUserInfo = async (userId) => {
 /* CONVERTED */
 export const getUserDefaultData = async (userId) => {
   try {
-    const userRef = doc(db, 'user', userId)
+    const userRef = doc(db, 'userInfo', userId)
     const userSnapshot = await getDoc(userRef)
     if (userSnapshot.exists()) {
       const userDefaultData = userSnapshot.data()
@@ -117,7 +117,7 @@ export const initializeUserInfo = async (userRef, newUserInfo) => {
 export const updateUserInfo = async (userId, newUserInfo) => {
   try {
     const userInfoQuery = await query(
-      collection(db, 'user'),
+      collection(db, 'userInfo'),
       where('userId', '==', userId),
     )
     const userInfoDocs = await getDocs(userInfoQuery)

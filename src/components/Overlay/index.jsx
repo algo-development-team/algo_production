@@ -139,14 +139,6 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
           />
         )
-      case 'EDIT_TEAM':
-        return (
-          <TeamEditor
-            isEdit
-            teamToEdit={dialogProps.team}
-            closeOverlay={closeOverlay}
-          />
-        )
       case 'CONFIRM_DELETE':
         return (
           <ConfrimDeleteProject

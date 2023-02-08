@@ -4,25 +4,18 @@ import { useState } from 'react'
 import { generatePushId } from 'utils/index'
 import './styles/add-project.scss'
 import './styles/light.scss'
-import { addTeam, updateTeam } from '../../../backend/handleTeams'
+import { addTeam } from '../../../backend/handleTeams'
 import { TagsInput } from './tags-input'
 
 /* Create a hook called useTeams and update it in the component */
-export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
+export const TeamEditor = ({ closeOverlay }) => {
   const { currentUser } = useAuth()
-  const [teamName, setTeamName] = useState(isEdit && teamToEdit.name)
-  const [teamDescription, setTeamDescription] = useState(
-    isEdit && teamToEdit.description,
-  )
+  const [teamName, setTeamName] = useState('')
+  const [teamDescription, setTeamDescription] = useState('')
   const teamId = generatePushId()
   const { setShowDialog } = useOverlayContextValue()
-  const [disableSubmit, setDisableSubmit] = useState(isEdit ? false : true)
+  const [disableSubmit, setDisableSubmit] = useState(true)
   const [emails, setEmails] = useState([])
-
-  const updateTeamHandler = async (e) => {
-    e.preventDefault()
-    await updateTeam(teamToEdit.teamId, teamName, teamDescription)
-  }
 
   const addTeamHandler = async (e) => {
     e.preventDefault()
@@ -35,6 +28,7 @@ export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
 
     await addTeam(currentUser && currentUser.id, newProject)
 
+    // send email invite to team members here
     // update team list here
   }
 
@@ -55,15 +49,13 @@ export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
         onClick={(event) => event.stopPropagation()}
       >
         <header className='add-project__modal--header'>
-          <h4>{isEdit ? 'Edit' : 'Add'} Project</h4>
+          <h4>Add Project</h4>
         </header>
         <div className='add-project__modal--content'>
           <form
             action=''
             autoComplete='off'
-            onSubmit={(e) =>
-              isEdit ? updateTeamHandler(e) : addTeamHandler(e)
-            }
+            onSubmit={(e) => addTeamHandler(e)}
           >
             <div className='add-project__form-group'>
               <label>Name</label>
@@ -73,7 +65,7 @@ export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
                 name='teamName'
                 id='teamName'
                 minLength={2}
-                value={teamName || ''}
+                value={teamName}
                 onChange={(e) => handleChange(e)}
                 required
               />
@@ -85,7 +77,7 @@ export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
                 type='text'
                 name='teamDescription'
                 id='teamDescription'
-                value={teamDescription || ''}
+                value={teamDescription}
                 onChange={(e) => setTeamDescription(e.target.value)}
               />
             </div>
@@ -106,11 +98,10 @@ export const TeamEditor = ({ closeOverlay, isEdit, teamToEdit }) => {
               type='submit'
               disabled={disableSubmit}
               onClick={(e) => {
-                e.preventDefault()
-                isEdit ? updateTeamHandler(e) : addTeamHandler(e)
+                addTeamHandler(e)
               }}
             >
-              {isEdit ? 'Save' : 'Add'}
+              Add
             </button>
           </div>
         </footer>
