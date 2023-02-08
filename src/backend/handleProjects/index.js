@@ -251,5 +251,5 @@ export const dragEnds = async (
 }
 
 export const addProject = async (userId, newProject) => {
-  await addDoc(collection(db, 'user', `${userId}/projects`), newProject)
+  await addDoc(collection(db, 'project'), newProject)
 }
