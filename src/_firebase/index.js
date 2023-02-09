@@ -36,10 +36,11 @@ export { firebaseConfig as firebase }
 
 export const batchWriteDefaultData = async (userId, userName, email) => {
   try {
-    const defaultUserInfo = getDefaultUserInfo(userId, email)
+    const projectId = generatePushId()
+    const defaultUserTasks = getDefaultUserTasks(projectId)
+    const defaultUserProject = getDefaultUserProject(projectId)
     const defaultUserTeam = getDefaultUserTeam(userId, userName)
-    const defaultUserProject = getDefaultUserProject(userId)
-    const defaultUserTasks = getDefaultUserTasks(userId)
+    const defaultUserInfo = getDefaultUserInfo(userId, email)
 
     const projectDocRef = doc(collection(db, 'project'))
     setDoc(projectDocRef, defaultUserProject).then(() => {

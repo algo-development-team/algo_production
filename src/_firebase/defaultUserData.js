@@ -1,11 +1,11 @@
-export const getDefaultUserTasks = () => {
+export const getDefaultUserTasks = (projectId) => {
   const defaultUserTasks = [
     {
       name: 'Start your own project! 🚀',
       startDate: '',
       date: '',
-      projectId: 'welcome',
-      taskId: 'icebreaker_1',
+      projectId: projectId,
+      taskId: 'default_task_1',
       boardStatus: 'TODO',
       completed: false,
       important: false,
@@ -19,8 +19,8 @@ export const getDefaultUserTasks = () => {
       name: 'Schedule tasks 📅 ',
       startDate: '',
       date: '',
-      projectId: 'welcome',
-      taskId: 'icebreaker_2',
+      projectId: projectId,
+      taskId: 'default_task_1',
       boardStatus: 'TODO',
       completed: false,
       important: false,
@@ -34,10 +34,10 @@ export const getDefaultUserTasks = () => {
   return defaultUserTasks
 }
 
-export const getDefaultUserProject = (userId) => {
+export const getDefaultUserProject = (projectId) => {
   const defaultUserProject = {
     name: 'Welcome 👋',
-    projectId: userId,
+    projectId: projectId,
     projectColour: {
       name: 'Charcoal',
       hex: '#808080',
