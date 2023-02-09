@@ -11,7 +11,7 @@ export const CustomTeam = ({ team }) => {
       role='button'
     >
       <div className='project-group__group'>
-        <p className='project-group__name'>{team.name}</p>
+        <p className='project-group__name'>{cropLabel(team.name, 12)}</p>
       </div>
     </NavLink>
   )

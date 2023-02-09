@@ -11,8 +11,6 @@ export const CustomProjects = () => {
   const [showTeams, setShowTeams] = useState(true)
   const [showProjects, setShowProjects] = useState(true)
 
-  console.log('teams', teams) // DEBUGGING
-
   /* purpose: sorts project names at sidebar alphabetically */
   const sortByName = (projects) => {
     return projects.sort((a, b) => {
