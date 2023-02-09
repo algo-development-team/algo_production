@@ -12,27 +12,24 @@ export const useTasksCount = (isDefaultGroup, projectId, name) => {
     let q = null
     if (!isDefaultGroup) {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('projectId', '==', projectId),
         where('completed', '==', false),
       )
     } else if (isDefaultGroup && name === 'Inbox') {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('projectId', '==', ''),
         where('completed', '==', false),
       )
     } else if (isDefaultGroup && name === 'Important') {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('important', '==', true),
         where('completed', '==', false),
       )
     } else {
-      q = query(
-        collection(db, 'project'),
-        where('completed', '==', false),
-      )
+      q = query(collection(db, 'task'), where('completed', '==', false))
     }
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let numOfTasks = querySnapshot.docs.length

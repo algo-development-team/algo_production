@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
-import  React  from 'react';
+import React from 'react'
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()

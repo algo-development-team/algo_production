@@ -9,7 +9,12 @@ import {
   writeBatch,
 } from 'firebase/firestore'
 import { generatePushId } from 'utils'
-import { icebreakerTasks } from './icebreakerTasks'
+import {
+  getDefaultUserInfo,
+  getDefaultUserTeam,
+  getDefaultUserProject,
+  getDefaultUserTasks,
+} from './defaultUserData'
 
 const initConfig = {
   apiKey: process.env.REACT_APP_API_KEY,
@@ -29,51 +34,28 @@ export const provider = new GoogleAuthProvider()
 export const db = getFirestore(firebaseConfig)
 export { firebaseConfig as firebase }
 
-export const batchWriteIcebreakerTasks = async (userId) => {
-  const icebreakerProjectId = 'welcome'
+export const batchWriteDefaultData = async (userId, userName, email) => {
   try {
-    const icebreakerProject = {
-      name: 'Welcome 👋',
-      projectId: icebreakerProjectId,
-      projectColour: {
-        name: 'Charcoal',
-        hex: '#808080',
-      },
-      projectIsList: false,
-      projectIsWork: true,
-      columns: [
-        {
-          id: 'NOSECTION',
-          title: '(No Section)',
-        },
-        {
-          id: 'TODO',
-          title: 'To do',
-        },
-        {
-          id: 'INPROGRESS',
-          title: 'In Progress',
-        },
-        {
-          id: 'COMPLETE',
-          title: 'Complete',
-        },
-      ],
-    }
-    const projectsDocRef = doc(collection(db, 'user', `${userId}/projects`))
-    setDoc(projectsDocRef, icebreakerProject).then(() => {
+    const defaultUserInfo = getDefaultUserInfo(userId, email)
+    const defaultUserTeam = getDefaultUserTeam(userId, userName)
+    const defaultUserProject = getDefaultUserProject(userId)
+    const defaultUserTasks = getDefaultUserTasks(userId)
+
+    const projectDocRef = doc(collection(db, 'project'))
+    setDoc(projectDocRef, defaultUserProject).then(() => {
       let batch = writeBatch(db)
-      while (icebreakerTasks.length) {
+      while (defaultUserTasks.length) {
         const id = generatePushId()
-        batch.set(
-          doc(db, 'user', `${userId}/tasks/${id}`),
-          icebreakerTasks.pop(),
-        )
-        if (!icebreakerTasks.length) {
+        batch.set(doc(db, 'task', id), defaultUserTasks.pop())
+        if (!defaultUserTasks.length) {
           batch.commit()
         }
       }
     })
+    const teamDocRef = doc(collection(db, 'team'))
+    await setDoc(teamDocRef, defaultUserTeam)
+    const userInfoRef = doc(collection(db, 'userInfo'))
+    await setDoc(userInfoRef, defaultUserInfo)
   } catch (error) {
     console.log(error)
   }
@@ -91,8 +73,8 @@ export const createUserProfileDocument = async (userAuth) => {
     const createdAt = new Date()
 
     setDoc(userRef, { displayName, createdAt, email })
-      .finally(() => batchWriteIcebreakerTasks(userAuth.uid))
-      .catch((err) => console.log(err))
+      .finally(() => batchWriteDefaultData(userAuth.uid, displayName, email))
+      .catch((error) => console.log(error))
   }
   return userRef
 }

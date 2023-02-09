@@ -27,27 +27,24 @@ export const useTasks = () => {
     let q = null
     if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('projectId', '==', selectedProject),
         orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('projectId', '==', ''),
         orderBy('index', 'asc'),
       )
     } else if (selectedProject === 'Important') {
       q = query(
-        collection(db, 'project'),
+        collection(db, 'task'),
         where('important', '==', true),
         orderBy('index', 'asc'),
       )
     } else {
-      q = query(
-        collection(db, 'project'),
-        orderBy('index', 'asc'),
-      )
+      q = query(collection(db, 'task'), orderBy('index', 'asc'))
     }
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {

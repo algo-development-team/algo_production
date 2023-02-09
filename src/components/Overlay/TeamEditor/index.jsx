@@ -23,6 +23,7 @@ export const TeamEditor = ({ closeOverlay }) => {
       teamId: teamId,
       name: teamName,
       description: teamDescription,
+      projects: [],
     }
     setShowDialog('')
 

@@ -90,7 +90,6 @@ export const getDefaultUserInfo = (userId, email) => {
     isSetup: false,
     calendarId: null,
     calendarIds: [{ id: email, selected: true, summary: email, colorId: 7 }],
-    timeZone: timeZone,
     checklist: [],
     scheduleCreated: false,
     isGrouping: true,

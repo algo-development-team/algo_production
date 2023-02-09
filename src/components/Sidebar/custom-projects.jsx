@@ -1,16 +1,18 @@
-import { useProjects } from 'hooks'
+import { useProjects, useTeams } from 'hooks'
 import { useState } from 'react'
 import { CustomProject } from './custom-project'
 import { AddCustomProject } from './add-custom-project'
 import { AddCustomTeam } from './add-custom-team'
+import { CustomTeam } from './custom-team'
 
 export const CustomProjects = () => {
   const { projects } = useProjects()
+  const { teams } = useTeams()
   const [showTeams, setShowTeams] = useState(true)
   const [showProjects, setShowProjects] = useState(true)
 
   /* purpose: sorts project names at sidebar alphabetically */
-  const sortProjectsByName = (projects) => {
+  const sortByName = (projects) => {
     return projects.sort((a, b) => {
       if (a.name.toLowerCase() < b.name.toLowerCase()) {
         return -1
@@ -25,6 +27,17 @@ export const CustomProjects = () => {
   return (
     <div className='custom-project-group__wrapper'>
       <AddCustomTeam showTeams={showTeams} setShowTeams={setShowTeams} />
+      {showTeams && (
+        <div
+          className='custom-projects'
+          style={{ height: `${showTeams ? '100%' : '0%'}` }}
+        >
+          {sortByName(teams).map((team) => (
+            <CustomTeam key={team.teamId} team={team} />
+          ))}
+          <div className='add-project__container'></div>
+        </div>
+      )}
       <AddCustomProject
         showProjects={showProjects}
         setShowProjects={setShowProjects}
@@ -34,7 +47,7 @@ export const CustomProjects = () => {
           className='custom-projects'
           style={{ height: `${showProjects ? '100%' : '0%'}` }}
         >
-          {sortProjectsByName(projects).map((project) => (
+          {sortByName(projects).map((project) => (
             <CustomProject key={project.projectId} project={project} />
           ))}
           <div className='add-project__container'></div>
