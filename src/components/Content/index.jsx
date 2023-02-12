@@ -8,10 +8,9 @@ import './styles/light.scss'
 import React from 'react'
 import { TeamPage } from 'components/TeamPage'
 import { ProjectsVisualisation } from 'components/Visualisations/projects-visualisation.jsx'
-import { TasksVisualisation } from 'components/Visualisations/tasks-visualisation.jsx'
 
 export const Content = () => {
-  const { projectId, defaultGroup } = useParams()
+  const { teamId, projectId, defaultGroup } = useParams()
   const projectInfo = useSelectedProjectInfo(projectId)
   const currentView = projectInfo && projectInfo[0]?.projectIsList
 
@@ -30,6 +29,8 @@ export const Content = () => {
       } else {
         return null
       }
+    } else if (teamId) {
+      return <TeamPage />
     } else {
       return currentView ? <TaskList /> : <Board />
     }
