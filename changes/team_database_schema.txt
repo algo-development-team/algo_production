@@ -1,0 +1,78 @@
+# Team Database Schema
+
+> Written in Typescript Notation
+
+```ts
+// default user info
+interface user = {
+	createdAt: Timestamp,
+	displayName: string,
+	email: string,
+}
+
+// user info
+interface userInfo = {
+	userId: userId,
+	teams: teamId[],
+	workTimeRange: string,
+	sleepTimeRange: string,
+	preferences: number[24],
+	personalPreferences: number[24],
+	workDays: boolean[7],
+	isSetup: boolean,
+	calendarId: string | null,
+	calendarIds: { id: string, selected: boolean, summary: string, colorId: number }[],
+	checklist: string[], // soon to be replaced by weeklyChecklist
+	weeklyChecklist: {[Timestamp]: string[]},
+	scheduleCreated: boolean,
+	isGrouping: boolean,
+	isWeekly: boolean,
+	startingDay: number,
+	beforeMeetingBufferTime: number,
+	afterMeetingBufferTime: number,
+	beforeWorkBufferTime: number,
+	afterWorkBufferTime: number,
+	beforeSleepBufferTime: number,
+	afterSleepBufferTime: number,
+}
+
+interface team = {
+  teamId: teamId,
+  projects: projectId[],
+  name: string,
+  description: string,
+}
+
+interface project = {
+	projectId: projectId,
+	projectIsList: boolean,
+	projectIsWork: boolean,
+	projectColour: {hex: string, name: string},
+	name: string,
+	columns: {id: string, title: string}[],
+}
+
+interface task = {
+	taskId: taskId,
+	projectId: projectId,
+	boardStatus: string,
+	completed: boolean,
+	name: string,
+	description: string,
+	startDate: string,
+	date: string,
+	priority: number,
+	timeLength: number,
+	eventIds: string[],
+	important: boolean,
+	index: number,
+}
+```
+
+```ts
+userInfo: userInfo.teams: teamId[], userInfo.userId: teamId -> team
+
+team: team.projects: projectId[] -> project
+
+task: task.projectId: projectId -> project
+```

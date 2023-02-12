@@ -11,9 +11,7 @@ export const useChecklist = () => {
   useEffect(() => {
     setLoading(true)
 
-    let q = query(
-      collection(db, 'user', `${currentUser && currentUser.id}/userInfo`),
-    )
+    let q = query(collection(db, 'userInfo'))
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let result = []

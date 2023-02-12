@@ -3,9 +3,9 @@ import { useAuth } from 'hooks'
 import { useEffect, useState } from 'react'
 import { db } from '_firebase'
 
-export const useScheduleCreated = () => {
+export const useTeamIds = () => {
   const { currentUser } = useAuth()
-  const [scheduleCreated, setScheduleCreated] = useState(false)
+  const [teamIds, setTeamIds] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -14,18 +14,21 @@ export const useScheduleCreated = () => {
     let q = query(collection(db, 'userInfo'))
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      let result = false
+      let result = []
       querySnapshot.forEach((doc) => {
-        if (doc.data()?.scheduleCreated === true) {
-          result = true
+        let teamIds = []
+        if (doc.data()?.userId) {
+          teamIds.push(doc.data()?.userId)
+        } else if (doc.data()?.teams) {
+          teamIds = teamIds.concat(doc.data()?.teams)
         }
+        result = teamIds
       })
-
-      setScheduleCreated(result)
+      setTeamIds(result)
       setLoading(false)
     })
     return unsubscribe
   }, [currentUser])
 
-  return { setScheduleCreated, scheduleCreated, loading }
+  return { setTeamIds, teamIds, loading }
 }

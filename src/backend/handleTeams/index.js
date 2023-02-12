@@ -18,10 +18,12 @@ export const createDefaultTeamDoc = async (userId) => {
 }
 
 /* CONVERTED */
-export const getDefaultTeam = (userId) => {
+export const getDefaultTeam = (userId, userName) => {
   const defaultTeam = {
     teamId: userId,
-    projects: [],
+    name: userName,
+    description: `Default team for ${userName}`,
+    projects: [userId],
   }
   return defaultTeam
 }

@@ -1,43 +1,42 @@
 import { collection, onSnapshot, query, where } from 'firebase/firestore'
 import { useEffect, useState } from 'react'
+import { useTeamIds } from './useTeamIds'
 import { db } from '_firebase'
-import { useProjectIds } from './useProjectIds'
 
-export const useProjects = () => {
-  const [projects, setProjects] = useState([])
+export const useProjectIds = () => {
+  const [projectIds, setProjectIds] = useState([])
   const [loading, setLoading] = useState(true)
-  const { projectIds } = useProjectIds()
+  const { teamIds } = useTeamIds()
 
   useEffect(() => {
     setLoading(true)
 
     const unsubscribes = []
 
-    if (projectIds) {
+    if (teamIds) {
       let result = []
 
-      for (const projectId of projectIds) {
+      for (const teamId of teamIds) {
         let subresult = []
 
-        let q = query(
-          collection(db, 'project'),
-          where('projectId', '==', projectId),
-        )
+        let q = query(collection(db, 'team'), where('teamId', '==', teamId))
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           querySnapshot.forEach((doc) => {
-            subresult.push(doc.data())
+            if (doc.data()?.projects) {
+              subresult = doc.data()?.projects
+            }
           })
         })
 
         result = result.concat(subresult)
         unsubscribes.push(unsubscribe)
       }
-      setProjects(result)
+      setProjectIds(result)
       setLoading(false)
     }
 
-    return unsubscribes
-  }, [projectIds])
+    // return unsubscribes
+  }, [teamIds])
 
-  return { setProjects, projects, loading }
+  return { setProjectIds, projectIds, loading }
 }

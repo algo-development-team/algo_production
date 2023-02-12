@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react'
-import { auth, provider } from '_firebase'
+import { auth, provider, createUserProfileDocument } from '_firebase'
 import {
   signInWithPopup,
   signInWithEmailAndPassword,
@@ -14,8 +14,13 @@ import {
   createUserDoc,
   getDefaultUserInfo,
   initializeUserInfo,
+  getUserInfo,
 } from 'backend/handleUserInfo'
-import { createDefaultTeamDoc, getDefaultTeam, initializeDefaultTeam } from 'backend/handleTeams'
+import {
+  createDefaultTeamDoc,
+  getDefaultTeam,
+  initializeDefaultTeam,
+} from 'backend/handleTeams'
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
@@ -112,20 +117,21 @@ export const AuthProvider = ({ children }) => {
     const unsubscribe = auth.onAuthStateChanged(async (userAuth) => {
       setLoading(false)
       if (userAuth) {
-        const teamRef = await createDefaultTeamDoc(userAuth.uid)
-        onSnapshot(teamRef, async (snapshot) => {
-          const defaultTeam = getDefaultTeam(snapshot.id)
-          await initializeDefaultTeam(teamRef, defaultTeam)
-        })
-
-        const userRef = await createUserDoc(userAuth.uid)
+        const userRef = await createUserProfileDocument(userAuth)
         onSnapshot(userRef, async (snapshot) => {
-          const defaultUserInfo = getDefaultUserInfo(snapshot.id, userAuth.email)
-          await initializeUserInfo(userRef, defaultUserInfo)
+          const snapshotData = snapshot.data()
+          const userInfo = await getUserInfo(snapshot.id)
+          if (userInfo.empty === true && userInfo.failed === false) {
+            const defaultUserInfo = getDefaultUserInfo(snapshotData.email)
+            await initializeUserInfo(snapshot.id, defaultUserInfo)
+          } else if (userInfo.failed === true) {
+            console.log('error getting user info')
+            alert('Please refresh the page')
+          }
 
           const user = {
-            displayName: userAuth.displayName,
-            email: userAuth.email,
+            displayName: snapshotData.displayName,
+            email: snapshotData.email,
             id: snapshot.id,
           }
           setCurrentUser(user)
