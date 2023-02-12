@@ -31,7 +31,11 @@ export const useProjectIds = () => {
     }
 
     setLoading(false)
-    return unsubscribes
+    return () => {
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe()
+      }
+    }
   }, [teamIds])
 
   return { setProjectIds, projectIds, loading }

@@ -23,7 +23,7 @@ export const Views = () => {
         </Route>
 
         <Route element={<DashBoardRoutes />}>
-          <Route exact path={'/payment'} element={<PaymentPage />}/>
+          <Route exact path={'/payment'} element={<PaymentPage />} />
           <Route exact path={'/app/*'} element={<Layout />}>
             <Route
               path={':defaultGroup'}
@@ -33,6 +33,10 @@ export const Views = () => {
 
           <Route path={'/project/*'} element={<Layout />}>
             <Route path={':projectId'} element={<Content />} />
+          </Route>
+
+          <Route path={'/team/*'} element={<Layout />}>
+            <Route path={':teamId'} element={<Content />} />
           </Route>
         </Route>
 

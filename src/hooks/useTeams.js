@@ -30,7 +30,11 @@ export const useTeams = () => {
       setLoading(false)
     }
 
-    return unsubscribes
+    return () => {
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe()
+      }
+    }
   }, [teamIds])
 
   return { setTeams, teams, loading }

@@ -28,6 +28,14 @@ export const TaskList = () => {
   const { checklist } = useChecklist()
   const [tasklist, setTasklist] = useState([])
 
+  useEffect(() => {
+    console.log('tasks', tasks) // DEBUGGING
+  }, [tasks])
+
+  useEffect(() => {
+    console.log('tasklist', tasklist) // DEBUGGING
+  }, [tasklist])
+
   const sortTaskByDate = (tasks) => {
     const scheduledTasks = tasks.filter(
       (task) => task.startDate !== '' || task.date !== '',

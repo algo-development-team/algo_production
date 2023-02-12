@@ -83,7 +83,11 @@ export const useTasks = () => {
     }
 
     setLoading(false)
-    return unsubscribes
+    return () => {
+      for (const unsubscribe of unsubscribes) {
+        unsubscribe()
+      }
+    }
   }, [selectedProject, currentUser, projectIds])
   return { setTasks, tasks, loading }
 }
