@@ -14,23 +14,23 @@ export const useTeams = () => {
     const unsubscribes = []
 
     if (teamIds) {
-      let result = []
-
+      setTeams((teams) => [])
       for (const teamId of teamIds) {
         let q = query(collection(db, 'team'), where('teamId', '==', teamId))
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           querySnapshot.forEach((doc) => {
-            result.push(doc.data())
+            setTeams((teams) => {
+              return [...teams, doc.data()]
+            })
           })
         })
 
         unsubscribes.push(unsubscribe)
       }
-      setTeams(result)
       setLoading(false)
     }
 
-    // return unsubscribes
+    return unsubscribes
   }, [teamIds])
 
   return { setTeams, teams, loading }

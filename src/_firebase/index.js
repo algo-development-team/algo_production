@@ -39,7 +39,7 @@ export const batchWriteDefaultData = async (userId, userName, email) => {
     const projectId = generatePushId()
     const defaultUserTasks = getDefaultUserTasks(projectId)
     const defaultUserProject = getDefaultUserProject(projectId)
-    const defaultUserTeam = getDefaultUserTeam(userId, userName)
+    const defaultUserTeam = getDefaultUserTeam(userId, projectId, userName)
     const defaultUserInfo = getDefaultUserInfo(userId, email)
 
     const projectDocRef = doc(collection(db, 'project'))

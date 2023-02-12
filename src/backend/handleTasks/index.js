@@ -321,6 +321,7 @@ export const addTask = async (
       description: taskDescription ? taskDescription : '', // string
       priority: taskPriority, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-480)
+      eventIds: [],
       index: index,
     })
     // UPDATE TASK INDEX HERE (COMPLETED)

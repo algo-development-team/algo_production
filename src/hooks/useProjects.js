@@ -14,25 +14,22 @@ export const useProjects = () => {
     const unsubscribes = []
 
     if (projectIds) {
-      let result = []
-
+      setProjects((projects) => [])
       for (const projectId of projectIds) {
-        let subresult = []
-
         let q = query(
           collection(db, 'project'),
           where('projectId', '==', projectId),
         )
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           querySnapshot.forEach((doc) => {
-            subresult.push(doc.data())
+            setProjects((projects) => {
+              return [...projects, doc.data()]
+            })
           })
         })
 
-        result = result.concat(subresult)
         unsubscribes.push(unsubscribe)
       }
-      setProjects(result)
       setLoading(false)
     }
 

@@ -9,7 +9,6 @@ import {
   doc,
   getDoc,
 } from 'firebase/firestore'
-import { timeZone } from 'handleCalendars'
 import { db } from '_firebase'
 
 /* CONVERTED */

@@ -10,32 +10,28 @@ export const useProjectIds = () => {
 
   useEffect(() => {
     setLoading(true)
-
     const unsubscribes = []
 
     if (teamIds) {
-      let result = []
-
+      setProjectIds((projectIds) => [])
       for (const teamId of teamIds) {
-        let subresult = []
-
         let q = query(collection(db, 'team'), where('teamId', '==', teamId))
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
           querySnapshot.forEach((doc) => {
             if (doc.data()?.projects) {
-              subresult = doc.data()?.projects
+              setProjectIds((projectIds) => {
+                return [...projectIds, ...doc.data().projects]
+              })
             }
           })
         })
 
-        result = result.concat(subresult)
         unsubscribes.push(unsubscribe)
       }
-      setProjectIds(result)
-      setLoading(false)
     }
 
-    // return unsubscribes
+    setLoading(false)
+    return unsubscribes
   }, [teamIds])
 
   return { setProjectIds, projectIds, loading }

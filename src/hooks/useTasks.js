@@ -5,7 +5,7 @@ import {
   query,
   where,
 } from 'firebase/firestore'
-import { useAuth } from 'hooks'
+import { useAuth, useProjectIds } from 'hooks'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { collatedTasksExist } from 'utils'
@@ -14,8 +14,8 @@ import { db } from '_firebase'
 export const useTasks = () => {
   const { projectId, defaultGroup } = useParams()
   const selectedProject = projectId || defaultGroup
-
   const { currentUser } = useAuth()
+  const { projectIds } = useProjectIds()
 
   const [tasks, setTasks] = useState([])
 
@@ -24,41 +24,66 @@ export const useTasks = () => {
   useEffect(() => {
     setLoading(true)
 
-    let q = null
+    let queries = []
     if (selectedProject && !collatedTasksExist(selectedProject)) {
-      q = query(
-        collection(db, 'task'),
-        where('projectId', '==', selectedProject),
-        orderBy('index', 'asc'),
+      queries.push(
+        query(
+          collection(db, 'task'),
+          where('projectId', '==', selectedProject),
+          orderBy('index', 'asc'),
+        ),
       )
     } else if (selectedProject === 'Inbox' || selectedProject === 0) {
-      q = query(
-        collection(db, 'task'),
-        where('projectId', '==', ''),
-        orderBy('index', 'asc'),
-      )
-    } else if (selectedProject === 'Important') {
-      q = query(
-        collection(db, 'task'),
-        where('important', '==', true),
-        orderBy('index', 'asc'),
-      )
+      if (currentUser.id) {
+        queries.push(
+          query(
+            collection(db, 'task'),
+            where('projectId', '==', currentUser.id),
+            orderBy('index', 'asc'),
+          ),
+        )
+      }
     } else {
-      q = query(collection(db, 'task'), orderBy('index', 'asc'))
+      if (currentUser.id) {
+        queries.push(
+          query(
+            collection(db, 'task'),
+            where('projectId', '==', currentUser.id),
+            orderBy('index', 'asc'),
+          ),
+        )
+        for (const customProjectId of projectIds) {
+          if (customProjectId !== currentUser.id) {
+            queries.push(
+              query(
+                collection(db, 'task'),
+                where('projectId', '==', customProjectId),
+                orderBy('index', 'asc'),
+              ),
+            )
+          }
+        }
+      }
     }
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const result = []
-      querySnapshot.forEach((doc) => {
-        if (doc.data()?.completed !== true) {
-          result.push(doc.data())
-        }
-      })
+    const unsubscribes = []
 
-      setTasks(result)
-      setLoading(false)
-    })
-    return unsubscribe
-  }, [selectedProject, currentUser])
+    setTasks((tasks) => [])
+    for (const q of queries) {
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          if (doc.data()?.completed !== true) {
+            setTasks((tasks) => {
+              return [...tasks, doc.data()]
+            })
+          }
+        })
+      })
+      unsubscribes.push(unsubscribe)
+    }
+
+    setLoading(false)
+    return unsubscribes
+  }, [selectedProject, currentUser, projectIds])
   return { setTasks, tasks, loading }
 }

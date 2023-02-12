@@ -66,10 +66,10 @@ export const getDefaultUserProject = (projectId) => {
   return defaultUserProject
 }
 
-export const getDefaultUserTeam = (userId, userName) => {
+export const getDefaultUserTeam = (userId, projectId, userName) => {
   const defaultUserTeam = {
     teamId: userId,
-    projects: [userId],
+    projects: [projectId],
     name: userName,
     description: `Default team for ${userName}`,
   }
