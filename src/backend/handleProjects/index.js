@@ -243,6 +243,23 @@ export const dragEnds = async (
   }
 }
 
+export const setProjectView = async (projectId, viewIsList) => {
+  try {
+    const projectQuery = await query(
+      collection(db, 'project'),
+      where('projectId', '==', projectId),
+    )
+    const projectDocs = await getDocs(projectQuery)
+    projectDocs.forEach(async (projectDoc) => {
+      await updateDoc(projectDoc.ref, {
+        projectIsList: viewIsList,
+      })
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export const addProject = async (userId, newProject) => {
   await addDoc(collection(db, 'project'), newProject)
 }

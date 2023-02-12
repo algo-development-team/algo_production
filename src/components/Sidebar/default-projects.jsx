@@ -71,17 +71,21 @@ export const DefaultProjects = () => {
         </div>
         <ProjectTasksCounts isDefaultGroup name={'Scheduled'} />
       </NavLink>
-      {/* <NavLink to={"/app/Important"} className={({ isActive }) => (isActive ? "active project-group" : "project-group")}>
-        <div className="project-group__group">
-          <div className="project-group__icon">
-            <ImportantIcon stroke={`${isLight ? "#eb8909" : "#ff9a14"}`} />
+      <NavLink
+        to={'/app/ProjectsVisualisation'}
+        className={({ isActive }) =>
+          isActive ? 'active project-group' : 'project-group'
+        }
+      >
+        <div className='project-group__group'>
+          <div className='project-group__icon'>
+            <ScheduledIcon fill={`${isLight ? '#246fe0' : '#5297ff'}`} />
           </div>
 
-          <div className="project-group__name">Important</div>
+          <div className='project-group__name'>Timeline</div>
         </div>
-
-        <ProjectTasksCounts isDefaultGroup name={"Important"} />
-      </NavLink> */}
+        <ProjectTasksCounts isDefaultGroup name={'ProjectsVisualisation'} />
+      </NavLink>
     </div>
   )
 }

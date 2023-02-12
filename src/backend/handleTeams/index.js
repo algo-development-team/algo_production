@@ -9,7 +9,7 @@ import {
   updateDoc,
 } from 'firebase/firestore'
 import { db } from '_firebase'
-import { getUserInfo } from '../handleUserInfo'
+import { getUserInfo, updateUserInfo } from '../handleUserInfo'
 
 /* CONVERTED */
 export const createDefaultTeamDoc = async (userId) => {
@@ -66,6 +66,10 @@ export const getUserTeams = async (userId) => {
 
 export const addTeam = async (userId, newTeam) => {
   await addDoc(collection(db, 'team'), newTeam)
+  const userInfo = await getUserInfo(userId)
+  console.log('newTeam.teamId: ', newTeam.teamId) // DEBUGGING
+  const newTeams = [...userInfo.teams, newTeam.teamId]
+  await updateUserInfo(userId, { teams: newTeams })
 }
 
 export const updateTeam = async (teamId, teamName, teamDescription) => {

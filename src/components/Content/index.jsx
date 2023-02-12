@@ -7,7 +7,8 @@ import './styles/content.scss'
 import './styles/light.scss'
 import React from 'react'
 import { TeamPage } from 'components/TeamPage'
-import { TaskVisualisation } from 'components/Visualisations/task-visualisation.jsx'
+import { ProjectsVisualisation } from 'components/Visualisations/projects-visualisation.jsx'
+import { TasksVisualisation } from 'components/Visualisations/tasks-visualisation.jsx'
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
@@ -24,6 +25,8 @@ export const Content = () => {
         return <TaskList />
       } else if (defaultGroup === 'Calendar') {
         return <Calendar />
+      } else if (defaultGroup === 'ProjectsVisualisation') {
+        return <ProjectsVisualisation />
       } else {
         return null
       }
