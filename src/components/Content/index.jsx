@@ -5,7 +5,11 @@ import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
 import './styles/content.scss'
 import './styles/light.scss'
-import React from 'react'
+import  React  from 'react';
+import { TeamPage } from 'components/TeamPage'
+import{ TaskVisualisation } from 'components/Visualisations/task-visualisation.jsx'
+
+
 
 export const Content = () => {
   const { projectId, defaultGroup } = useParams()
@@ -13,21 +17,22 @@ export const Content = () => {
   const currentView = projectInfo && projectInfo[0]?.projectIsList
 
   const getProject = () => {
-    if (defaultGroup) {
-      if (
-        defaultGroup === 'Checklist' ||
-        defaultGroup === 'Inbox' ||
-        defaultGroup === 'Scheduled'
-      ) {
-        return <TaskList />
-      } else if (defaultGroup === 'Calendar') {
-        return <Calendar />
-      } else {
-        return null
-      }
-    } else {
-      return currentView ? <TaskList /> : <Board />
-    }
+    // if (defaultGroup) {
+    //   if (
+    //     defaultGroup === 'Checklist' ||
+    //     defaultGroup === 'Inbox' ||
+    //     defaultGroup === 'Scheduled'
+    //   ) {
+    //     return <TaskList />
+    //   } else if (defaultGroup === 'Calendar') {
+    //     return <Calendar />
+    //   } else {
+    //     return null
+    //   }
+    // } else {
+    //   return currentView ? <TaskList /> : <Board />
+    return <TaskVisualisation/>
+    // }
   }
 
   return (

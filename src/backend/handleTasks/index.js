@@ -21,6 +21,22 @@ export const getTask = async (userId, taskId) => {
     console.log(error)
   }
 }
+
+export const updateTask = async (userId, taskId, task) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'task'),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (taskDoc) => {
+      await updateDoc(taskDoc.ref, task)
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 const getValidStartDate = (startDate, endDate) => {
   if (startDate === '') {
     return ''
@@ -38,7 +54,7 @@ const getValidStartDate = (startDate, endDate) => {
 export const getAllUserTasks = async (userId) => {
   const nonCompletedTasks = []
   const completedTasks = []
-  const userQuery = query(collection(db, 'userInfo'))
+  const userQuery = query(collection(db, 'userInfo', `${userId}`))
   const userDocs = await getDocs(userQuery)
   userDocs.forEach(async (userDoc) => {
     const userData = userDoc.data()
@@ -137,6 +153,7 @@ export const completeTask = async (
     })
 
     const columnTasksDocsCompleted = await getTaskDocsInProjectColumnCompleted(
+      userId,
       projectId,
       columnId,
     )
@@ -323,6 +340,7 @@ export const addTask = async (
       timeLength: taskTimeLength, // number (int) (range: 15-480)
       eventIds: [],
       index: index,
+      eventIds: [],
     })
     // UPDATE TASK INDEX HERE (COMPLETED)
     if (scheduleCreated) {
