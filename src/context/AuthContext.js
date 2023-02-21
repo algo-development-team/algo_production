@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { auth, createUserProfileDocument, provider } from '_firebase'
 import {
-  signInWithPopup,
   signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
