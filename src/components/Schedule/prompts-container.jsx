@@ -39,15 +39,17 @@ export const PromptsContainer = ({
   }, [dayId])
 
   const handlePromptInput = () => {
-    if (currentPromptIndex >= 0) {
-      const newPrompts = [...prompts]
-      newPrompts[currentPromptIndex] = prompt
-      setPrompts(newPrompts)
-      setCurrentPromptIndex(-1)
-    } else {
-      setPrompts([...prompts, prompt])
+    if (prompt.length > 0) {
+      if (currentPromptIndex >= 0) {
+        const newPrompts = [...prompts]
+        newPrompts[currentPromptIndex] = prompt
+        setPrompts(newPrompts)
+        setCurrentPromptIndex(-1)
+      } else {
+        setPrompts([...prompts, prompt])
+      }
+      setPrompt('')
     }
-    setPrompt('')
   }
 
   const onDragEnd = async (result) => {
