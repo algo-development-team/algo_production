@@ -1,4 +1,9 @@
+import { useState } from 'react'
+
 export const PromptsContainer = () => {
+  const [prompt, setPrompt] = useState('')
+  const [prompts, setPrompts] = useState([])
+
   return (
     <div style={{ marginTop: '1rem' }}>
       <div
@@ -34,6 +39,14 @@ export const PromptsContainer = () => {
               borderTopLeftRadius: '5px',
               borderBottomLeftRadius: '5px',
               outline: 'none',
+            }}
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                setPrompts([...prompts, prompt])
+                setPrompt('')
+              }
             }}
           />
           <div
@@ -93,7 +106,11 @@ export const PromptsContainer = () => {
           height: '28vh',
           overflowX: 'scroll',
         }}
-      ></div>
+      >
+        {prompts.map((prompt) => (
+          <p>{prompt}</p>
+        ))}
+      </div>
       <div
         style={{
           backgroundColor: '#282828',
