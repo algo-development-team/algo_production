@@ -4,7 +4,7 @@ import { TodayIcon } from 'components/today-icon'
 import { useThemeContextValue } from 'context'
 import { NavLink } from 'react-router-dom'
 import { ProjectTasksCounts } from './project-tasks-count'
-import { getDayId } from '../../handleTime'
+import { getDayId } from '../../handleDayId'
 
 export const DefaultProjects = () => {
   const { isLight } = useThemeContextValue()
