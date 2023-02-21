@@ -8,6 +8,7 @@ import './styles/light.scss'
 import React from 'react'
 import { TeamPage } from 'components/TeamPage'
 import { ProjectsVisualisation } from 'components/Visualisations/projects-visualisation.jsx'
+import { ContactUs } from '../Email/contact-us.jsx'
 
 export const Content = () => {
   const { teamId, projectId, defaultGroup } = useParams()
@@ -34,6 +35,7 @@ export const Content = () => {
     } else {
       return currentView ? <TaskList /> : <Board />
     }
+    // return <ContactUs />
   }
 
   return (

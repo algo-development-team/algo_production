@@ -6,6 +6,7 @@ import './styles/add-project.scss'
 import './styles/light.scss'
 import { addTeam } from '../../../backend/handleTeams'
 import { TagsInput } from './tags-input'
+import emailjs from 'emailjs-com'
 
 /* Create a hook called useTeams and update it in the component */
 export const TeamEditor = ({ closeOverlay }) => {
@@ -30,7 +31,21 @@ export const TeamEditor = ({ closeOverlay }) => {
     await addTeam(currentUser && currentUser.id, newProject)
 
     // send email invite to team members here
-    // update team list here
+    // emailjs
+    //   .sendForm(
+    //     process.env.REACT_APP_EMAILJS_SERVICE_ID,
+    //     process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+    //     e.target,
+    //     process.env.REACT_APP_EMAILJS_PUBLIC_KEY,
+    //   )
+    //   .then(
+    //     (result) => {
+    //       console.log(result.text)
+    //     },
+    //     (error) => {
+    //       console.log(error.text)
+    //     },
+    //   )
   }
 
   const handleChange = (e) => {
