@@ -1,19 +1,22 @@
-import { Board } from 'components/BoardView/index'
+import { Board } from 'components/BoardView'
 import { TaskList } from 'components/ListView'
 import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
 import { Calendar } from 'components/Calendar'
+import { Schedule } from 'components/Schedule'
 import './styles/content.scss'
 import './styles/light.scss'
-import  React  from 'react';
+import React from 'react'
 
 export const Content = () => {
-  const { projectId, defaultGroup } = useParams()
+  const { projectId, defaultGroup, dayId } = useParams()
   const projectInfo = useSelectedProjectInfo(projectId)
   const currentView = projectInfo && projectInfo[0]?.projectIsList
 
   const getProject = () => {
-    if (defaultGroup) {
+    if (dayId) {
+      return <Schedule />
+    } else if (defaultGroup) {
       if (
         defaultGroup === 'Checklist' ||
         defaultGroup === 'Inbox' ||
