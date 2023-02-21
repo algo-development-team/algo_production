@@ -23,12 +23,14 @@ export const Views = () => {
         </Route>
 
         <Route element={<DashBoardRoutes />}>
-          <Route exact path={'/payment'} element={<PaymentPage />}/>
+          <Route exact path={'/payment'} element={<PaymentPage />} />
+
           <Route exact path={'/app/*'} element={<Layout />}>
-            <Route
-              path={':defaultGroup'}
-              element={<Content isDefaultGroup />}
-            />
+            <Route path={':defaultGroup'} element={<Content />} />
+          </Route>
+
+          <Route exact path={'/schedule/*'} element={<Layout />}>
+            <Route path={':dayId'} element={<Content />} />
           </Route>
 
           <Route path={'/project/*'} element={<Layout />}>
