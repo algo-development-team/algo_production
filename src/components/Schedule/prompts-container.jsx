@@ -1,4 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import { cropLabel } from 'handleLabel'
+import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
+import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
+import { useParams } from 'react-router-dom'
+import { useResponsiveSizes } from 'hooks'
 
 export const PromptsContainer = ({
   promptsClosed,
@@ -7,10 +13,62 @@ export const PromptsContainer = ({
 }) => {
   const [prompt, setPrompt] = useState('')
   const [prompts, setPrompts] = useState([])
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(-1)
+  const [promptLength, setPromptLength] = useState(20)
+  const { dayId } = useParams()
+  const { sizes } = useResponsiveSizes()
+
+  useEffect(() => {
+    if (sizes.smallPhone) {
+      setPromptLength(24)
+    } else if (sizes.phone) {
+      setPromptLength(40)
+    } else if (sizes.tabPort) {
+      setPromptLength(52)
+    } else if (sizes.desktop) {
+      setPromptLength(90)
+    } else if (sizes.bigDesktop) {
+      setPromptLength(120)
+    }
+  }, [sizes])
+
+  /* connect prompts to Firebase */
+  useEffect(() => {
+    setPrompt('')
+    setPrompts([])
+  }, [dayId])
 
   const handlePromptInput = () => {
-    setPrompts([...prompts, prompt])
+    if (currentPromptIndex >= 0) {
+      const newPrompts = [...prompts]
+      newPrompts[currentPromptIndex] = prompt
+      setPrompts(newPrompts)
+      setCurrentPromptIndex(-1)
+    } else {
+      setPrompts([...prompts, prompt])
+    }
     setPrompt('')
+  }
+
+  const onDragEnd = async (result) => {
+    console.log('onDragEnd...') // DEBUGGING
+    const { destination, source, draggableId } = result
+
+    if (!destination) {
+      return
+    }
+
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return
+    }
+
+    const newPrompts = Array.from(prompts)
+    const [removed] = newPrompts.splice(source.index, 1)
+    newPrompts.splice(destination.index, 0, removed)
+    setPrompts(newPrompts)
   }
 
   return (
@@ -114,11 +172,55 @@ export const PromptsContainer = ({
           backgroundColor: '#282828',
           height: promptsClosed ? 0 : eventsClosed ? '62vh' : '28vh',
           overflowX: 'scroll',
+          display: 'flex',
+          justifyContent: 'center',
         }}
       >
-        {prompts.map((prompt) => (
-          <p>{prompt}</p>
-        ))}
+        <div style={{ width: '90%' }}>
+          <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
+            <Droppable droppableId='prompts'>
+              {(provided) => (
+                <div ref={provided.innerRef} {...provided.droppableProps}>
+                  {prompts.map((prompt, index) => (
+                    <Draggable draggableId={index.toString()} index={index}>
+                      {(provided) => (
+                        <div
+                          className='board-task-prompt'
+                          {...provided.dragHandleProps}
+                          {...provided.draggableProps}
+                          ref={provided.innerRef}
+                        >
+                          <div
+                            className='task__details'
+                            style={{ paddingLeft: '10px' }}
+                          >
+                            <p className='board-task__name'>
+                              {cropLabel(prompt, promptLength)}
+                            </p>
+                          </div>
+                          <EditIcon
+                            style={{ marginRight: '5px' }}
+                            onClick={() => {
+                              setPrompt(prompt)
+                              setCurrentPromptIndex(index)
+                            }}
+                          />
+                          <DeleteIcon
+                            style={{ marginRight: '5px' }}
+                            onClick={() => {
+                              setPrompts(prompts.filter((p) => p !== prompt))
+                            }}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
       </div>
       <div
         style={{
