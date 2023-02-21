@@ -51,7 +51,6 @@ export const PromptsContainer = ({
   }
 
   const onDragEnd = async (result) => {
-    console.log('onDragEnd...') // DEBUGGING
     const { destination, source, draggableId } = result
 
     if (!destination) {
@@ -170,7 +169,7 @@ export const PromptsContainer = ({
       <div
         style={{
           backgroundColor: '#282828',
-          height: promptsClosed ? 0 : eventsClosed ? '62vh' : '28vh',
+          height: promptsClosed ? 0 : eventsClosed ? '60vh' : '27vh',
           overflowX: 'scroll',
           display: 'flex',
           justifyContent: 'center',
@@ -231,6 +230,7 @@ export const PromptsContainer = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          paddingTop: '5px',
         }}
       >
         {!(eventsClosed && !promptsClosed) && (
