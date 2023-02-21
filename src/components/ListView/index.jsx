@@ -9,12 +9,10 @@ import { EmptyState } from './empty-state'
 import './styles/light.scss'
 import './styles/listview.scss'
 import { Task } from './task'
-import { DragDropContext } from 'react-beautiful-dnd'
-import { Droppable } from 'react-beautiful-dnd'
+import { DragDropContext, Droppable } from 'react-beautiful-dnd'
 import { updateUserInfo } from '../../backend/handleUserInfo'
 import moment from 'moment/moment'
 import { dragEnds } from '../../backend/handleUserProjects'
-
 
 // UPDATE SORT THE LIST TASKS BY THEIR INDEX (COMPLETED)
 
@@ -163,12 +161,15 @@ export const TaskList = () => {
       newTasklist.splice(destination.index, 0, removed)
       setTasklist(newTasklist)
       // drag ends
-      await dragEnds(defaultGroup, currentUser && currentUser.id, source.index, destination.index)
-
+      await dragEnds(
+        defaultGroup,
+        currentUser && currentUser.id,
+        source.index,
+        destination.index,
+      )
 
       // UPDATE TASK INDEX HERE (COMPLETED)
-    }
-    else {
+    } else {
       const filteredTasklist = filterAndIndexMapTasks(tasklist)
       const mappedSourceIndex = filteredTasklist[source.index][1]
       const mappedDestinationIndex = filteredTasklist[destination.index][1]

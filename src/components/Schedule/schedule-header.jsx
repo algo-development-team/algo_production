@@ -6,8 +6,11 @@ import {
   getDay,
 } from '../../handleDayId'
 import { NavLink } from 'react-router-dom'
+import { useState } from 'react'
 
 export const ScheduleHeader = ({ dayId }) => {
+  const [isWeeklyView, setIsWeeklyView] = useState(false)
+
   return (
     <div
       style={{
@@ -78,8 +81,9 @@ export const ScheduleHeader = ({ dayId }) => {
           borderRadius: '5px',
           backgroundColor: '#282828',
         }}
+        onClick={() => setIsWeeklyView(!isWeeklyView)}
       >
-        See Weekly View
+        See {isWeeklyView ? 'Daily' : 'Weekly'} View
       </button>
     </div>
   )
