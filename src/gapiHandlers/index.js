@@ -3,9 +3,11 @@
  * https://blog.telzee.io/calendar-events-reactjs-gapi/
  * ***/
 
-import { gapi } from 'gapi-script'
+// import { gapi } from 'gapi-script'
 
 export const initClient = (callback) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   const API_KEY = process.env.REACT_APP_GOOGLE_API_KEY
   const DISCOVERY_DOCS = [
     'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest',
@@ -36,20 +38,26 @@ export const initClient = (callback) => {
       console.log(error)
     }
   })
+  */
 }
 
 export const disconnectClient = () => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     gapi.auth2.getAuthInstance().disconnect()
   } catch (error) {
     console.log(error)
   }
+  */
 }
 
 // 0: not loaded
 // 1: signed in
 // 2: not signed in
 export const checkSignInStatus = async () => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   if (!gapi.auth2) {
     return 0
   }
@@ -59,36 +67,52 @@ export const checkSignInStatus = async () => {
   } else {
     return 2
   }
+  */
+  return 0
 }
 
 export const getCalendarEvents = async (fetchOption) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const events = await gapi.client.calendar.events.list(fetchOption)
     return events.result.items
   } catch (error) {
     console.log(error)
   }
+  */
+  return []
 }
 
 export const insertCalenderEvent = async (insertOption) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const event = await gapi.client.calendar.events.insert(insertOption)
     return event.result
   } catch (error) {
     console.log(error)
   }
+  */
+  return null
 }
 
 export const updateCalenderEvent = async (updateOption) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const event = await gapi.client.calendar.events.update(updateOption)
     return event.result
   } catch (error) {
     console.log(error)
   }
+  */
+  return null
 }
 
 export const deleteCalenderEvent = async (deleteOption) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     await gapi.client.calendar.events.delete(deleteOption)
     return true
@@ -96,9 +120,13 @@ export const deleteCalenderEvent = async (deleteOption) => {
     console.log(error)
     return false
   }
+  */
+  return true
 }
 
 export const getUserTimeZone = async () => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const timezone = await gapi.client.calendar.settings.get({
       setting: 'timezone',
@@ -107,9 +135,13 @@ export const getUserTimeZone = async () => {
   } catch (error) {
     console.log(error)
   }
+  */
+  return 'America/Toronto'
 }
 
 export const fetchAllCalendars = async () => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const allCalendars = []
     let calendars = null
@@ -132,9 +164,13 @@ export const fetchAllCalendars = async () => {
   } catch (error) {
     console.log(error)
   }
+  */
+  return []
 }
 
 export const insertCalendar = async (summary) => {
+  /* GAPI_TEMP_DEBUGGING */
+  /*
   try {
     const response = await gapi.client.calendar.calendars.insert({
       resource: {
@@ -145,6 +181,8 @@ export const insertCalendar = async (summary) => {
   } catch (error) {
     console.log(error)
   }
+  */
+  return null
 }
 
 /*** 
