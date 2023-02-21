@@ -47,7 +47,7 @@ export const ScheduleHeader = ({ dayId }) => {
         </p>
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <NavLink to={`/schedule/${getDayId(getDayDiff(dayId) - 1)}`}>
-            <i class='arrow-lg left' />
+            <i class='arrow-xl left' />
           </NavLink>
           <button
             style={{
@@ -66,7 +66,7 @@ export const ScheduleHeader = ({ dayId }) => {
             {getDay(dayId)}
           </button>
           <NavLink to={`/schedule/${getDayId(getDayDiff(dayId) + 1)}`}>
-            <i class='arrow-lg right' />
+            <i class='arrow-xl right' />
           </NavLink>
         </div>
       </div>
