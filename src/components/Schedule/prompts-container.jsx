@@ -1,8 +1,17 @@
 import { useState } from 'react'
 
-export const PromptsContainer = () => {
+export const PromptsContainer = ({
+  promptsClosed,
+  setPromptsClosed,
+  eventsClosed,
+}) => {
   const [prompt, setPrompt] = useState('')
   const [prompts, setPrompts] = useState([])
+
+  const handlePromptInput = () => {
+    setPrompts([...prompts, prompt])
+    setPrompt('')
+  }
 
   return (
     <div style={{ marginTop: '1rem' }}>
@@ -44,8 +53,7 @@ export const PromptsContainer = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
-                setPrompts([...prompts, prompt])
-                setPrompt('')
+                handlePromptInput()
               }
             }}
           />
@@ -73,6 +81,7 @@ export const PromptsContainer = () => {
                 paddingRight: '10px',
                 cursor: 'pointer',
               }}
+              onClick={() => handlePromptInput()}
             >
               <div
                 style={{
@@ -103,7 +112,7 @@ export const PromptsContainer = () => {
       <div
         style={{
           backgroundColor: '#282828',
-          height: '28vh',
+          height: promptsClosed ? 0 : eventsClosed ? '62vh' : '28vh',
           overflowX: 'scroll',
         }}
       >
@@ -122,7 +131,12 @@ export const PromptsContainer = () => {
           alignItems: 'center',
         }}
       >
-        <i class='arrow-lg up' />
+        {!(eventsClosed && !promptsClosed) && (
+          <i
+            class={`arrow-lg ${promptsClosed ? 'down' : 'up'}`}
+            onClick={() => setPromptsClosed(!promptsClosed)}
+          />
+        )}
       </div>
     </div>
   )
