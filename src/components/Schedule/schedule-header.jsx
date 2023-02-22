@@ -7,30 +7,35 @@ import {
 } from '../../handleDayId'
 import { NavLink } from 'react-router-dom'
 import { useState } from 'react'
+import { useResponsiveSizes } from 'hooks'
 
 export const ScheduleHeader = ({ dayId }) => {
   const [isWeeklyView, setIsWeeklyView] = useState(false)
+  const { sizes } = useResponsiveSizes()
 
   return (
     <div
       style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: sizes.smallPhone ? 'center' : 'space-between',
         alignItems: 'center',
         width: '100%',
       }}
     >
-      <button
-        style={{
-          color: 'inherit',
-          padding: '10px',
-          fontSize: '16px',
-          borderRadius: '5px',
-          backgroundColor: '#282828',
-        }}
-      >
-        {formatDate(dayId)}
-      </button>
+      {!sizes.smallPhone && (
+        <button
+          style={{
+            color: 'inherit',
+            padding: '10px',
+            fontSize: '16px',
+            borderRadius: '5px',
+            backgroundColor: '#282828',
+            width: '120px',
+          }}
+        >
+          {formatDate(dayId)}
+        </button>
+      )}
       <div
         style={{
           display: 'flex',
@@ -73,18 +78,21 @@ export const ScheduleHeader = ({ dayId }) => {
           </NavLink>
         </div>
       </div>
-      <button
-        style={{
-          color: 'inherit',
-          padding: '10px',
-          fontSize: '16px',
-          borderRadius: '5px',
-          backgroundColor: '#282828',
-        }}
-        onClick={() => setIsWeeklyView(!isWeeklyView)}
-      >
-        See {isWeeklyView ? 'Daily' : 'Weekly'} View
-      </button>
+      {!sizes.smallPhone && (
+        <button
+          style={{
+            color: 'inherit',
+            padding: '10px',
+            fontSize: '16px',
+            borderRadius: '5px',
+            backgroundColor: '#282828',
+            width: '120px',
+          }}
+          onClick={() => setIsWeeklyView(!isWeeklyView)}
+        >
+          {isWeeklyView ? 'Daily' : 'Weekly'}
+        </button>
+      )}
     </div>
   )
 }
