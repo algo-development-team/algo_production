@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
+import { ReactComponent as RefreshIcon } from 'assets/svg/refresh.svg'
 
 const defaultEvents = [
   {
@@ -184,7 +185,7 @@ export const EventsContainer = ({
       >
         <div style={{ width: '90%' }}>
           <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-            <Droppable droppableId='prompts'>
+            <Droppable droppableId='events'>
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
                   {events.map((event, index) => (
@@ -204,6 +205,7 @@ export const EventsContainer = ({
                               {cropLabel(event.type, 30)}
                             </p>
                           </div>
+                          <RefreshIcon style={{ marginRight: '5px' }} />
                           <DeleteIcon
                             style={{ marginRight: '5px' }}
                             onClick={() => {
