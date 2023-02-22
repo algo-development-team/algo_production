@@ -23,7 +23,7 @@ const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'Work',
+    type: 'aaaaaaaaaaaaaaaaaaaaaa',
     options: [
       { id: 'T-1', value: 'Make Presentation' },
       { id: 'T-2', value: 'Work Report' },
@@ -36,7 +36,7 @@ const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'Work',
+    type: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     options: [
       { id: 'T-1', value: 'Make Presentation' },
       { id: 'T-2', value: 'Work Report' },
@@ -54,6 +54,8 @@ export const EventsContainer = ({
   promptsClosed,
 }) => {
   const [events, setEvents] = useState([])
+  const [eventTypeLength, setEventTypeLength] = useState(24)
+  const [eventTypeWidth, setEventTypeWidth] = useState('50px')
 
   /* connect events to Firebase */
   useEffect(() => {
@@ -132,9 +134,10 @@ export const EventsContainer = ({
                             className='board-task__name'
                             style={{
                               paddingLeft: '10px',
+                              width: eventTypeWidth,
                             }}
                           >
-                            {cropLabel(event.type, 30)}
+                            {cropLabel(event.type, eventTypeLength)}
                           </p>
                           <div style={{ display: 'flex', flexGrow: 1 }} />
                           <div
@@ -191,7 +194,7 @@ export const EventsContainer = ({
                                     value={option.id}
                                     style={{ color: '#222222' }}
                                   >
-                                    {option.value}
+                                    {cropLabel(option.value, 24)}
                                   </option>
                                 ))}
                               </select>
