@@ -21,7 +21,7 @@ export const PromptsContainer = ({
 
   useEffect(() => {
     if (sizes.smallPhone) {
-      setPromptLength(24)
+      setPromptLength(20)
     } else if (sizes.phone) {
       setPromptLength(40)
     } else if (sizes.tabPort) {
@@ -81,13 +81,14 @@ export const PromptsContainer = ({
           borderTopLeftRadius: '10px',
           borderTopRightRadius: '10px',
           display: 'flex',
-          justifyContent: 'center',
           alignItems: 'center',
         }}
       >
         <div
           style={{
-            width: '90%',
+            width: '94%',
+            marginLeft: '3%',
+            marginRight: '3%',
             marginTop: '10px',
             marginBottom: '10px',
             display: 'flex',
@@ -121,6 +122,7 @@ export const PromptsContainer = ({
             style={{
               fontSize: '16px',
               height: '44px',
+              width: '40px',
               border: 'none',
               fontWeight: 400,
               backgroundColor: '#222222',
@@ -132,8 +134,6 @@ export const PromptsContainer = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              paddingLeft: '10px',
-              paddingRight: '10px',
               cursor: 'pointer',
             }}
             onClick={handlePromptInput}
