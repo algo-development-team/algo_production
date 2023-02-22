@@ -2,117 +2,51 @@ import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
+import { ReactComponent as RefreshIcon } from 'assets/svg/refresh.svg'
+import { ReactComponent as CheckmarkIcon } from 'assets/svg/checkmark.svg'
+import { EventTimeDisplay } from './event-time-display'
+import { useResponsiveSizes } from 'hooks'
+import moment from 'moment'
 
 const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-1',
+    startTime: moment('2023-02-22 09:00:00'),
+    endTime: moment('2023-02-22 11:00:00'),
   },
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-2',
+    startTime: moment('2023-02-22 11:00:00'),
+    endTime: moment('2023-02-22 13:00:00'),
   },
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-3',
+    startTime: moment('2023-02-22 13:00:00'),
+    endTime: moment('2023-02-22 15:00:00'),
   },
 ]
 
@@ -122,6 +56,19 @@ export const EventsContainer = ({
   promptsClosed,
 }) => {
   const [events, setEvents] = useState([])
+  const [eventTypeLength, setEventTypeLength] = useState(24)
+  const [eventTypeWidth, setEventTypeWidth] = useState('50px')
+  const { sizes } = useResponsiveSizes()
+
+  useEffect(() => {
+    if (sizes.smallPhone) {
+      setEventTypeLength(20)
+      setEventTypeWidth('44px')
+    } else {
+      setEventTypeLength(24)
+      setEventTypeWidth('50px')
+    }
+  }, [sizes])
 
   /* connect events to Firebase */
   useEffect(() => {
@@ -148,20 +95,147 @@ export const EventsContainer = ({
     setEvents(newEvents)
   }
 
+  const getEventContent = (event, index) => {
+    if (sizes.tabLand) {
+      return (
+        <div className='task__details'>
+          <p
+            className='board-task__name'
+            style={{ paddingBottom: '0.3rem', marginLeft: '10px' }}
+          >
+            {cropLabel(event.type, eventTypeLength)}
+          </p>
+          <div
+            style={{
+              display: 'inline-block',
+              paddingBottom: '0.3rem',
+              marginLeft: '5px',
+            }}
+          >
+            <EventTimeDisplay
+              isStart={true}
+              time={event.startTime}
+              setEvents={setEvents}
+              eventIndex={index}
+            />
+          </div>
+          <div
+            style={{
+              display: 'inline-block',
+              paddingBottom: '0.3rem',
+            }}
+          >
+            <EventTimeDisplay
+              isStart={false}
+              time={event.endTime}
+              setEvents={setEvents}
+              eventIndex={index}
+            />
+          </div>
+          <div
+            style={{
+              display: 'inline-block',
+              paddingBottom: '0.3rem',
+              marginLeft: '10px',
+              marginRight: '10px',
+            }}
+          >
+            <select
+              value={event.selectedOptionId}
+              className={'select-preference text-color__none'}
+              onChange={(e) => {
+                const newEvents = [...events]
+                newEvents[index].selectedOptionId = e.target.value
+                setEvents(newEvents)
+              }}
+            >
+              {event.options.map((option) => (
+                <option value={option.id} style={{ color: '#222222' }}>
+                  {cropLabel(option.value, 24)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )
+    } else {
+      return (
+        <>
+          <p
+            className='board-task__name'
+            style={{
+              marginLeft: '10px',
+              width: eventTypeWidth,
+            }}
+          >
+            {cropLabel(event.type, eventTypeLength)}
+          </p>
+          <div style={{ display: 'flex', flexGrow: 1 }} />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            <div
+              style={{
+                display: 'inline-block',
+                marginLeft: '10px',
+              }}
+            >
+              <EventTimeDisplay
+                isStart={true}
+                time={event.startTime}
+                setEvents={setEvents}
+                eventIndex={index}
+              />
+            </div>
+            <div
+              style={{
+                display: 'inline-block',
+              }}
+            >
+              <EventTimeDisplay
+                isStart={false}
+                time={event.endTime}
+                setEvents={setEvents}
+                eventIndex={index}
+              />
+            </div>
+            <div
+              style={{
+                display: 'inline-block',
+                marginLeft: '10px',
+                marginRight: '10px',
+              }}
+            >
+              <select
+                value={event.selectedOptionId}
+                className={'select-preference text-color__none'}
+                onChange={(e) => {
+                  const newEvents = [...events]
+                  newEvents[index].selectedOptionId = e.target.value
+                  setEvents(newEvents)
+                }}
+              >
+                {event.options.map((option) => (
+                  <option value={option.id} style={{ color: '#222222' }}>
+                    {cropLabel(option.value, eventTypeLength)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexGrow: 1 }} />
+        </>
+      )
+    }
+  }
+
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderTopLeftRadius: '10px',
-          borderTopRightRadius: '10px',
-          height: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingBottom: '5px',
-        }}
-      >
+    <div className='events__container'>
+      <div className='events__header-container'>
         {!(promptsClosed && !eventsClosed) && (
           <i
             class={`arrow-lg ${eventsClosed ? 'up' : 'down'}`}
@@ -170,40 +244,47 @@ export const EventsContainer = ({
         )}
       </div>
       <div
-        style={{
-          backgroundColor: '#282828',
-          height: eventsClosed ? 0 : promptsClosed ? '60vh' : '33vh',
-          overflowX: 'scroll',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
+        className={`events__body-container${
+          eventsClosed ? '--closed' : promptsClosed ? '--extended' : ''
+        }`}
       >
         <div style={{ width: '90%' }}>
           <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
-            <Droppable droppableId='prompts'>
+            <Droppable droppableId='events'>
               {(provided) => (
                 <div ref={provided.innerRef} {...provided.droppableProps}>
                   {events.map((event, index) => (
                     <Draggable draggableId={index.toString()} index={index}>
                       {(provided) => (
                         <div
-                          className='board-task-prompt'
+                          className='board-task-schedule'
                           {...provided.dragHandleProps}
                           {...provided.draggableProps}
                           ref={provided.innerRef}
                         >
-                          <div
-                            className='task__details'
-                            style={{ paddingLeft: '10px' }}
-                          >
-                            <p className='board-task__name'>
-                              {cropLabel(event.type, 30)}
-                            </p>
-                          </div>
+                          {getEventContent(event, index)}
+                          <RefreshIcon
+                            style={{
+                              minWidth: '16px',
+                              minHeight: '16px',
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              cursor: 'pointer',
+                            }}
+                          />
                           <DeleteIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              minWidth: '16px',
+                              minHeight: '16px',
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              marginRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
-                              setEvents(events.filter((e) => e !== prompt))
+                              const newEvents = [...events]
+                              newEvents.splice(index, 1)
+                              setEvents(newEvents)
                             }}
                           />
                         </div>
@@ -216,6 +297,26 @@ export const EventsContainer = ({
             </Droppable>
           </DragDropContext>
         </div>
+      </div>
+      <div className='events__footer-container'>
+        <button
+          className='action action__add-project'
+          style={{ marginRight: '5px', display: 'flex', alignItems: 'center' }}
+          type='submit'
+          disabled={events.length === 0}
+        >
+          <CheckmarkIcon width='14' height='14' />
+          <span style={{ marginLeft: '5px' }}>Accept</span>
+        </button>
+        <button
+          className='action action__add-project'
+          style={{ marginLeft: '5px', display: 'flex', alignItems: 'center' }}
+          type='submit'
+          disabled={events.length === 0}
+        >
+          <RefreshIcon width='14' height='14' />
+          <span style={{ marginLeft: '5px' }}>Refresh</span>
+        </button>
       </div>
     </div>
   )

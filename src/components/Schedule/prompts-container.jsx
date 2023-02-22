@@ -3,8 +3,11 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
+import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useParams } from 'react-router-dom'
 import { useResponsiveSizes } from 'hooks'
+import './styles/light.scss'
+import './styles/main.scss'
 
 export const PromptsContainer = ({
   promptsClosed,
@@ -20,7 +23,7 @@ export const PromptsContainer = ({
 
   useEffect(() => {
     if (sizes.smallPhone) {
-      setPromptLength(24)
+      setPromptLength(20)
     } else if (sizes.phone) {
       setPromptLength(40)
     } else if (sizes.tabPort) {
@@ -39,15 +42,17 @@ export const PromptsContainer = ({
   }, [dayId])
 
   const handlePromptInput = () => {
-    if (currentPromptIndex >= 0) {
-      const newPrompts = [...prompts]
-      newPrompts[currentPromptIndex] = prompt
-      setPrompts(newPrompts)
-      setCurrentPromptIndex(-1)
-    } else {
-      setPrompts([...prompts, prompt])
+    if (prompt.length > 0) {
+      if (currentPromptIndex >= 0) {
+        const newPrompts = [...prompts]
+        newPrompts[currentPromptIndex] = prompt
+        setPrompts(newPrompts)
+        setCurrentPromptIndex(-1)
+      } else {
+        setPrompts([...prompts, prompt])
+      }
+      setPrompt('')
     }
-    setPrompt('')
   }
 
   const onDragEnd = async (result) => {
@@ -71,41 +76,11 @@ export const PromptsContainer = ({
   }
 
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderTopLeftRadius: '10px',
-          borderTopRightRadius: '10px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <div
-          style={{
-            width: '90%',
-            marginTop: '10px',
-            marginBottom: '10px',
-            display: 'flex',
-          }}
-        >
+    <div className='prompts__container'>
+      <div className='prompts__header-container'>
+        <div className='prompts__input-container'>
           <input
-            style={{
-              fontSize: '16px',
-              display: 'flex',
-              flexGrow: 1,
-              height: '24px',
-              border: 'none',
-              padding: '10px',
-              paddingLeft: '10px',
-              fontWeight: 400,
-              backgroundColor: '#222222',
-              color: 'inherit',
-              borderTopLeftRadius: '5px',
-              borderBottomLeftRadius: '5px',
-              outline: 'none',
-            }}
+            className='prompts__input'
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={(e) => {
@@ -115,65 +90,17 @@ export const PromptsContainer = ({
             }}
           />
           <div
-            style={{
-              fontSize: '16px',
-              height: '44px',
-              border: 'none',
-              fontWeight: 400,
-              backgroundColor: '#222222',
-              color: 'inherit',
-              borderRadius: 0,
-              borderTopRightRadius: '5px',
-              borderBottomRightRadius: '5px',
-              outline: 'none',
-            }}
+            className='prompts__input-submit-btn'
+            onClick={handlePromptInput}
           >
-            {/* overlap the elements on top of each other */}
-            <div
-              style={{
-                display: 'block',
-                position: 'relative',
-                marginRight: '24px',
-                marginTop: '14px',
-                paddingRight: '10px',
-                cursor: 'pointer',
-              }}
-              onClick={() => handlePromptInput()}
-            >
-              <div
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: '24px solid #444444',
-                  borderTop: '8px solid transparent',
-                  borderBottom: '8px solid transparent',
-                  position: 'absolute',
-                }}
-              ></div>
-              <div
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: '12px solid #222222',
-                  borderTop: '4px solid transparent',
-                  borderBottom: '4px solid transparent',
-                  position: 'absolute',
-                  marginTop: '4px',
-                  zIndex: 1,
-                }}
-              ></div>
-            </div>
+            <AirplaneIcon />
           </div>
         </div>
       </div>
       <div
-        style={{
-          backgroundColor: '#282828',
-          height: promptsClosed ? 0 : eventsClosed ? '60vh' : '27vh',
-          overflowX: 'scroll',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
+        className={`prompts__body-container${
+          promptsClosed ? '--closed' : eventsClosed ? '--extended' : ''
+        }`}
       >
         <div style={{ width: '90%' }}>
           <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
@@ -184,28 +111,38 @@ export const PromptsContainer = ({
                     <Draggable draggableId={index.toString()} index={index}>
                       {(provided) => (
                         <div
-                          className='board-task-prompt'
+                          className='board-task-schedule'
                           {...provided.dragHandleProps}
                           {...provided.draggableProps}
                           ref={provided.innerRef}
                         >
-                          <div
-                            className='task__details'
+                          <p
+                            className='board-task__name'
                             style={{ paddingLeft: '10px' }}
                           >
-                            <p className='board-task__name'>
-                              {cropLabel(prompt, promptLength)}
-                            </p>
-                          </div>
+                            {cropLabel(prompt, promptLength)}
+                          </p>
+                          <div style={{ display: 'flex', flexGrow: 1 }} />
                           <EditIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
                               setPrompt(prompt)
                               setCurrentPromptIndex(index)
                             }}
                           />
                           <DeleteIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              minWidth: '16px',
+                              minHeight: '16px',
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              marginRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
                               setPrompts(prompts.filter((p) => p !== prompt))
                             }}
@@ -221,18 +158,7 @@ export const PromptsContainer = ({
           </DragDropContext>
         </div>
       </div>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderBottomLeftRadius: '10px',
-          borderBottomRightRadius: '10px',
-          height: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop: '5px',
-        }}
-      >
+      <div className='prompts__footer-container'>
         {!(eventsClosed && !promptsClosed) && (
           <i
             class={`arrow-lg ${promptsClosed ? 'down' : 'up'}`}
