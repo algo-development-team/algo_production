@@ -1,0 +1,54 @@
+@import 'scss/mixins.scss';
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  &-small-phone {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__menu-btn {
+    color: inherit;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #282828;
+    width: 120px;
+  }
+
+  &__date-btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__date-btn-subtitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #3f4cda;
+    margin-bottom: 2px;
+  }
+
+  &__date-btn-icon-container {
+    display: flex;
+    align-items: center;
+  }
+
+  &__date-btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: #3f4cda;
+    cursor: default;
+  }
+}
