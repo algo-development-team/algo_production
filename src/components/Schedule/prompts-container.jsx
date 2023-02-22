@@ -6,6 +6,8 @@ import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useParams } from 'react-router-dom'
 import { useResponsiveSizes } from 'hooks'
+import './styles/light.scss'
+import './styles/main.scss'
 
 export const PromptsContainer = ({
   promptsClosed,
@@ -74,42 +76,11 @@ export const PromptsContainer = ({
   }
 
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderTopLeftRadius: '10px',
-          borderTopRightRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <div
-          style={{
-            width: '94%',
-            marginLeft: '3%',
-            marginRight: '3%',
-            marginTop: '10px',
-            marginBottom: '10px',
-            display: 'flex',
-          }}
-        >
+    <div className='prompt__container'>
+      <div className='prompt__header-container'>
+        <div className='prompt__input-container'>
           <input
-            style={{
-              fontSize: '16px',
-              display: 'flex',
-              flexGrow: 1,
-              height: '24px',
-              border: 'none',
-              padding: '10px',
-              paddingLeft: '10px',
-              fontWeight: 400,
-              backgroundColor: '#222222',
-              color: 'inherit',
-              borderTopLeftRadius: '5px',
-              borderBottomLeftRadius: '5px',
-              outline: 'none',
-            }}
+            className='prompt__input'
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={(e) => {
@@ -118,38 +89,15 @@ export const PromptsContainer = ({
               }
             }}
           />
-          <div
-            style={{
-              fontSize: '16px',
-              height: '44px',
-              width: '40px',
-              border: 'none',
-              fontWeight: 400,
-              backgroundColor: '#222222',
-              color: 'inherit',
-              borderRadius: 0,
-              borderTopRightRadius: '5px',
-              borderBottomRightRadius: '5px',
-              outline: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-            }}
-            onClick={handlePromptInput}
-          >
+          <div className='prompt__input-submit-btn' onClick={handlePromptInput}>
             <AirplaneIcon fill='white' />
           </div>
         </div>
       </div>
       <div
-        style={{
-          backgroundColor: '#282828',
-          height: promptsClosed ? 0 : eventsClosed ? '55vh' : '25vh',
-          overflowX: 'scroll',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
+        className={`prompt__body-container${
+          promptsClosed ? '--closed' : eventsClosed ? '--extended' : ''
+        }`}
       >
         <div style={{ width: '90%' }}>
           <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
@@ -207,18 +155,7 @@ export const PromptsContainer = ({
           </DragDropContext>
         </div>
       </div>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderBottomLeftRadius: '10px',
-          borderBottomRightRadius: '10px',
-          height: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingTop: '5px',
-        }}
-      >
+      <div className='prompt__footer-container'>
         {!(eventsClosed && !promptsClosed) && (
           <i
             class={`arrow-lg ${promptsClosed ? 'down' : 'up'}`}
