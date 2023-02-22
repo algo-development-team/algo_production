@@ -185,6 +185,8 @@ export const PromptsContainer = ({
                           />
                           <DeleteIcon
                             style={{
+                              minWidth: '16px',
+                              minHeight: '16px',
                               paddingLeft: '3px',
                               paddingRight: '3px',
                               marginRight: '3px',
