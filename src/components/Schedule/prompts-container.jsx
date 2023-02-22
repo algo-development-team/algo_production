@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
+import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useParams } from 'react-router-dom'
 import { useResponsiveSizes } from 'hooks'
 
@@ -128,43 +129,16 @@ export const PromptsContainer = ({
               borderTopRightRadius: '5px',
               borderBottomRightRadius: '5px',
               outline: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingLeft: '10px',
+              paddingRight: '10px',
+              cursor: 'pointer',
             }}
+            onClick={handlePromptInput}
           >
-            {/* overlap the elements on top of each other */}
-            <div
-              style={{
-                display: 'block',
-                position: 'relative',
-                marginRight: '24px',
-                marginTop: '14px',
-                paddingRight: '10px',
-                cursor: 'pointer',
-              }}
-              onClick={() => handlePromptInput()}
-            >
-              <div
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: '24px solid #444444',
-                  borderTop: '8px solid transparent',
-                  borderBottom: '8px solid transparent',
-                  position: 'absolute',
-                }}
-              ></div>
-              <div
-                style={{
-                  width: 0,
-                  height: 0,
-                  borderLeft: '12px solid #222222',
-                  borderTop: '4px solid transparent',
-                  borderBottom: '4px solid transparent',
-                  position: 'absolute',
-                  marginTop: '4px',
-                  zIndex: 1,
-                }}
-              ></div>
-            </div>
+            <AirplaneIcon fill='white' />
           </div>
         </div>
       </div>
