@@ -1,5 +1,5 @@
 .light .sidebar {
-  background-color: #fafafa;
+  background-color: #fafbfc;
   .custom-project,
   .project-group {
     &:hover,
@@ -10,11 +10,10 @@
 }
 
 .light .custom-project-group__add-project {
-  svg{
+  svg {
     stroke: #333;
   }
   &:hover {
     background-color: #eee;
   }
 }
-
