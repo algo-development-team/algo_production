@@ -145,7 +145,7 @@ export const PromptsContainer = ({
       <div
         style={{
           backgroundColor: '#282828',
-          height: promptsClosed ? 0 : eventsClosed ? '60vh' : '27vh',
+          height: promptsClosed ? 0 : eventsClosed ? '55vh' : '27vh',
           overflowX: 'scroll',
           display: 'flex',
           justifyContent: 'center',

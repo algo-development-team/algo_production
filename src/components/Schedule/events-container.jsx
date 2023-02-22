@@ -3,6 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as RefreshIcon } from 'assets/svg/refresh.svg'
+import { ReactComponent as CheckmarkIcon } from 'assets/svg/checkmark.svg'
 import { EventTimeDisplay } from './event-time-display'
 import { useResponsiveSizes } from 'hooks'
 import moment from 'moment'
@@ -24,7 +25,7 @@ const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'aaaaaaaaaaaaaaaaaaaaaa',
+    type: 'Work',
     options: [
       { id: 'T-1', value: 'Make Presentation' },
       { id: 'T-2', value: 'Work Report' },
@@ -37,7 +38,7 @@ const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    type: 'Work',
     options: [
       { id: 'T-1', value: 'Make Presentation' },
       { id: 'T-2', value: 'Work Report' },
@@ -239,8 +240,6 @@ export const EventsContainer = ({
           backgroundColor: '#282828',
           borderTopLeftRadius: '10px',
           borderTopRightRadius: '10px',
-          borderBottomLeftRadius: eventsClosed ? '10px' : 0,
-          borderBottomRightRadius: eventsClosed ? '10px' : 0,
           height: '20px',
           display: 'flex',
           justifyContent: 'center',
@@ -258,9 +257,7 @@ export const EventsContainer = ({
       <div
         style={{
           backgroundColor: '#282828',
-          borderBottomLeftRadius: '10px',
-          borderBottomRightRadius: '10px',
-          height: eventsClosed ? 0 : promptsClosed ? '60vh' : '33vh',
+          height: eventsClosed ? 0 : promptsClosed ? '55vh' : '28vh',
           overflowX: 'scroll',
           display: 'flex',
           justifyContent: 'center',
@@ -315,6 +312,36 @@ export const EventsContainer = ({
             </Droppable>
           </DragDropContext>
         </div>
+      </div>
+      <div
+        style={{
+          backgroundColor: '#282828',
+          borderBottomLeftRadius: '10px',
+          borderBottomRightRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '44px',
+        }}
+      >
+        <button
+          className='action action__add-project'
+          style={{ marginRight: '5px', display: 'flex', alignItems: 'center' }}
+          type='submit'
+          disabled={events.length === 0}
+        >
+          <CheckmarkIcon width='14' height='14' />
+          <span style={{ marginLeft: '5px' }}>Accept</span>
+        </button>
+        <button
+          className='action action__add-project'
+          style={{ marginLeft: '5px', display: 'flex', alignItems: 'center' }}
+          type='submit'
+          disabled={events.length === 0}
+        >
+          <RefreshIcon width='14' height='14' />
+          <span style={{ marginLeft: '5px' }}>Refresh</span>
+        </button>
       </div>
     </div>
   )
