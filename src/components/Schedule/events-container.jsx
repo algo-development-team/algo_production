@@ -155,6 +155,8 @@ export const EventsContainer = ({
           backgroundColor: '#282828',
           borderTopLeftRadius: '10px',
           borderTopRightRadius: '10px',
+          borderBottomLeftRadius: eventsClosed ? '10px' : 0,
+          borderBottomRightRadius: eventsClosed ? '10px' : 0,
           height: '20px',
           display: 'flex',
           justifyContent: 'center',
@@ -172,6 +174,8 @@ export const EventsContainer = ({
       <div
         style={{
           backgroundColor: '#282828',
+          borderBottomLeftRadius: '10px',
+          borderBottomRightRadius: '10px',
           height: eventsClosed ? 0 : promptsClosed ? '60vh' : '33vh',
           overflowX: 'scroll',
           display: 'flex',
