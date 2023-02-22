@@ -257,7 +257,7 @@ export const EventsContainer = ({
       <div
         style={{
           backgroundColor: '#282828',
-          height: eventsClosed ? 0 : promptsClosed ? '55vh' : '28vh',
+          height: eventsClosed ? 0 : promptsClosed ? '55vh' : '30vh',
           overflowX: 'scroll',
           display: 'flex',
           justifyContent: 'center',
