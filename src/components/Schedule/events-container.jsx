@@ -234,19 +234,8 @@ export const EventsContainer = ({
   }
 
   return (
-    <div style={{ marginTop: '1rem' }}>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderTopLeftRadius: '10px',
-          borderTopRightRadius: '10px',
-          height: '20px',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingBottom: '5px',
-        }}
-      >
+    <div className='events__container'>
+      <div className='events__header-container'>
         {!(promptsClosed && !eventsClosed) && (
           <i
             class={`arrow-lg ${eventsClosed ? 'up' : 'down'}`}
@@ -255,13 +244,9 @@ export const EventsContainer = ({
         )}
       </div>
       <div
-        style={{
-          backgroundColor: '#282828',
-          height: eventsClosed ? 0 : promptsClosed ? '55vh' : '30vh',
-          overflowX: 'scroll',
-          display: 'flex',
-          justifyContent: 'center',
-        }}
+        className={`events__body-container${
+          eventsClosed ? '--closed' : promptsClosed ? '--extended' : ''
+        }`}
       >
         <div style={{ width: '90%' }}>
           <DragDropContext onDragEnd={(result) => onDragEnd(result)}>
@@ -272,7 +257,7 @@ export const EventsContainer = ({
                     <Draggable draggableId={index.toString()} index={index}>
                       {(provided) => (
                         <div
-                          className='board-task-prompt'
+                          className='board-task-schedule'
                           {...provided.dragHandleProps}
                           {...provided.draggableProps}
                           ref={provided.innerRef}
@@ -313,17 +298,7 @@ export const EventsContainer = ({
           </DragDropContext>
         </div>
       </div>
-      <div
-        style={{
-          backgroundColor: '#282828',
-          borderBottomLeftRadius: '10px',
-          borderBottomRightRadius: '10px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '44px',
-        }}
-      >
+      <div className='events__footer-container'>
         <button
           className='action action__add-project'
           style={{ marginRight: '5px', display: 'flex', alignItems: 'center' }}

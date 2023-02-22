@@ -53,7 +53,7 @@
   }
 }
 
-.prompt {
+.prompts {
   &__container {
     margin-top: 1rem;
   }
@@ -139,5 +139,52 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
+  }
+}
+
+.events {
+  &__container {
+    margin-top: 1rem;
+  }
+
+  &__header-container {
+    background-color: #282828;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5px;
+  }
+
+  &__body-container {
+    background-color: #282828;
+    height: 30vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--extended {
+    background-color: #282828;
+    height: 55vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--closed {
+    display: none;
+  }
+
+  &__footer-container {
+    background-color: #282828;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
   }
 }

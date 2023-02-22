@@ -76,11 +76,11 @@ export const PromptsContainer = ({
   }
 
   return (
-    <div className='prompt__container'>
-      <div className='prompt__header-container'>
-        <div className='prompt__input-container'>
+    <div className='prompts__container'>
+      <div className='prompts__header-container'>
+        <div className='prompts__input-container'>
           <input
-            className='prompt__input'
+            className='prompts__input'
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={(e) => {
@@ -89,13 +89,16 @@ export const PromptsContainer = ({
               }
             }}
           />
-          <div className='prompt__input-submit-btn' onClick={handlePromptInput}>
-            <AirplaneIcon fill='white' />
+          <div
+            className='prompts__input-submit-btn'
+            onClick={handlePromptInput}
+          >
+            <AirplaneIcon />
           </div>
         </div>
       </div>
       <div
-        className={`prompt__body-container${
+        className={`prompts__body-container${
           promptsClosed ? '--closed' : eventsClosed ? '--extended' : ''
         }`}
       >
@@ -108,7 +111,7 @@ export const PromptsContainer = ({
                     <Draggable draggableId={index.toString()} index={index}>
                       {(provided) => (
                         <div
-                          className='board-task-prompt'
+                          className='board-task-schedule'
                           {...provided.dragHandleProps}
                           {...provided.draggableProps}
                           ref={provided.innerRef}
@@ -155,7 +158,7 @@ export const PromptsContainer = ({
           </DragDropContext>
         </div>
       </div>
-      <div className='prompt__footer-container'>
+      <div className='prompts__footer-container'>
         {!(eventsClosed && !promptsClosed) && (
           <i
             class={`arrow-lg ${promptsClosed ? 'down' : 'up'}`}
