@@ -3,117 +3,48 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import { cropLabel } from 'handleLabel'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as RefreshIcon } from 'assets/svg/refresh.svg'
+import { EventTimeDisplay } from './event-time-display'
+import moment from 'moment'
 
 const defaultEvents = [
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-1',
+    startTime: moment('2023-02-22 09:00:00'),
+    endTime: moment('2023-02-22 11:00:00'),
   },
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-2',
+    startTime: moment('2023-02-22 11:00:00'),
+    endTime: moment('2023-02-22 13:00:00'),
   },
   {
     isDefault: false,
     isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
-  },
-  {
-    isDefault: false,
-    isWork: true,
-    type: 'Make Presentation',
-    what: 'Make Presentation',
-    options: ['Make Presentation', 'Work Report', 'Email Customers'],
-    startTimeHour: 9,
-    startTimeMin: 0,
-    endTimeHour: 11,
-    endTimeMin: 0,
+    type: 'Work',
+    options: [
+      { id: 'T-1', value: 'Make Presentation' },
+      { id: 'T-2', value: 'Work Report' },
+      { id: 'T-3', value: 'Email Customers' },
+    ],
+    selectedOptionId: 'T-3',
+    startTime: moment('2023-02-22 13:00:00'),
+    endTime: moment('2023-02-22 15:00:00'),
   },
 ]
 
@@ -197,19 +128,94 @@ export const EventsContainer = ({
                           {...provided.draggableProps}
                           ref={provided.innerRef}
                         >
-                          <div
-                            className='task__details'
-                            style={{ paddingLeft: '10px' }}
+                          <p
+                            className='board-task__name'
+                            style={{
+                              paddingLeft: '10px',
+                            }}
                           >
-                            <p className='board-task__name'>
-                              {cropLabel(event.type, 30)}
-                            </p>
+                            {cropLabel(event.type, 30)}
+                          </p>
+                          <div style={{ display: 'flex', flexGrow: 1 }} />
+                          <div
+                            style={{
+                              display: 'flex',
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: 'inline-block',
+                                marginLeft: '10px',
+                              }}
+                            >
+                              <EventTimeDisplay
+                                isStart={true}
+                                time={event.startTime}
+                                setEvents={setEvents}
+                                eventIndex={index}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                display: 'inline-block',
+                              }}
+                            >
+                              <EventTimeDisplay
+                                isStart={false}
+                                time={event.endTime}
+                                setEvents={setEvents}
+                                eventIndex={index}
+                              />
+                            </div>
+                            <div
+                              style={{
+                                display: 'inline-block',
+                                marginLeft: '10px',
+                                marginRight: '10px',
+                              }}
+                            >
+                              <select
+                                value={event.selectedOptionId}
+                                className={'select-preference text-color__none'}
+                                onChange={(e) => {
+                                  const newEvents = [...events]
+                                  newEvents[index].selectedOptionId =
+                                    e.target.value
+                                  setEvents(newEvents)
+                                }}
+                              >
+                                {event.options.map((option) => (
+                                  <option
+                                    value={option.id}
+                                    style={{ color: '#222222' }}
+                                  >
+                                    {option.value}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
-                          <RefreshIcon style={{ marginRight: '5px' }} />
+                          <div style={{ display: 'flex', flexGrow: 1 }} />
+                          <RefreshIcon
+                            style={{
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              cursor: 'pointer',
+                            }}
+                          />
                           <DeleteIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              marginRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
-                              setEvents(events.filter((e) => e !== prompt))
+                              const newEvents = [...events]
+                              newEvents.splice(index, 1)
+                              setEvents(newEvents)
                             }}
                           />
                         </div>

@@ -54,7 +54,6 @@ export const Task = ({ name, task, index, projects }) => {
             <p className='board-task__name' style={{ paddingBottom: '0.3rem' }}>
               {cropLabel(name, 30)}
             </p>
-
             <div className='task__info'>
               <div
                 style={{

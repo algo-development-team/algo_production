@@ -191,23 +191,31 @@ export const PromptsContainer = ({
                           {...provided.draggableProps}
                           ref={provided.innerRef}
                         >
-                          <div
-                            className='task__details'
+                          <p
+                            className='board-task__name'
                             style={{ paddingLeft: '10px' }}
                           >
-                            <p className='board-task__name'>
-                              {cropLabel(prompt, promptLength)}
-                            </p>
-                          </div>
+                            {cropLabel(prompt, promptLength)}
+                          </p>
+                          <div style={{ display: 'flex', flexGrow: 1 }} />
                           <EditIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
                               setPrompt(prompt)
                               setCurrentPromptIndex(index)
                             }}
                           />
                           <DeleteIcon
-                            style={{ marginRight: '5px' }}
+                            style={{
+                              paddingLeft: '3px',
+                              paddingRight: '3px',
+                              marginRight: '3px',
+                              cursor: 'pointer',
+                            }}
                             onClick={() => {
                               setPrompts(prompts.filter((p) => p !== prompt))
                             }}
