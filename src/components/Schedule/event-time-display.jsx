@@ -1,32 +1,8 @@
 import { useEffect } from 'react'
+import { useResponsiveSizes } from 'hooks'
 
 export const EventTimeDisplay = ({ isStart, time, setEvents, eventIndex }) => {
-  /*The is the Handle of the AM & PM */
-  const formatHour = (hour) => {
-    if (hour > 12) {
-      return hour - 12
-    } else if (hour === 0) {
-      return 12
-    } else {
-      return hour
-    }
-  }
-
-  const formatMin = (min) => {
-    if (min < 10) {
-      return `0${min}`
-    } else {
-      return min
-    }
-  }
-
-  const displayAMPM = (hour) => {
-    if (hour >= 12) {
-      return 'pm'
-    } else {
-      return 'am'
-    }
-  }
+  const { sizes } = useResponsiveSizes()
 
   const handleAdjustTime = (isInc) => {
     const newTime = time.clone()
@@ -54,8 +30,10 @@ export const EventTimeDisplay = ({ isStart, time, setEvents, eventIndex }) => {
 
   return (
     <div className='display-row' style={{ cursor: 'pointer' }}>
-      {!isStart && <p style={{ marginLeft: '5px' }}>to</p>}
-      <p style={{ marginLeft: '5px' }}>{time.format('hh:mm a')}</p>
+      {!isStart && !sizes.smallPhone && <p style={{ marginLeft: '5px' }}>to</p>}
+      <p style={{ marginLeft: !isStart && sizes.smallPhone ? '10px' : '5px' }}>
+        {time.format('hh:mm a')}
+      </p>
       <div
         className='display-col'
         style={{ marginLeft: '5px', marginRight: '5px' }}
