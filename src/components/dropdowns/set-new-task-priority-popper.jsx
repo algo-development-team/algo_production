@@ -56,7 +56,7 @@ export const SetNewTaskPriorityPopper = ({
               <NextWeekIcon fill={'#5297ff'} />
             </div>
 
-            <p className='set-new-task__schedule--name'>Average</p>
+            <p className='set-new-task__schedule--name'>Medium</p>
           </li>
           <li
             className='set-schedule__popper--option'
