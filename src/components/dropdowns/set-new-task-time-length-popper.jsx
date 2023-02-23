@@ -1,8 +1,4 @@
 import { ReactComponent as NextWeekIcon } from 'assets/svg/next-week.svg'
-import { ReactComponent as NoDateIcon } from 'assets/svg/none.svg'
-import { ReactComponent as SetScheduleIcon } from 'assets/svg/set-schedule.svg'
-import { ReactComponent as WeekendIcon } from 'assets/svg/weekend.svg'
-import { TodayIcon } from 'components/today-icon'
 import './light.scss'
 import './main.scss'
 
@@ -16,36 +12,8 @@ export const SetNewTaskTimeLengthPopper = ({
   yPosition,
   parentPosition,
 }) => {
-  const set0Min = () => {
-    setTaskTimeLength(0)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set15Min = () => {
-    setTaskTimeLength(15)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set30Min = () => {
-    setTaskTimeLength(30)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set1Hour = () => {
-    setTaskTimeLength(60)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set2Hour = () => {
-    setTaskTimeLength(120)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set4Hour = () => {
-    setTaskTimeLength(240)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set8Hour = () => {
-    setTaskTimeLength(480)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set16Hour = () => {
-    setTaskTimeLength(960)
+  const setMin = (min) => {
+    setTaskTimeLength(min)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
@@ -72,7 +40,7 @@ export const SetNewTaskTimeLengthPopper = ({
         <ul>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set0Min()}
+            onClick={() => setMin(0)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -82,7 +50,7 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set15Min()}
+            onClick={() => setMin(15)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -92,7 +60,7 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set30Min()}
+            onClick={() => setMin(30)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -102,7 +70,17 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set1Hour()}
+            onClick={() => setMin(45)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>45min</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(60)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -112,7 +90,7 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set2Hour()}
+            onClick={() => setMin(120)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -122,7 +100,7 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set4Hour()}
+            onClick={() => setMin(240)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -132,7 +110,17 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set8Hour()}
+            onClick={() => setMin(360)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>6h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(480)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
@@ -142,13 +130,53 @@ export const SetNewTaskTimeLengthPopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set16Hour()}
+            onClick={() => setMin(720)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>12h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(960)}
           >
             <div className=''>
               <NextWeekIcon fill={'grey'} />
             </div>
 
             <p className='set-new-task__schedule--name'>16h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(1200)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>20h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(1800)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>30h</p>
+          </li>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setMin(2400)}
+          >
+            <div className=''>
+              <NextWeekIcon fill={'grey'} />
+            </div>
+
+            <p className='set-new-task__schedule--name'>40h</p>
           </li>
         </ul>
       </div>

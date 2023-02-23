@@ -322,7 +322,7 @@ export const addTask = async (
       important: defaultGroup === 'Important' ? true : false,
       description: taskDescription ? taskDescription : '', // string
       priority: taskPriority, // number (int) (range: 1-3)
-      timeLength: taskTimeLength, // number (int) (range: 15-480)
+      timeLength: taskTimeLength, // number (int) (range: 15-2400)
       index: index,
       eventIds: [],
     })
@@ -457,7 +457,7 @@ export const updateFireStore = async (
         projectId: newProjectId,
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)
-        timeLength: taskTimeLength, // number (int) (range: 15-480)
+        timeLength: taskTimeLength, // number (int) (range: 15-2400)
         boardStatus: newBoardStatus,
         index: newIndex,
       })

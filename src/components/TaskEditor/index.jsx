@@ -16,12 +16,16 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
-import { getTaskDocsInProjectColumnNotCompleted, check, addTask, updateFireStore } from '../../backend/handleUserTasks'
+import {
+  getTaskDocsInProjectColumnNotCompleted,
+  check,
+  addTask,
+  updateFireStore,
+} from '../../backend/handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
-import { updateUserInfo } from '../../backend/handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
-import useScreenType from 'react-screentype-hook'
+import { useResponsiveSizes } from 'hooks'
 
 export const TaskEditor = ({
   column,
@@ -59,7 +63,7 @@ export const TaskEditor = ({
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
   const { checklist } = useChecklist()
-  const screenType = useScreenType()
+  const { sizes } = useResponsiveSizes()
   const textAreaRef = useRef(null)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -110,11 +114,24 @@ export const TaskEditor = ({
       index = getMaxIndex(tasks, boardStatus) + 1
     }
     // UPDATE TASK INDEX HERE (COMPLETED)
-    
+
     resetForm()
 
-    await addTask(currentUser && currentUser.id, project.selectedProjectId, startSchedule.date, endSchedule.date, taskName, taskId,
-      boardStatus, defaultGroup, taskDescription, taskPriority, taskTimeLength, index, scheduleCreated)
+    await addTask(
+      currentUser && currentUser.id,
+      project.selectedProjectId,
+      startSchedule.date,
+      endSchedule.date,
+      taskName,
+      taskId,
+      boardStatus,
+      defaultGroup,
+      taskDescription,
+      taskPriority,
+      taskTimeLength,
+      index,
+      scheduleCreated,
+    )
   }
 
   const resetForm = (event) => {
@@ -146,9 +163,25 @@ export const TaskEditor = ({
 
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    await updateFireStore(currentUser && currentUser.id, task.taskId, task.projectId, task.boardStatus, task.index, projects, taskName, 
-                          taskDescription, taskPriority, taskTimeLength, scheduleCreated, endSchedule.date, startSchedule.date, 
-                          defaultGroup, task.projectId, project.selectedProjectName, project.selectedProjectId)
+    await updateFireStore(
+      currentUser && currentUser.id,
+      task.taskId,
+      task.projectId,
+      task.boardStatus,
+      task.index,
+      projects,
+      taskName,
+      taskDescription,
+      taskPriority,
+      taskTimeLength,
+      scheduleCreated,
+      endSchedule.date,
+      startSchedule.date,
+      defaultGroup,
+      task.projectId,
+      project.selectedProjectName,
+      project.selectedProjectId,
+    )
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }
@@ -198,11 +231,11 @@ export const TaskEditor = ({
 
   const splitTaskAttributes = () => {
     if (isPopup || isQuickAdd) {
-      return screenType.isMobile
+      return sizes.smallPhone
     } else if (defaultGroup) {
-      return screenType.isMobile
+      return sizes.smallPhone
     } else {
-      return !projectIsList || screenType.isMobile
+      return !projectIsList || sizes.smallPhone
     }
   }
 

@@ -41,13 +41,10 @@ export const SetNewTaskPriority = ({
       return 'Low'
     }
     if (taskPriority === 2) {
-      return 'Average'
+      return 'Medium'
     }
     if (taskPriority === 3) {
       return 'High'
-    }
-    if (taskPriority === 4) {
-      return 'Very High'
     }
   }
 
