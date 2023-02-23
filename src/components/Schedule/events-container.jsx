@@ -14,11 +14,11 @@ const defaultEvents = [
     isWork: true,
     type: 'Work',
     options: [
-      { id: 'T-1', value: 'Make Presentation' },
-      { id: 'T-2', value: 'Work Report' },
-      { id: 'T-3', value: 'Email Customers' },
+      { taskId: 'qwertyuiop', value: 'Make Presentation' },
+      { taskId: 'asdfghjkl1', value: 'Work Report' },
+      { taskId: 'zxcvbnm234', value: 'Email Customers' },
     ],
-    selectedOptionId: 'T-1',
+    selectedOptionTaskId: 'qwertyuiop',
     startTime: moment('2023-02-22 09:00:00'),
     endTime: moment('2023-02-22 11:00:00'),
   },
@@ -27,11 +27,11 @@ const defaultEvents = [
     isWork: true,
     type: 'Work',
     options: [
-      { id: 'T-1', value: 'Make Presentation' },
-      { id: 'T-2', value: 'Work Report' },
-      { id: 'T-3', value: 'Email Customers' },
+      { taskId: 'qwertyuiop', value: 'Make Presentation' },
+      { taskId: 'asdfghjkl1', value: 'Work Report' },
+      { taskId: 'zxcvbnm234', value: 'Email Customers' },
     ],
-    selectedOptionId: 'T-2',
+    selectedOptionTaskId: 'asdfghjkl1',
     startTime: moment('2023-02-22 11:00:00'),
     endTime: moment('2023-02-22 13:00:00'),
   },
@@ -40,11 +40,11 @@ const defaultEvents = [
     isWork: true,
     type: 'Work',
     options: [
-      { id: 'T-1', value: 'Make Presentation' },
-      { id: 'T-2', value: 'Work Report' },
-      { id: 'T-3', value: 'Email Customers' },
+      { taskId: 'qwertyuiop', value: 'Make Presentation' },
+      { taskId: 'asdfghjkl1', value: 'Work Report' },
+      { taskId: 'zxcvbnm234', value: 'Email Customers' },
     ],
-    selectedOptionId: 'T-3',
+    selectedOptionTaskId: 'zxcvbnm234',
     startTime: moment('2023-02-22 13:00:00'),
     endTime: moment('2023-02-22 15:00:00'),
   },
@@ -141,16 +141,16 @@ export const EventsContainer = ({
             }}
           >
             <select
-              value={event.selectedOptionId}
+              value={event.selectedOptionTaskId}
               className={'select-preference text-color__none'}
               onChange={(e) => {
                 const newEvents = [...events]
-                newEvents[index].selectedOptionId = e.target.value
+                newEvents[index].selectedOptionTaskId = e.target.value
                 setEvents(newEvents)
               }}
             >
               {event.options.map((option) => (
-                <option value={option.id} style={{ color: '#222222' }}>
+                <option value={option.taskId} style={{ color: '#222222' }}>
                   {cropLabel(option.value, 24)}
                 </option>
               ))}
@@ -211,16 +211,16 @@ export const EventsContainer = ({
               }}
             >
               <select
-                value={event.selectedOptionId}
+                value={event.selectedOptionTaskId}
                 className={'select-preference text-color__none'}
                 onChange={(e) => {
                   const newEvents = [...events]
-                  newEvents[index].selectedOptionId = e.target.value
+                  newEvents[index].selectedOptionTaskId = e.target.value
                   setEvents(newEvents)
                 }}
               >
                 {event.options.map((option) => (
-                  <option value={option.id} style={{ color: '#222222' }}>
+                  <option value={option.taskId} style={{ color: '#222222' }}>
                     {cropLabel(option.value, eventTypeLength)}
                   </option>
                 ))}
