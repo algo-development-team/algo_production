@@ -17,6 +17,7 @@ import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import { SetNewTaskDeadlineType } from './set-new-task-deadline-type'
+import { MenuButton } from './menu-button'
 import {
   getTaskDocsInProjectColumnNotCompleted,
   check,
@@ -304,6 +305,20 @@ export const TaskEditor = ({
               placeholder={'Some Title...'}
             />
 
+            {/* Menu Buttons Section */}
+            <div
+              className='add-task__attributes'
+              style={{ marginBottom: '10px' }}
+            >
+              <div className='add-task__attributes--left'>
+                {defaultGroup !== 'Checklist' &&
+                  defaultGroup !== 'Scheduled' && (
+                    <MenuButton type='LINK_TASKS' />
+                  )}
+              </div>
+              <div className='add-task__attributes--right'></div>
+            </div>
+
             {/* Description Editor Section */}
             <textarea
               className='add-task__input textarea'
@@ -409,6 +424,8 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--right'></div>
               </div>
             </div>
+
+            {/* Link Tasks Editor Section */}
           </div>
 
           <div
