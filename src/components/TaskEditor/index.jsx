@@ -16,6 +16,7 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
+import { SetNewTaskDeadlineType } from './set-new-task-deadline-type'
 import {
   getTaskDocsInProjectColumnNotCompleted,
   check,
@@ -56,8 +57,11 @@ export const TaskEditor = ({
   const [taskTimeLength, setTaskTimeLength] = useState(
     isEdit && task.timeLength,
   )
-  const { currentUser } = useAuth()
+  const [taskDeadlineType, setTaskDeadlineType] = useState(
+    isEdit && task.deadlineType,
+  )
   const [disabled, setDisabled] = useState(true)
+  const { currentUser } = useAuth()
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
@@ -129,6 +133,7 @@ export const TaskEditor = ({
       taskDescription,
       taskPriority,
       taskTimeLength,
+      taskDeadlineType,
       index,
       scheduleCreated,
     )
@@ -149,6 +154,7 @@ export const TaskEditor = ({
     } else {
       setEndSchedule({ day: '', date: '' })
     }
+    setTaskDeadlineType('HARD')
     setTaskEditorToShow('')
   }
 
@@ -174,6 +180,7 @@ export const TaskEditor = ({
       taskDescription,
       taskPriority,
       taskTimeLength,
+      taskDeadlineType,
       scheduleCreated,
       endSchedule.date,
       startSchedule.date,
@@ -221,6 +228,11 @@ export const TaskEditor = ({
       setTaskPriority(taskPriority)
     }
     if (!taskTimeLength && taskTimeLength !== 0) setTaskTimeLength(60)
+    if (!taskDeadlineType) {
+      setTaskDeadlineType('HARD')
+    } else {
+      setTaskDeadlineType(taskDeadlineType)
+    }
   }, [defaultGroup])
 
   useEffect(() => {
@@ -277,6 +289,7 @@ export const TaskEditor = ({
               isQuickAdd ? ' quick-add__container' : ''
             }`}
           >
+            {/* Title Editor Section */}
             <input
               className={`add-task__input title${
                 projectIsList ? '--list' : ''
@@ -291,6 +304,7 @@ export const TaskEditor = ({
               placeholder={'Some Title...'}
             />
 
+            {/* Description Editor Section */}
             <textarea
               className='add-task__input textarea'
               value={taskDescription}
@@ -300,6 +314,8 @@ export const TaskEditor = ({
               type='text'
               placeholder='Some description...'
             />
+
+            {/* Project Editor Section */}
             <div
               className='add-task__attributes'
               style={{ marginBottom: '10px' }}
@@ -318,10 +334,13 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
+
+            {/* Start Date, End Date, Priority, and Time Length Editors Section */}
             <div
               style={{
                 display: 'flex',
                 flexDirection: splitTaskAttributes() ? 'column' : 'row',
+                marginBottom: '10px',
               }}
             >
               <div
@@ -351,6 +370,7 @@ export const TaskEditor = ({
                 </div>
                 <div className='add-task__attributes--right'></div>
               </div>
+
               <div className='add-task__attributes'>
                 <div className='add-task__attributes--left'>
                   <SetNewTaskPriority
@@ -371,7 +391,26 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--right'></div>
               </div>
             </div>
+
+            {/* Deadline Type Editor Section */}
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {endSchedule.date !== '' && (
+                    <SetNewTaskDeadlineType
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      taskDeadlineType={taskDeadlineType}
+                      setTaskDeadlineType={setTaskDeadlineType}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
           </div>
+
           <div
             className={`add-task__actions ${
               isQuickAdd || isPopup ? 'quick-add__actions' : ''

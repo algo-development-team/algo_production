@@ -307,6 +307,7 @@ export const addTask = async (
   taskDescription,
   taskPriority,
   taskTimeLength,
+  taskDeadlineType,
   index,
   scheduleCreated,
 ) => {
@@ -323,6 +324,7 @@ export const addTask = async (
       description: taskDescription ? taskDescription : '', // string
       priority: taskPriority, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
+      deadlineType: taskDeadlineType, // string (range: 'HARD', 'SOFT', 'NONE')
       index: index,
       eventIds: [],
     })
@@ -363,6 +365,7 @@ export const updateFireStore = async (
   taskDescription,
   taskPriority,
   taskTimeLength,
+  taskDeadlineType,
   scheduleCreated,
   endScheduleDate,
   startScheduleDate,
@@ -458,6 +461,7 @@ export const updateFireStore = async (
         description: taskDescription, // string
         priority: taskPriority, // number (int) (range: 1-3)
         timeLength: taskTimeLength, // number (int) (range: 15-2400)
+        deadlineType: taskDeadlineType, // string (range: 'HARD', 'SOFT', 'NONE')
         boardStatus: newBoardStatus,
         index: newIndex,
       })
