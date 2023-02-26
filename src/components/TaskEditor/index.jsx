@@ -91,6 +91,17 @@ export const TaskEditor = ({
   const textAreaRef = useRef(null)
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
+  /***
+   * TODOS:
+   * 1. Create a task dependency tree
+   * 2. Filter out tasks that are already blocking the task recursively using the getChildNodeIds function from ../../handleArray
+   * 3. Filter out tasks that the task is already blocking
+   * 4. Prevent the task popup from closing when the user clicks on the Link button
+   * 5. Show the linked tasks in the input as bubbles
+   * 6. Fix the spacing between the buttons
+   * After that, start working on the schedule prompt search bar
+   * ***/
+
   useEffect(() => {
     if (tasks) {
       const tasksMap = {}
@@ -597,7 +608,10 @@ export const TaskEditor = ({
                   {showBlocksAdder && (
                     <>
                       <button
-                        className=' action add-task__actions--add-task'
+                        // className=' action add-task__actions--add-task'
+                        className={` action  ${
+                          isLight ? 'action__cancel' : 'action__cancel--dark'
+                        }`}
                         onClick={() => {
                           const newTaskBlocks = [
                             ...taskBlocks,
