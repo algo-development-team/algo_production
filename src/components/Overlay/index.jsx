@@ -4,6 +4,7 @@ import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-proje
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
 import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
 import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-time-length-popper'
+import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
 import { MenuList } from 'components/MenuList'
 import { UserOptions } from 'components/UserOption'
 import { ViewOptions } from 'components/ViewOptions'
@@ -122,6 +123,17 @@ export const Overlay = () => {
           <SetNewTaskTimeLengthPopper
             closeOverlay={closeOverlay}
             setTaskTimeLength={dialogProps.setTaskTimeLength}
+            projectId={dialogProps.projectId}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+      case 'SET_LINKED_TASKS':
+        return (
+          <SetNewTaskLinkedTasksPopper
+            closeOverlay={closeOverlay}
+            setLinkedTasks={dialogProps.setLinkedTasks}
             projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}

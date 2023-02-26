@@ -1,5 +1,4 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
-import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useThemeContextValue } from 'context'
 import { useTaskEditorContextValue } from 'context/board-task-editor-context'
 import {
@@ -18,6 +17,7 @@ import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import { SetNewTaskDeadlineType } from './set-new-task-deadline-type'
+import { SetNewTaskLinkedTasks } from './set-new-task-linked-tasks'
 import { MenuButton } from './menu-button'
 import {
   getTaskDocsInProjectColumnNotCompleted,
@@ -69,12 +69,12 @@ export const TaskEditor = ({
   const [isBlockedByAdderPrompt, setIsBlockedByAdderPrompt] = useState('')
   const [blocksAdderTasks, setBlocksAdderTasks] = useState([])
   const [isBlockedByAdderTasks, setIsBlockedByAdderTasks] = useState([])
-  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
-  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState(
-    isEdit && task.isBlockedBy,
-  )
+  const [linkedTaskBlocks, setLinkedTaskBlocks] = useState([])
+  const [linkedTaskIsBlockedBy, setLinkedTaskIsBlockedBy] = useState([])
   const [removedTaskBlocks, setRemovedTaskBlocks] = useState([])
   const [removedTaskIsBlockedBy, setRemovedTaskIsBlockedBy] = useState([])
+  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
+  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState([])
   const [disabled, setDisabled] = useState(true)
   const [tasksMap, setTasksMap] = useState({})
   const { currentUser } = useAuth()
@@ -118,6 +118,23 @@ export const TaskEditor = ({
       setBlocksAdderTasks(newBlocksAdderTasks)
     }
   }, [blocksAdderPrompt, tasks, task])
+
+  useEffect(() => {
+    if (task) {
+      const newIsBlockedByAdderTasks = tasks
+        .filter((projectTask) => projectTask.taskId !== task.taskId)
+        .filter((projectTask) =>
+          includesAnySubstring(
+            projectTask.name.toLowerCase(),
+            isBlockedByAdderPrompt
+              .toLowerCase()
+              .split(' ')
+              .filter((substr) => substr !== ''),
+          ),
+        )
+      setIsBlockedByAdderTasks(newIsBlockedByAdderTasks)
+    }
+  }, [isBlockedByAdderPrompt, tasks, task])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -509,48 +526,52 @@ export const TaskEditor = ({
                 return null
               }
             })}
-            {showBlocksAdder && (
-              <div>
-                <input
-                  style={{
-                    padding: '12px',
-                    display: 'flex',
-                    backgroundColor: '#282828',
-                    width: '-webkit-fill-available',
-                    marginBottom: '0.6rem',
-                    borderRadius: '5px',
-                    border: '1px solid #ffffff1a',
-                    boxShadow: '0 10px 10px #0000001a, 0 6px 3px #0000001f',
-                    position: 'relative',
-                    alignItems: 'center',
-                    color: 'inherit',
-                    fontSize: '14px',
-                  }}
-                  placeholder='Search for a task...'
-                  value={blocksAdderPrompt}
-                  onChange={(e) => setBlocksAdderPrompt(e.target.value)}
-                />
-                <ul>
-                  {blocksAdderTasks.map((task) => {
-                    return <li>{task.name}</li>
-                  })}
-                </ul>
-                <button
-                  className=' action add-task__actions--add-task'
-                  onClick={() => {}}
-                >
-                  Link
-                </button>
-                <button
-                  className={` action  ${
-                    isLight ? 'action__cancel' : 'action__cancel--dark'
-                  }`}
-                  onClick={() => setShowBlocksAdder(false)}
-                >
-                  Cancel
-                </button>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showBlocksAdder && (
+                    <SetNewTaskLinkedTasks
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      prompt={blocksAdderPrompt}
+                      setPrompt={setBlocksAdderPrompt}
+                      linkedTasks={linkedTaskBlocks}
+                      setLinkedTasks={setLinkedTaskBlocks}
+                      tasks={blocksAdderTasks}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
               </div>
-            )}
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showBlocksAdder && (
+                    <>
+                      <button
+                        className=' action add-task__actions--add-task'
+                        onClick={() => {}}
+                      >
+                        Link
+                      </button>
+                      <button
+                        className={` action  ${
+                          isLight ? 'action__cancel' : 'action__cancel--dark'
+                        }`}
+                        onClick={() => setShowBlocksAdder(false)}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
 
             {/* Is Blocked By Editor Section */}
             {(taskIsBlockedBy.length > 0 || showIsBlockedByAdder) && (
