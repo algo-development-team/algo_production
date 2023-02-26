@@ -22,12 +22,13 @@ import {
   getTaskDocsInProjectColumnNotCompleted,
   check,
   addTask,
-  updateFireStore,
+  updateTaskFromFields,
 } from '../../backend/handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import { useResponsiveSizes } from 'hooks'
+import { TaskSimpleView } from '../TaskSimpleView'
 
 export const TaskEditor = ({
   column,
@@ -61,7 +62,16 @@ export const TaskEditor = ({
   const [taskDeadlineType, setTaskDeadlineType] = useState(
     isEdit && task.deadlineType,
   )
+  const [showBlocksAdder, setShowBlocksAdder] = useState(false)
+  const [showIsBlockedByAdder, setShowIsBlockedByAdder] = useState(false)
+  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
+  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState(
+    isEdit && task.isBlockedBy,
+  )
+  const [removedTaskBlocks, setRemovedTaskBlocks] = useState([])
+  const [removedTaskIsBlockedBy, setRemovedTaskIsBlockedBy] = useState([])
   const [disabled, setDisabled] = useState(true)
+  const [tasksMap, setTasksMap] = useState({})
   const { currentUser } = useAuth()
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
@@ -69,9 +79,19 @@ export const TaskEditor = ({
   const { scheduleCreated } = useScheduleCreated()
   const { checklist } = useChecklist()
   const { sizes } = useResponsiveSizes()
+  const { defaultProject } = selectedProject
   const textAreaRef = useRef(null)
-
   useAutosizeTextArea(textAreaRef.current, taskDescription)
+
+  useEffect(() => {
+    if (tasks) {
+      const tasksMap = {}
+      tasks.forEach((task) => {
+        tasksMap[task.taskId] = task
+      })
+      setTasksMap(tasksMap)
+    }
+  }, [tasks])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -135,6 +155,8 @@ export const TaskEditor = ({
       taskPriority,
       taskTimeLength,
       taskDeadlineType,
+      taskBlocks,
+      taskIsBlockedBy,
       index,
       scheduleCreated,
     )
@@ -156,6 +178,8 @@ export const TaskEditor = ({
       setEndSchedule({ day: '', date: '' })
     }
     setTaskDeadlineType('HARD')
+    setTaskBlocks([])
+    setTaskIsBlockedBy([])
     setTaskEditorToShow('')
   }
 
@@ -168,9 +192,19 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const handleRemoveBlocks = (taskId) => {
+    setRemovedTaskBlocks([...removedTaskBlocks, taskId])
+    setTaskBlocks(taskBlocks.filter((block) => block !== taskId))
+  }
+
+  const handleRemoveIsBlockedBy = (taskId) => {
+    setRemovedTaskIsBlockedBy([...removedTaskIsBlockedBy, taskId])
+    setTaskIsBlockedBy(taskIsBlockedBy.filter((block) => block !== taskId))
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    await updateFireStore(
+    await updateTaskFromFields(
       currentUser && currentUser.id,
       task.taskId,
       task.projectId,
@@ -182,6 +216,10 @@ export const TaskEditor = ({
       taskPriority,
       taskTimeLength,
       taskDeadlineType,
+      taskBlocks,
+      taskIsBlockedBy,
+      removedTaskBlocks,
+      removedTaskIsBlockedBy,
       scheduleCreated,
       endSchedule.date,
       startSchedule.date,
@@ -193,8 +231,6 @@ export const TaskEditor = ({
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }
-
-  const { defaultProject } = selectedProject
 
   useEffect(() => {
     if (defaultGroup || isQuickAdd) {
@@ -225,14 +261,16 @@ export const TaskEditor = ({
     }
     if (!taskPriority) {
       setTaskPriority(2)
-    } else {
-      setTaskPriority(taskPriority)
     }
     if (!taskTimeLength && taskTimeLength !== 0) setTaskTimeLength(60)
     if (!taskDeadlineType) {
       setTaskDeadlineType('HARD')
-    } else {
-      setTaskDeadlineType(taskDeadlineType)
+    }
+    if (!taskBlocks) {
+      setTaskBlocks([])
+    }
+    if (!taskIsBlockedBy) {
+      setTaskIsBlockedBy([])
     }
   }, [defaultGroup])
 
@@ -311,10 +349,16 @@ export const TaskEditor = ({
               style={{ marginBottom: '10px' }}
             >
               <div className='add-task__attributes--left'>
-                {defaultGroup !== 'Checklist' &&
-                  defaultGroup !== 'Scheduled' && (
-                    <MenuButton type='LINK_TASKS' />
-                  )}
+                <MenuButton
+                  type='BLOCKS'
+                  value={showBlocksAdder}
+                  setValue={setShowBlocksAdder}
+                />
+                <MenuButton
+                  type='IS_BLOCKED_BY'
+                  value={showIsBlockedByAdder}
+                  setValue={setShowIsBlockedByAdder}
+                />
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
@@ -425,7 +469,36 @@ export const TaskEditor = ({
               </div>
             </div>
 
-            {/* Link Tasks Editor Section */}
+            {/* Blocks Editor Section */}
+            {(taskBlocks.length > 0 || showBlocksAdder) && <h5>Blocks</h5>}
+            {taskBlocks.map((taskId) => {
+              if (tasksMap[taskId]) {
+                return (
+                  <TaskSimpleView
+                    task={tasksMap[taskId]}
+                    handleClose={() => handleRemoveBlocks(taskId)}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+            {/* Is Blocked By Editor Section */}
+            {(taskIsBlockedBy.length > 0 || showIsBlockedByAdder) && (
+              <h5>Is Blocked By</h5>
+            )}
+            {taskIsBlockedBy.map((taskId) => {
+              if (tasksMap[taskId]) {
+                return (
+                  <TaskSimpleView
+                    task={tasksMap[taskId]}
+                    handleClose={() => handleRemoveIsBlockedBy(taskId)}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
           </div>
 
           <div

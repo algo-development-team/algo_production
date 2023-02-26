@@ -308,6 +308,8 @@ export const addTask = async (
   taskPriority,
   taskTimeLength,
   taskDeadlineType,
+  taskBlocks,
+  taskIsBlockedBy,
   index,
   scheduleCreated,
 ) => {
@@ -325,6 +327,8 @@ export const addTask = async (
       priority: taskPriority, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
       deadlineType: taskDeadlineType, // string (range: 'HARD', 'SOFT', 'NONE')
+      blocks: taskBlocks, // array of taskIds
+      isBlockedBy: taskIsBlockedBy, // array of taskIds
       index: index,
       eventIds: [],
     })
@@ -354,7 +358,7 @@ const getNewProjectId = (
   }
 }
 
-export const updateFireStore = async (
+export const updateTaskFromFields = async (
   userId,
   taskId,
   projectId,
@@ -366,6 +370,10 @@ export const updateFireStore = async (
   taskPriority,
   taskTimeLength,
   taskDeadlineType,
+  taskBlocks,
+  taskIsBlockedBy,
+  removedTaskBlocks,
+  removedTaskIsBlockedBy,
   scheduleCreated,
   endScheduleDate,
   startScheduleDate,
@@ -462,8 +470,44 @@ export const updateFireStore = async (
         priority: taskPriority, // number (int) (range: 1-3)
         timeLength: taskTimeLength, // number (int) (range: 15-2400)
         deadlineType: taskDeadlineType, // string (range: 'HARD', 'SOFT', 'NONE')
+        blocks: taskBlocks, // array of taskIds
+        isBlockedBy: taskIsBlockedBy, // array of taskIds
         boardStatus: newBoardStatus,
         index: newIndex,
+      })
+    })
+
+    // removes current taskId from removed blocks taskId's isBlockedBy array
+    removedTaskBlocks.forEach(async (removedTaskId) => {
+      const taskBlocksQuery = await query(
+        collection(db, 'user', `${userId}/tasks`),
+        where('taskId', '==', removedTaskId),
+      )
+      const taskBlocksDocs = await getDocs(taskBlocksQuery)
+      taskBlocksDocs.forEach(async (taskBlocksDoc) => {
+        await updateDoc(taskBlocksDoc.ref, {
+          isBlockedBy: taskBlocksDoc
+            .data()
+            .isBlockedBy.filter(
+              (isBlockedByTaskId) => isBlockedByTaskId !== taskId,
+            ),
+        })
+      })
+    })
+
+    // removes current taskId from removed isBlockedBy taskId's blocks array
+    removedTaskIsBlockedBy.forEach(async (removedTaskId) => {
+      const taskIsBlockedByQuery = await query(
+        collection(db, 'user', `${userId}/tasks`),
+        where('taskId', '==', removedTaskId),
+      )
+      const taskIsBlockedByDocs = await getDocs(taskIsBlockedByQuery)
+      taskIsBlockedByDocs.forEach(async (taskIsBlockedByDoc) => {
+        await updateDoc(taskIsBlockedByDoc.ref, {
+          blocks: taskIsBlockedByDoc
+            .data()
+            .blocks.filter((blocksTaskId) => blocksTaskId !== taskId),
+        })
       })
     })
 

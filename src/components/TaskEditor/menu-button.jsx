@@ -1,23 +1,33 @@
 import { ReactComponent as LinkIcon } from 'assets/svg/link.svg'
 
-export const MenuButton = ({ type }) => {
+export const MenuButton = ({ type, value, setValue }) => {
   const getMenuButtonIcon = (type) => {
-    if (type === 'LINK_TASKS') {
+    if (type === 'BLOCKS' || type === 'IS_BLOCKED_BY') {
       return <LinkIcon width={'18px'} height={'18px'} />
     }
   }
 
   const getMenuButtonText = (type) => {
-    if (type === 'LINK_TASKS') {
-      return 'Link Tasks'
+    if (type === 'BLOCKS') {
+      return 'Blocks'
+    } else if (type === 'IS_BLOCKED_BY') {
+      return 'Is Blocked by'
     }
   }
 
-  const handleLinkTasks = () => {}
+  const handleBlocks = () => {
+    setValue(true)
+  }
+
+  const handleIsBlockedBy = () => {
+    setValue(true)
+  }
 
   const callMenuButtonHandlerFunction = (type) => {
-    if (type === 'LINK_TASKS') {
-      return handleLinkTasks()
+    if (type === 'BLOCKS') {
+      return handleBlocks()
+    } else if (type === 'IS_BLOCKED_BY') {
+      return handleIsBlockedBy()
     }
   }
 
