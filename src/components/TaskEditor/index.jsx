@@ -30,7 +30,7 @@ import './styles/light.scss'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import { useResponsiveSizes } from 'hooks'
 import { TaskSimpleView } from '../TaskSimpleView'
-import { includesAnySubstring } from '../../handleString'
+import { includesAny } from '../../handleArray'
 
 export const TaskEditor = ({
   column,
@@ -112,7 +112,7 @@ export const TaskEditor = ({
       const newBlocksAdderTasks = tasks
         .filter((projectTask) => projectTask.taskId !== task.taskId)
         .filter((projectTask) =>
-          includesAnySubstring(
+          includesAny(
             projectTask.name.toLowerCase(),
             blocksAdderPrompt
               .toLowerCase()
@@ -127,7 +127,7 @@ export const TaskEditor = ({
         return
       }
       const newBlocksAdderTasks = tasks.filter((projectTask) =>
-        includesAnySubstring(
+        includesAny(
           projectTask.name.toLowerCase(),
           blocksAdderPrompt
             .toLowerCase()
@@ -150,7 +150,7 @@ export const TaskEditor = ({
       const newIsBlockedByAdderTasks = tasks
         .filter((projectTask) => projectTask.taskId !== task.taskId)
         .filter((projectTask) =>
-          includesAnySubstring(
+          includesAny(
             projectTask.name.toLowerCase(),
             isBlockedByAdderPrompt
               .toLowerCase()
@@ -165,7 +165,7 @@ export const TaskEditor = ({
         return
       }
       const newIsBlockedByAdderTasks = tasks.filter((projectTask) =>
-        includesAnySubstring(
+        includesAny(
           projectTask.name.toLowerCase(),
           isBlockedByAdderPrompt
             .toLowerCase()
@@ -538,7 +538,7 @@ export const TaskEditor = ({
             </div>
 
             {/* Deadline Type Editor Section */}
-            <div style={{ marginBottom: '10px' }}>
+            <div>
               <div className='add-task__attributes'>
                 <div className='add-task__attributes--left'>
                   {endSchedule.date !== '' && (
@@ -556,7 +556,8 @@ export const TaskEditor = ({
             </div>
 
             {/* Blocks Editor Section */}
-            {(taskBlocks.length > 0 || showBlocksAdder) && <h5>Blocks</h5>}
+            {(includesAny(Object.keys(tasksMap), taskBlocks) ||
+              showBlocksAdder) && <h5>Blocks</h5>}
             {taskBlocks.map((taskId) => {
               if (tasksMap[taskId]) {
                 return (
@@ -590,7 +591,7 @@ export const TaskEditor = ({
               </div>
             </div>
 
-            <div style={{ marginBottom: '10px' }}>
+            <div>
               <div className='add-task__attributes'>
                 <div className='add-task__attributes--left'>
                   {showBlocksAdder && (
@@ -629,9 +630,8 @@ export const TaskEditor = ({
             </div>
 
             {/* Is Blocked By Editor Section */}
-            {(taskIsBlockedBy.length > 0 || showIsBlockedByAdder) && (
-              <h5>Is Blocked By</h5>
-            )}
+            {(includesAny(Object.keys(tasksMap), taskIsBlockedBy) ||
+              showIsBlockedByAdder) && <h5>Is Blocked By</h5>}
             {taskIsBlockedBy.map((taskId) => {
               if (tasksMap[taskId]) {
                 return (
