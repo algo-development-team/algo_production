@@ -64,6 +64,10 @@ export const TaskEditor = ({
   const [taskDeadlineType, setTaskDeadlineType] = useState(
     isEdit && task.deadlineType,
   )
+  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
+  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState(
+    isEdit && task.isBlockedBy,
+  )
   const [showBlocksAdder, setShowBlocksAdder] = useState(false)
   const [showIsBlockedByAdder, setShowIsBlockedByAdder] = useState(false)
   const [blocksAdderPrompt, setBlocksAdderPrompt] = useState('')
@@ -74,8 +78,6 @@ export const TaskEditor = ({
   const [linkedTaskIsBlockedBy, setLinkedTaskIsBlockedBy] = useState([])
   const [removedTaskBlocks, setRemovedTaskBlocks] = useState([])
   const [removedTaskIsBlockedBy, setRemovedTaskIsBlockedBy] = useState([])
-  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
-  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState([])
   const [disabled, setDisabled] = useState(true)
   const [tasksMap, setTasksMap] = useState({})
   const { currentUser } = useAuth()
@@ -119,13 +121,28 @@ export const TaskEditor = ({
           ),
         )
       setBlocksAdderTasks(newBlocksAdderTasks)
+    } else {
+      if (blocksAdderPrompt === '') {
+        setBlocksAdderTasks(tasks)
+        return
+      }
+      const newBlocksAdderTasks = tasks.filter((projectTask) =>
+        includesAnySubstring(
+          projectTask.name.toLowerCase(),
+          blocksAdderPrompt
+            .toLowerCase()
+            .split(' ')
+            .filter((substr) => substr !== ''),
+        ),
+      )
+      setBlocksAdderTasks(newBlocksAdderTasks)
     }
   }, [blocksAdderPrompt, tasks, task])
 
   useEffect(() => {
     if (task) {
       if (isBlockedByAdderPrompt === '') {
-        setBlocksAdderTasks(
+        setIsBlockedByAdderTasks(
           tasks.filter((projectTask) => projectTask.taskId !== task.taskId),
         )
         return
@@ -141,6 +158,21 @@ export const TaskEditor = ({
               .filter((substr) => substr !== ''),
           ),
         )
+      setIsBlockedByAdderTasks(newIsBlockedByAdderTasks)
+    } else {
+      if (isBlockedByAdderPrompt === '') {
+        setIsBlockedByAdderTasks(tasks)
+        return
+      }
+      const newIsBlockedByAdderTasks = tasks.filter((projectTask) =>
+        includesAnySubstring(
+          projectTask.name.toLowerCase(),
+          isBlockedByAdderPrompt
+            .toLowerCase()
+            .split(' ')
+            .filter((substr) => substr !== ''),
+        ),
+      )
       setIsBlockedByAdderTasks(newIsBlockedByAdderTasks)
     }
   }, [isBlockedByAdderPrompt, tasks, task])
@@ -270,6 +302,8 @@ export const TaskEditor = ({
       taskDeadlineType,
       taskBlocks,
       taskIsBlockedBy,
+      linkedTaskBlocks.map((linkedTask) => linkedTask.taskId),
+      linkedTaskIsBlockedBy.map((linkedTask) => linkedTask.taskId),
       removedTaskBlocks,
       removedTaskIsBlockedBy,
       scheduleCreated,
@@ -563,7 +597,15 @@ export const TaskEditor = ({
                     <>
                       <button
                         className=' action add-task__actions--add-task'
-                        onClick={() => {}}
+                        onClick={() => {
+                          const newTaskBlocks = [
+                            ...taskBlocks,
+                            ...linkedTaskBlocks.map(
+                              (linkedTask) => linkedTask.taskId,
+                            ),
+                          ]
+                          setTaskBlocks(newTaskBlocks)
+                        }}
                       >
                         Link
                       </button>
@@ -574,6 +616,7 @@ export const TaskEditor = ({
                         onClick={() => {
                           setShowBlocksAdder(false)
                           setBlocksAdderPrompt('')
+                          setLinkedTaskBlocks([])
                         }}
                       >
                         Cancel
@@ -601,6 +644,64 @@ export const TaskEditor = ({
                 return null
               }
             })}
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showIsBlockedByAdder && (
+                    <SetNewTaskLinkedTasks
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      prompt={isBlockedByAdderPrompt}
+                      setPrompt={setIsBlockedByAdderPrompt}
+                      linkedTasks={linkedTaskIsBlockedBy}
+                      setLinkedTasks={setLinkedTaskIsBlockedBy}
+                      tasks={isBlockedByAdderTasks}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showIsBlockedByAdder && (
+                    <>
+                      <button
+                        className=' action add-task__actions--add-task'
+                        onClick={() => {
+                          const newTaskIsBlockedBy = [
+                            ...taskIsBlockedBy,
+                            ...linkedTaskIsBlockedBy.map(
+                              (linkedTask) => linkedTask.taskId,
+                            ),
+                          ]
+                          setTaskIsBlockedBy(newTaskIsBlockedBy)
+                        }}
+                      >
+                        Link
+                      </button>
+                      <button
+                        className={` action  ${
+                          isLight ? 'action__cancel' : 'action__cancel--dark'
+                        }`}
+                        onClick={() => {
+                          setShowIsBlockedByAdder(false)
+                          setIsBlockedByAdderPrompt('')
+                          setLinkedTaskIsBlockedBy([])
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
           </div>
 
           <div
