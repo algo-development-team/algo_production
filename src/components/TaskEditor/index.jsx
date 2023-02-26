@@ -1,4 +1,5 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
+import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useThemeContextValue } from 'context'
 import { useTaskEditorContextValue } from 'context/board-task-editor-context'
 import {
@@ -64,6 +65,10 @@ export const TaskEditor = ({
   )
   const [showBlocksAdder, setShowBlocksAdder] = useState(false)
   const [showIsBlockedByAdder, setShowIsBlockedByAdder] = useState(false)
+  const [blocksAdderPrompt, setBlocksAdderPrompt] = useState('')
+  const [isBlockedByAdderPrompt, setIsBlockedByAdderPrompt] = useState('')
+  const [blocksAdderTasks, setBlocksAdderTasks] = useState([])
+  const [isBlockedByAdderTasks, setIsBlockedByAdderTasks] = useState([])
   const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
   const [taskIsBlockedBy, setTaskIsBlockedBy] = useState(
     isEdit && task.isBlockedBy,
@@ -92,6 +97,27 @@ export const TaskEditor = ({
       setTasksMap(tasksMap)
     }
   }, [tasks])
+
+  const includesAnySubstring = (str, substrs) => {
+    return substrs.some((substr) => str.includes(substr))
+  }
+
+  useEffect(() => {
+    if (task) {
+      const newBlocksAdderTasks = tasks
+        .filter((projectTask) => projectTask.taskId !== task.taskId)
+        .filter((projectTask) =>
+          includesAnySubstring(
+            projectTask.name.toLowerCase(),
+            blocksAdderPrompt
+              .toLowerCase()
+              .split(' ')
+              .filter((substr) => substr !== ''),
+          ),
+        )
+      setBlocksAdderTasks(newBlocksAdderTasks)
+    }
+  }, [blocksAdderPrompt, tasks, task])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -483,6 +509,49 @@ export const TaskEditor = ({
                 return null
               }
             })}
+            {showBlocksAdder && (
+              <div>
+                <input
+                  style={{
+                    padding: '12px',
+                    display: 'flex',
+                    backgroundColor: '#282828',
+                    width: '-webkit-fill-available',
+                    marginBottom: '0.6rem',
+                    borderRadius: '5px',
+                    border: '1px solid #ffffff1a',
+                    boxShadow: '0 10px 10px #0000001a, 0 6px 3px #0000001f',
+                    position: 'relative',
+                    alignItems: 'center',
+                    color: 'inherit',
+                    fontSize: '14px',
+                  }}
+                  placeholder='Search for a task...'
+                  value={blocksAdderPrompt}
+                  onChange={(e) => setBlocksAdderPrompt(e.target.value)}
+                />
+                <ul>
+                  {blocksAdderTasks.map((task) => {
+                    return <li>{task.name}</li>
+                  })}
+                </ul>
+                <button
+                  className=' action add-task__actions--add-task'
+                  onClick={() => {}}
+                >
+                  Link
+                </button>
+                <button
+                  className={` action  ${
+                    isLight ? 'action__cancel' : 'action__cancel--dark'
+                  }`}
+                  onClick={() => setShowBlocksAdder(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
             {/* Is Blocked By Editor Section */}
             {(taskIsBlockedBy.length > 0 || showIsBlockedByAdder) && (
               <h5>Is Blocked By</h5>
