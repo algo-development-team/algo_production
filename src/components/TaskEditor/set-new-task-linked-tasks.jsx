@@ -49,6 +49,8 @@ export const SetNewTaskLinkedTasks = ({
               {
                 elementPosition: e.currentTarget.getBoundingClientRect(),
               },
+              { tasks },
+              { linkedTasks },
               { setLinkedTasks },
             ),
           )
@@ -67,6 +69,8 @@ export const SetNewTaskLinkedTasks = ({
           isQuickAdd={isQuickAdd}
           isPopup={isPopup}
           setShowPopup={setShowPopup}
+          tasks={tasks}
+          linkedTasks={linkedTasks}
           setLinkedTasks={setLinkedTasks}
           parentPosition={parentPosition}
         />

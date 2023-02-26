@@ -133,6 +133,8 @@ export const Overlay = () => {
         return (
           <SetNewTaskLinkedTasksPopper
             closeOverlay={closeOverlay}
+            tasks={dialogProps.tasks}
+            linkedTasks={dialogProps.linkedTasks}
             setLinkedTasks={dialogProps.setLinkedTasks}
             projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}

@@ -30,6 +30,7 @@ import './styles/light.scss'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import { useResponsiveSizes } from 'hooks'
 import { TaskSimpleView } from '../TaskSimpleView'
+import { includesAnySubstring } from '../../handleString'
 
 export const TaskEditor = ({
   column,
@@ -98,12 +99,14 @@ export const TaskEditor = ({
     }
   }, [tasks])
 
-  const includesAnySubstring = (str, substrs) => {
-    return substrs.some((substr) => str.includes(substr))
-  }
-
   useEffect(() => {
     if (task) {
+      if (blocksAdderPrompt === '') {
+        setBlocksAdderTasks(
+          tasks.filter((projectTask) => projectTask.taskId !== task.taskId),
+        )
+        return
+      }
       const newBlocksAdderTasks = tasks
         .filter((projectTask) => projectTask.taskId !== task.taskId)
         .filter((projectTask) =>
@@ -121,6 +124,12 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (task) {
+      if (isBlockedByAdderPrompt === '') {
+        setBlocksAdderTasks(
+          tasks.filter((projectTask) => projectTask.taskId !== task.taskId),
+        )
+        return
+      }
       const newIsBlockedByAdderTasks = tasks
         .filter((projectTask) => projectTask.taskId !== task.taskId)
         .filter((projectTask) =>
@@ -562,7 +571,10 @@ export const TaskEditor = ({
                         className={` action  ${
                           isLight ? 'action__cancel' : 'action__cancel--dark'
                         }`}
-                        onClick={() => setShowBlocksAdder(false)}
+                        onClick={() => {
+                          setShowBlocksAdder(false)
+                          setBlocksAdderPrompt('')
+                        }}
                       >
                         Cancel
                       </button>

@@ -1,4 +1,3 @@
-import { ReactComponent as NextWeekIcon } from 'assets/svg/next-week.svg'
 import { useEffect } from 'react'
 import './light.scss'
 import './main.scss'
@@ -7,19 +6,43 @@ export const SetNewTaskLinkedTasksPopper = ({
   isQuickAdd,
   isPopup,
   setShowPopup,
+  tasks,
+  linkedTasks,
   setLinkedTasks,
   closeOverlay,
   xPosition,
   yPosition,
   parentPosition,
 }) => {
-  const setMin = (min) => {
+  const isNewLinkedTaskAlreadyAdded = (linkedTasks, linkedTask) => {
+    return linkedTasks.find((task) => {
+      return task.name === linkedTask.name && task.taskId === linkedTask.taskId
+    })
+  }
+
+  const setLinkedTasksWithMatchedTask = (linkedTask) => {
+    const newLinkedTasks = isNewLinkedTaskAlreadyAdded(linkedTasks, linkedTask)
+      ? linkedTasks
+      : [...linkedTasks, linkedTask]
+    setLinkedTasks(newLinkedTasks)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
   const targetedposition = parentPosition
     ? parentPosition
     : { x: xPosition, y: yPosition }
+
+  if (
+    tasks.filter(
+      (matchedTask) =>
+        !isNewLinkedTaskAlreadyAdded(linkedTasks, {
+          name: matchedTask.name,
+          taskId: matchedTask.taskId,
+        }),
+    ).length === 0
+  ) {
+    return null
+  }
 
   return (
     <div
@@ -38,16 +61,31 @@ export const SetNewTaskLinkedTasksPopper = ({
         }}
       >
         <ul>
-          <li
-            className='set-schedule__popper--option'
-            onClick={() => setMin(0)}
-          >
-            <div className=''>
-              <NextWeekIcon fill={'grey'} />
-            </div>
-
-            <p className='set-new-task__schedule--name'>None</p>
-          </li>
+          {tasks
+            .filter(
+              (matchedTask) =>
+                !isNewLinkedTaskAlreadyAdded(linkedTasks, {
+                  name: matchedTask.name,
+                  taskId: matchedTask.taskId,
+                }),
+            )
+            .map((matchedTask) => {
+              return (
+                <li
+                  className='set-schedule__popper--option'
+                  onClick={() =>
+                    setLinkedTasksWithMatchedTask({
+                      name: matchedTask.name,
+                      taskId: matchedTask.taskId,
+                    })
+                  }
+                >
+                  <p className='set-new-task__schedule--name'>
+                    {matchedTask.name}
+                  </p>
+                </li>
+              )
+            })}
         </ul>
       </div>
     </div>
