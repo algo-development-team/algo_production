@@ -16,16 +16,21 @@ import { SetNewTaskProject } from './set-new-task-project'
 import { SetNewTaskSchedule } from './set-new-task-schedule'
 import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
+import { SetNewTaskDeadlineType } from './set-new-task-deadline-type'
+import { SetNewTaskLinkedTasks } from './set-new-task-linked-tasks'
+import { MenuButton } from './menu-button'
 import {
   getTaskDocsInProjectColumnNotCompleted,
   check,
   addTask,
-  updateFireStore,
+  updateTaskFromFields,
 } from '../../backend/handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import { useResponsiveSizes } from 'hooks'
+import { TaskSimpleView } from '../TaskSimpleView'
+import { includesAny } from '../../handleArray'
 
 export const TaskEditor = ({
   column,
@@ -56,17 +61,128 @@ export const TaskEditor = ({
   const [taskTimeLength, setTaskTimeLength] = useState(
     isEdit && task.timeLength,
   )
-  const { currentUser } = useAuth()
+  const [taskDeadlineType, setTaskDeadlineType] = useState(
+    isEdit && task.deadlineType,
+  )
+  const [taskBlocks, setTaskBlocks] = useState(isEdit && task.blocks)
+  const [taskIsBlockedBy, setTaskIsBlockedBy] = useState(
+    isEdit && task.isBlockedBy,
+  )
+  const [showBlocksAdder, setShowBlocksAdder] = useState(false)
+  const [showIsBlockedByAdder, setShowIsBlockedByAdder] = useState(false)
+  const [blocksAdderPrompt, setBlocksAdderPrompt] = useState('')
+  const [isBlockedByAdderPrompt, setIsBlockedByAdderPrompt] = useState('')
+  const [blocksAdderTasks, setBlocksAdderTasks] = useState([])
+  const [isBlockedByAdderTasks, setIsBlockedByAdderTasks] = useState([])
+  const [linkedTaskBlocks, setLinkedTaskBlocks] = useState([])
+  const [linkedTaskIsBlockedBy, setLinkedTaskIsBlockedBy] = useState([])
+  const [removedTaskBlocks, setRemovedTaskBlocks] = useState([])
+  const [removedTaskIsBlockedBy, setRemovedTaskIsBlockedBy] = useState([])
   const [disabled, setDisabled] = useState(true)
+  const [tasksMap, setTasksMap] = useState({})
+  const { currentUser } = useAuth()
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
   const { scheduleCreated } = useScheduleCreated()
   const { checklist } = useChecklist()
   const { sizes } = useResponsiveSizes()
+  const { defaultProject } = selectedProject
   const textAreaRef = useRef(null)
-
   useAutosizeTextArea(textAreaRef.current, taskDescription)
+
+  /***
+   * TODOS: (IMPLEMENT THESE LATER)
+   * 1. Create a task dependency tree
+   * 2. Filter out tasks that are already blocking the task recursively using the getChildNodeIds function from ../../handleArray
+   * 3. Filter out tasks that the task is already blocking
+   * ***/
+
+  useEffect(() => {
+    if (tasks) {
+      const tasksMap = {}
+      tasks.forEach((task) => {
+        tasksMap[task.taskId] = task
+      })
+      setTasksMap(tasksMap)
+    }
+  }, [tasks])
+
+  useEffect(() => {
+    if (task) {
+      if (blocksAdderPrompt === '') {
+        setBlocksAdderTasks(
+          tasks.filter((projectTask) => projectTask.taskId !== task.taskId),
+        )
+        return
+      }
+      const newBlocksAdderTasks = tasks
+        .filter((projectTask) => projectTask.taskId !== task.taskId)
+        .filter((projectTask) =>
+          includesAny(
+            projectTask.name.toLowerCase(),
+            blocksAdderPrompt
+              .toLowerCase()
+              .split(' ')
+              .filter((substr) => substr !== ''),
+          ),
+        )
+      setBlocksAdderTasks(newBlocksAdderTasks)
+    } else {
+      if (blocksAdderPrompt === '') {
+        setBlocksAdderTasks(tasks)
+        return
+      }
+      const newBlocksAdderTasks = tasks.filter((projectTask) =>
+        includesAny(
+          projectTask.name.toLowerCase(),
+          blocksAdderPrompt
+            .toLowerCase()
+            .split(' ')
+            .filter((substr) => substr !== ''),
+        ),
+      )
+      setBlocksAdderTasks(newBlocksAdderTasks)
+    }
+  }, [blocksAdderPrompt, tasks, task])
+
+  useEffect(() => {
+    if (task) {
+      if (isBlockedByAdderPrompt === '') {
+        setIsBlockedByAdderTasks(
+          tasks.filter((projectTask) => projectTask.taskId !== task.taskId),
+        )
+        return
+      }
+      const newIsBlockedByAdderTasks = tasks
+        .filter((projectTask) => projectTask.taskId !== task.taskId)
+        .filter((projectTask) =>
+          includesAny(
+            projectTask.name.toLowerCase(),
+            isBlockedByAdderPrompt
+              .toLowerCase()
+              .split(' ')
+              .filter((substr) => substr !== ''),
+          ),
+        )
+      setIsBlockedByAdderTasks(newIsBlockedByAdderTasks)
+    } else {
+      if (isBlockedByAdderPrompt === '') {
+        setIsBlockedByAdderTasks(tasks)
+        return
+      }
+      const newIsBlockedByAdderTasks = tasks.filter((projectTask) =>
+        includesAny(
+          projectTask.name.toLowerCase(),
+          isBlockedByAdderPrompt
+            .toLowerCase()
+            .split(' ')
+            .filter((substr) => substr !== ''),
+        ),
+      )
+      setIsBlockedByAdderTasks(newIsBlockedByAdderTasks)
+    }
+  }, [isBlockedByAdderPrompt, tasks, task])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -129,6 +245,9 @@ export const TaskEditor = ({
       taskDescription,
       taskPriority,
       taskTimeLength,
+      taskDeadlineType,
+      taskBlocks,
+      taskIsBlockedBy,
       index,
       scheduleCreated,
     )
@@ -149,6 +268,9 @@ export const TaskEditor = ({
     } else {
       setEndSchedule({ day: '', date: '' })
     }
+    setTaskDeadlineType('HARD')
+    setTaskBlocks([])
+    setTaskIsBlockedBy([])
     setTaskEditorToShow('')
   }
 
@@ -161,9 +283,19 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const handleRemoveBlocks = (taskId) => {
+    setRemovedTaskBlocks([...removedTaskBlocks, taskId])
+    setTaskBlocks(taskBlocks.filter((block) => block !== taskId))
+  }
+
+  const handleRemoveIsBlockedBy = (taskId) => {
+    setRemovedTaskIsBlockedBy([...removedTaskIsBlockedBy, taskId])
+    setTaskIsBlockedBy(taskIsBlockedBy.filter((block) => block !== taskId))
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
-    await updateFireStore(
+    await updateTaskFromFields(
       currentUser && currentUser.id,
       task.taskId,
       task.projectId,
@@ -174,6 +306,13 @@ export const TaskEditor = ({
       taskDescription,
       taskPriority,
       taskTimeLength,
+      taskDeadlineType,
+      taskBlocks,
+      taskIsBlockedBy,
+      linkedTaskBlocks.map((linkedTask) => linkedTask.taskId),
+      linkedTaskIsBlockedBy.map((linkedTask) => linkedTask.taskId),
+      removedTaskBlocks,
+      removedTaskIsBlockedBy,
       scheduleCreated,
       endSchedule.date,
       startSchedule.date,
@@ -185,8 +324,6 @@ export const TaskEditor = ({
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }
-
-  const { defaultProject } = selectedProject
 
   useEffect(() => {
     if (defaultGroup || isQuickAdd) {
@@ -217,10 +354,17 @@ export const TaskEditor = ({
     }
     if (!taskPriority) {
       setTaskPriority(2)
-    } else {
-      setTaskPriority(taskPriority)
     }
     if (!taskTimeLength && taskTimeLength !== 0) setTaskTimeLength(60)
+    if (!taskDeadlineType) {
+      setTaskDeadlineType('HARD')
+    }
+    if (!taskBlocks) {
+      setTaskBlocks([])
+    }
+    if (!taskIsBlockedBy) {
+      setTaskIsBlockedBy([])
+    }
   }, [defaultGroup])
 
   useEffect(() => {
@@ -277,6 +421,7 @@ export const TaskEditor = ({
               isQuickAdd ? ' quick-add__container' : ''
             }`}
           >
+            {/* Title Editor Section */}
             <input
               className={`add-task__input title${
                 projectIsList ? '--list' : ''
@@ -291,6 +436,27 @@ export const TaskEditor = ({
               placeholder={'Some Title...'}
             />
 
+            {/* Menu Buttons Section */}
+            <div
+              className='add-task__attributes'
+              style={{ marginBottom: '10px' }}
+            >
+              <div className='add-task__attributes--left'>
+                <MenuButton
+                  type='BLOCKS'
+                  value={showBlocksAdder}
+                  setValue={setShowBlocksAdder}
+                />
+                <MenuButton
+                  type='IS_BLOCKED_BY'
+                  value={showIsBlockedByAdder}
+                  setValue={setShowIsBlockedByAdder}
+                />
+              </div>
+              <div className='add-task__attributes--right'></div>
+            </div>
+
+            {/* Description Editor Section */}
             <textarea
               className='add-task__input textarea'
               value={taskDescription}
@@ -300,6 +466,8 @@ export const TaskEditor = ({
               type='text'
               placeholder='Some description...'
             />
+
+            {/* Project Editor Section */}
             <div
               className='add-task__attributes'
               style={{ marginBottom: '10px' }}
@@ -318,10 +486,13 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
+
+            {/* Start Date, End Date, Priority, and Time Length Editors Section */}
             <div
               style={{
                 display: 'flex',
                 flexDirection: splitTaskAttributes() ? 'column' : 'row',
+                marginBottom: '10px',
               }}
             >
               <div
@@ -351,6 +522,7 @@ export const TaskEditor = ({
                 </div>
                 <div className='add-task__attributes--right'></div>
               </div>
+
               <div className='add-task__attributes'>
                 <div className='add-task__attributes--left'>
                   <SetNewTaskPriority
@@ -371,7 +543,176 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--right'></div>
               </div>
             </div>
+
+            {/* Deadline Type Editor Section */}
+            <div>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {endSchedule.date !== '' && (
+                    <SetNewTaskDeadlineType
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      taskDeadlineType={taskDeadlineType}
+                      setTaskDeadlineType={setTaskDeadlineType}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
+
+            {/* Blocks Editor Section */}
+            {(includesAny(Object.keys(tasksMap), taskBlocks) ||
+              showBlocksAdder) && <h5>Blocks</h5>}
+            {taskBlocks.map((taskId) => {
+              if (tasksMap[taskId]) {
+                return (
+                  <TaskSimpleView
+                    task={tasksMap[taskId]}
+                    handleClose={() => handleRemoveBlocks(taskId)}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showBlocksAdder && (
+                    <SetNewTaskLinkedTasks
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      linkedTasks={linkedTaskBlocks}
+                      setLinkedTasks={setLinkedTaskBlocks}
+                      tasks={blocksAdderTasks}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
+
+            <div>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showBlocksAdder && (
+                    <>
+                      <button
+                        className=' action add-task__actions--add-task'
+                        onClick={() => {
+                          const newTaskBlocks = [
+                            ...taskBlocks,
+                            ...linkedTaskBlocks.map(
+                              (linkedTask) => linkedTask.taskId,
+                            ),
+                          ]
+                          setShowBlocksAdder(false)
+                          setBlocksAdderPrompt('')
+                          setTaskBlocks(newTaskBlocks)
+                        }}
+                        disabled={linkedTaskBlocks.length === 0}
+                      >
+                        Link
+                      </button>
+                      <button
+                        className={` action  ${
+                          isLight ? 'action__cancel' : 'action__cancel--dark'
+                        }`}
+                        onClick={() => {
+                          setShowBlocksAdder(false)
+                          setBlocksAdderPrompt('')
+                          setLinkedTaskBlocks([])
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
+
+            {/* Is Blocked By Editor Section */}
+            {(includesAny(Object.keys(tasksMap), taskIsBlockedBy) ||
+              showIsBlockedByAdder) && <h5>Is Blocked By</h5>}
+            {taskIsBlockedBy.map((taskId) => {
+              if (tasksMap[taskId]) {
+                return (
+                  <TaskSimpleView
+                    task={tasksMap[taskId]}
+                    handleClose={() => handleRemoveIsBlockedBy(taskId)}
+                  />
+                )
+              } else {
+                return null
+              }
+            })}
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showIsBlockedByAdder && (
+                    <SetNewTaskLinkedTasks
+                      isQuickAdd={isQuickAdd}
+                      isPopup={isPopup}
+                      linkedTasks={linkedTaskIsBlockedBy}
+                      setLinkedTasks={setLinkedTaskIsBlockedBy}
+                      tasks={isBlockedByAdderTasks}
+                      task={task}
+                    />
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  {showIsBlockedByAdder && (
+                    <>
+                      <button
+                        className=' action add-task__actions--add-task'
+                        onClick={() => {
+                          const newTaskIsBlockedBy = [
+                            ...taskIsBlockedBy,
+                            ...linkedTaskIsBlockedBy.map(
+                              (linkedTask) => linkedTask.taskId,
+                            ),
+                          ]
+                          setShowIsBlockedByAdder(false)
+                          setIsBlockedByAdderPrompt('')
+                          setTaskIsBlockedBy(newTaskIsBlockedBy)
+                        }}
+                        disabled={linkedTaskIsBlockedBy.length === 0}
+                      >
+                        Link
+                      </button>
+                      <button
+                        className={` action  ${
+                          isLight ? 'action__cancel' : 'action__cancel--dark'
+                        }`}
+                        onClick={() => {
+                          setShowIsBlockedByAdder(false)
+                          setIsBlockedByAdderPrompt('')
+                          setLinkedTaskIsBlockedBy([])
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            </div>
           </div>
+
           <div
             className={`add-task__actions ${
               isQuickAdd || isPopup ? 'quick-add__actions' : ''

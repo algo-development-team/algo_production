@@ -5,7 +5,9 @@ import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { ReactComponent as AirplaneIcon } from 'assets/svg/airplane.svg'
 import { useParams } from 'react-router-dom'
-import { useResponsiveSizes } from 'hooks'
+import { useResponsiveSizes, useTasks } from 'hooks'
+import { useOverlayContextValue } from 'context'
+import { ReactComponent as CloseIcon } from 'assets/svg/close.svg'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -18,8 +20,11 @@ export const PromptsContainer = ({
   const [prompts, setPrompts] = useState([])
   const [currentPromptIndex, setCurrentPromptIndex] = useState(-1)
   const [promptLength, setPromptLength] = useState(20)
+  const [selectedTasks, setSelectedTasks] = useState([])
   const { dayId } = useParams()
   const { sizes } = useResponsiveSizes()
+  const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
+  const { tasks } = useTasks()
 
   useEffect(() => {
     if (sizes.smallPhone) {
@@ -78,6 +83,28 @@ export const PromptsContainer = ({
   return (
     <div className='prompts__container'>
       <div className='prompts__header-container'>
+        {selectedTasks.length > 0 && (
+          <div className='set-new-task__linked-tasks'>
+            {selectedTasks.map((linkedTask) => {
+              return (
+                <div className='set-new-task__linked-tasks__bubble-text'>
+                  <p style={{ marginRight: '5px' }}>{linkedTask.name}</p>
+                  <CloseIcon
+                    height='12px'
+                    width='12px'
+                    onClick={() => {
+                      setSelectedTasks(
+                        selectedTasks.filter(
+                          (task) => task.taskId !== linkedTask.taskId,
+                        ),
+                      )
+                    }}
+                  />
+                </div>
+              )
+            })}
+          </div>
+        )}
         <div className='prompts__input-container'>
           <input
             className='prompts__input'
@@ -87,6 +114,19 @@ export const PromptsContainer = ({
               if (e.key === 'Enter') {
                 handlePromptInput()
               }
+            }}
+            onSelect={(e) => {
+              setDialogProps(
+                Object.assign(
+                  {
+                    elementPosition: e.currentTarget.getBoundingClientRect(),
+                  },
+                  { tasks },
+                  { selectedTasks },
+                  { setSelectedTasks },
+                ),
+              )
+              setShowDialog('SET_SELECTED_TASKS')
             }}
           />
           <div

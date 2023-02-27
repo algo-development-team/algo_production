@@ -1,51 +1,49 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
-import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
+import { SetNewTaskDeadlineTypePopper } from 'components/dropdowns/set-new-task-deadline-type-popper'
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
-export const SetNewTaskPriority = ({
+
+export const SetNewTaskDeadlineType = ({
   isQuickAdd,
   isPopup,
-  setTaskPriority,
-  taskPriority,
+  setTaskDeadlineType,
+  taskDeadlineType,
   task,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
   const [parentPosition, setParentPosition] = useState({})
+
   const showQUickAddDropDown = (parentPosition) => {
     setParentPosition(parentPosition)
     setShowPopup(true)
   }
 
-  const getPriorityStyle = () => {
-    if (taskPriority === 1) {
-      return 'date__today'
-    } else if (taskPriority === 2) {
-      return 'date__weekend'
-    } else if (taskPriority === 3) {
+  const getDeadlineTypeStyle = () => {
+    if (taskDeadlineType === 'HARD') {
       return 'date__tomorrow'
+    } else if (taskDeadlineType === 'SOFT') {
+      return 'date__today'
     }
   }
 
-  const getPriorityText = (taskPriority) => {
-    if (taskPriority === 1) {
-      return 'Low'
-    } else if (taskPriority === 2) {
-      return 'Medium'
-    } else if (taskPriority === 3) {
-      return 'High'
+  const getDeadlineTypeText = (taskPriority) => {
+    if (taskPriority === 'HARD') {
+      return 'Hard Deadline'
+    } else if (taskPriority === 'SOFT') {
+      return 'Soft Deadline'
     }
   }
 
   return (
     <>
       <div
-        className={`set-new-task__schedule ${getPriorityStyle()}`}
+        className={`set-new-task__schedule ${getDeadlineTypeStyle()}`}
         onClick={(e) => {
           setDialogProps(
             Object.assign(
               { elementPosition: e.currentTarget.getBoundingClientRect() },
-              { setTaskPriority },
+              { setTaskDeadlineType },
             ),
           )
           if (isPopup) {
@@ -54,20 +52,20 @@ export const SetNewTaskPriority = ({
           } else if (isQuickAdd) {
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else {
-            setShowDialog('SET_TASK_PRIORITY')
+            setShowDialog('SET_TASK_DEADLINE_TYPE')
           }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {taskPriority && getPriorityText(taskPriority)}
+        {taskDeadlineType && getDeadlineTypeText(taskDeadlineType)}
       </div>
       {showPopup && (
-        <SetNewTaskPriorityPopper
+        <SetNewTaskDeadlineTypePopper
           isQuickAdd={isQuickAdd}
           isPopup={isPopup}
           setShowPopup={setShowPopup}
-          setTaskPriority={setTaskPriority}
+          setTaskDeadlineType={setTaskDeadlineType}
           parentPosition={parentPosition}
         />
       )}
