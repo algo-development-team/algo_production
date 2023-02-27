@@ -1,30 +1,30 @@
 import './light.scss'
 import './main.scss'
 
-export const SetNewTaskLinkedTasksPopper = ({
-  isQuickAdd,
-  isPopup,
-  setShowPopup,
+export const SetSelectedTasksPopper = ({
   tasks,
-  linkedTasks,
-  setLinkedTasks,
+  selectedTasks,
+  setSelectedTasks,
   closeOverlay,
   xPosition,
   yPosition,
   parentPosition,
 }) => {
-  const isNewLinkedTaskAlreadyAdded = (linkedTasks, linkedTask) => {
-    return linkedTasks.find((task) => {
+  const isNewSelectedTaskAlreadyAdded = (selectedTasks, linkedTask) => {
+    return selectedTasks.find((task) => {
       return task.name === linkedTask.name && task.taskId === linkedTask.taskId
     })
   }
 
-  const setLinkedTasksWithMatchedTask = (linkedTask) => {
-    const newLinkedTasks = isNewLinkedTaskAlreadyAdded(linkedTasks, linkedTask)
-      ? linkedTasks
-      : [...linkedTasks, linkedTask]
-    setLinkedTasks(newLinkedTasks)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
+  const setSelectedTasksWithMatchedTask = (linkedTask) => {
+    const newSelectedTasks = isNewSelectedTaskAlreadyAdded(
+      selectedTasks,
+      linkedTask,
+    )
+      ? selectedTasks
+      : [...selectedTasks, linkedTask]
+    setSelectedTasks(newSelectedTasks)
+    closeOverlay()
   }
 
   const targetedposition = parentPosition
@@ -34,7 +34,7 @@ export const SetNewTaskLinkedTasksPopper = ({
   if (
     tasks.filter(
       (matchedTask) =>
-        !isNewLinkedTaskAlreadyAdded(linkedTasks, {
+        !isNewSelectedTaskAlreadyAdded(selectedTasks, {
           name: matchedTask.name,
           taskId: matchedTask.taskId,
         }),
@@ -48,7 +48,7 @@ export const SetNewTaskLinkedTasksPopper = ({
       className='option__overlay'
       onClick={(event) => {
         event.stopPropagation()
-        isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay(event)
+        closeOverlay(event)
       }}
     >
       <div
@@ -63,7 +63,7 @@ export const SetNewTaskLinkedTasksPopper = ({
           {tasks
             .filter(
               (matchedTask) =>
-                !isNewLinkedTaskAlreadyAdded(linkedTasks, {
+                !isNewSelectedTaskAlreadyAdded(selectedTasks, {
                   name: matchedTask.name,
                   taskId: matchedTask.taskId,
                 }),
@@ -73,7 +73,7 @@ export const SetNewTaskLinkedTasksPopper = ({
                 <li
                   className='set-schedule__popper--option'
                   onClick={() =>
-                    setLinkedTasksWithMatchedTask({
+                    setSelectedTasksWithMatchedTask({
                       name: matchedTask.name,
                       taskId: matchedTask.taskId,
                     })

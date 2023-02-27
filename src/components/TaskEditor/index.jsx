@@ -585,8 +585,6 @@ export const TaskEditor = ({
                     <SetNewTaskLinkedTasks
                       isQuickAdd={isQuickAdd}
                       isPopup={isPopup}
-                      prompt={blocksAdderPrompt}
-                      setPrompt={setBlocksAdderPrompt}
                       linkedTasks={linkedTaskBlocks}
                       setLinkedTasks={setLinkedTaskBlocks}
                       tasks={blocksAdderTasks}
@@ -662,8 +660,6 @@ export const TaskEditor = ({
                     <SetNewTaskLinkedTasks
                       isQuickAdd={isQuickAdd}
                       isPopup={isPopup}
-                      prompt={isBlockedByAdderPrompt}
-                      setPrompt={setIsBlockedByAdderPrompt}
                       linkedTasks={linkedTaskIsBlockedBy}
                       setLinkedTasks={setLinkedTaskIsBlockedBy}
                       tasks={isBlockedByAdderTasks}

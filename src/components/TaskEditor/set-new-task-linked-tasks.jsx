@@ -6,8 +6,6 @@ import { ReactComponent as CloseIcon } from 'assets/svg/close.svg'
 export const SetNewTaskLinkedTasks = ({
   isQuickAdd,
   isPopup,
-  prompt,
-  setPrompt,
   linkedTasks,
   setLinkedTasks,
   tasks,

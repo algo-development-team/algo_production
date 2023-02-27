@@ -5,6 +5,7 @@ import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-sche
 import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
 import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-time-length-popper'
 import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
+import { SetSelectedTasksPopper } from 'components/dropdowns/set-selected-tasks-popper'
 import { MenuList } from 'components/MenuList'
 import { UserOptions } from 'components/UserOption'
 import { ViewOptions } from 'components/ViewOptions'
@@ -91,7 +92,6 @@ export const Overlay = () => {
           <SetNewTaskSchedulePopper
             closeOverlay={closeOverlay}
             setSchedule={dialogProps.setSchedule}
-            projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
           />
@@ -101,7 +101,6 @@ export const Overlay = () => {
           <SetNewTaskProjectPopper
             closeOverlay={closeOverlay}
             setProject={dialogProps.setProject}
-            projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
@@ -112,7 +111,6 @@ export const Overlay = () => {
           <SetNewTaskPriorityPopper
             closeOverlay={closeOverlay}
             setTaskPriority={dialogProps.setTaskPriority}
-            projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
@@ -123,7 +121,6 @@ export const Overlay = () => {
           <SetNewTaskTimeLengthPopper
             closeOverlay={closeOverlay}
             setTaskTimeLength={dialogProps.setTaskTimeLength}
-            projectId={dialogProps.projectId}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
@@ -136,7 +133,18 @@ export const Overlay = () => {
             tasks={dialogProps.tasks}
             linkedTasks={dialogProps.linkedTasks}
             setLinkedTasks={dialogProps.setLinkedTasks}
-            projectId={dialogProps.projectId}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+      case 'SET_SELECTED_TASKS':
+        return (
+          <SetSelectedTasksPopper
+            closeOverlay={closeOverlay}
+            tasks={dialogProps.tasks}
+            selectedTasks={dialogProps.selectedTasks}
+            setSelectedTasks={dialogProps.setSelectedTasks}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
