@@ -92,13 +92,11 @@ export const TaskEditor = ({
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
   /***
-   * TODOS:
+   * TODOS: (IMPLEMENT THESE LATER)
    * 1. Create a task dependency tree
    * 2. Filter out tasks that are already blocking the task recursively using the getChildNodeIds function from ../../handleArray
    * 3. Filter out tasks that the task is already blocking
-   * 5. Show the linked tasks in the input as bubbles
    * 7. When a task is deleted, remove the link from the other task
-   * After that, start working on the schedule prompt search bar
    * ***/
 
   useEffect(() => {

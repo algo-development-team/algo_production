@@ -276,6 +276,40 @@ export const taskDelete = async (
     )
     const taskDocs = await getDocs(q)
     taskDocs.forEach(async (taskDoc) => {
+      const task = taskDoc.data()
+      // removes current taskId from blockingTask's taskId's blocks array
+      task.isBlockedBy.forEach(async (blockingTask) => {
+        const taskIsBlockedByQuery = await query(
+          collection(db, 'user', `${userId}/tasks`),
+          where('taskId', '==', blockingTask),
+        )
+        const taskIsBlockedByDocs = await getDocs(taskIsBlockedByQuery)
+        taskIsBlockedByDocs.forEach(async (taskIsBlockedByDoc) => {
+          await updateDoc(taskIsBlockedByDoc.ref, {
+            blocks: taskIsBlockedByDoc
+              .data()
+              .blocks.filter((blocksTaskId) => blocksTaskId !== taskId),
+          })
+        })
+      })
+
+      // removes current taskId from blockedTask's isBlockedBy array
+      task.blocks.forEach(async (blockedTask) => {
+        const taskBlocksQuery = await query(
+          collection(db, 'user', `${userId}/tasks`),
+          where('taskId', '==', blockedTask),
+        )
+        const taskBlocksDocs = await getDocs(taskBlocksQuery)
+        taskBlocksDocs.forEach(async (taskBlocksDoc) => {
+          await updateDoc(taskBlocksDoc.ref, {
+            isBlockedBy: taskBlocksDoc
+              .data()
+              .isBlockedBy.filter(
+                (isBlockedByTaskId) => isBlockedByTaskId !== taskId,
+              ),
+          })
+        })
+      })
       await deleteDoc(taskDoc.ref)
     })
   } catch (error) {
