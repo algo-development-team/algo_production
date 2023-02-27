@@ -1,6 +1,7 @@
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
+import { ReactComponent as CloseIcon } from 'assets/svg/close.svg'
 
 export const SetNewTaskLinkedTasks = ({
   isQuickAdd,
@@ -23,26 +24,30 @@ export const SetNewTaskLinkedTasks = ({
 
   return (
     <>
+      {linkedTasks.length > 0 && (
+        <div className='set-new-task__linked-tasks'>
+          {linkedTasks.map((linkedTask) => {
+            return (
+              <div className='set-new-task__linked-tasks__bubble-text'>
+                <p style={{ marginRight: '5px' }}>{linkedTask.name}</p>
+                <CloseIcon
+                  height='12px'
+                  width='12px'
+                  onClick={() => {
+                    setLinkedTasks(
+                      linkedTasks.filter(
+                        (task) => task.taskId !== linkedTask.taskId,
+                      ),
+                    )
+                  }}
+                />
+              </div>
+            )
+          })}
+        </div>
+      )}
       <input
-        style={{
-          padding: '12px',
-          display: 'flex',
-          backgroundColor: '#282828',
-          width: '-webkit-fill-available',
-          marginBottom: '0.6rem',
-          borderRadius: '5px',
-          border: '1px solid #ffffff1a',
-          boxShadow: '0 10px 10px #0000001a, 0 6px 3px #0000001f',
-          position: 'relative',
-          alignItems: 'center',
-          color: 'inherit',
-          fontSize: '14px',
-        }}
-        placeholder='Search for a task...'
-        value={prompt}
-        onChange={(e) => {
-          setPrompt(e.target.value)
-        }}
+        className='set-new-task__linked-tasks'
         onSelect={(e) => {
           setDialogProps(
             Object.assign(

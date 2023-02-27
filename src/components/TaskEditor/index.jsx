@@ -96,9 +96,8 @@ export const TaskEditor = ({
    * 1. Create a task dependency tree
    * 2. Filter out tasks that are already blocking the task recursively using the getChildNodeIds function from ../../handleArray
    * 3. Filter out tasks that the task is already blocking
-   * 4. Prevent the task popup from closing when the user clicks on the Link button
    * 5. Show the linked tasks in the input as bubbles
-   * 6. Fix the spacing between the buttons
+   * 7. When a task is deleted, remove the link from the other task
    * After that, start working on the schedule prompt search bar
    * ***/
 
@@ -608,10 +607,7 @@ export const TaskEditor = ({
                   {showBlocksAdder && (
                     <>
                       <button
-                        // className=' action add-task__actions--add-task'
-                        className={` action  ${
-                          isLight ? 'action__cancel' : 'action__cancel--dark'
-                        }`}
+                        className=' action add-task__actions--add-task'
                         onClick={() => {
                           const newTaskBlocks = [
                             ...taskBlocks,
@@ -619,8 +615,11 @@ export const TaskEditor = ({
                               (linkedTask) => linkedTask.taskId,
                             ),
                           ]
+                          setShowBlocksAdder(false)
+                          setBlocksAdderPrompt('')
                           setTaskBlocks(newTaskBlocks)
                         }}
+                        disabled={linkedTaskBlocks.length === 0}
                       >
                         Link
                       </button>
@@ -693,8 +692,11 @@ export const TaskEditor = ({
                               (linkedTask) => linkedTask.taskId,
                             ),
                           ]
+                          setShowIsBlockedByAdder(false)
+                          setIsBlockedByAdderPrompt('')
                           setTaskIsBlockedBy(newTaskIsBlockedBy)
                         }}
+                        disabled={linkedTaskIsBlockedBy.length === 0}
                       >
                         Link
                       </button>
