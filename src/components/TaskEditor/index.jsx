@@ -96,7 +96,6 @@ export const TaskEditor = ({
    * 1. Create a task dependency tree
    * 2. Filter out tasks that are already blocking the task recursively using the getChildNodeIds function from ../../handleArray
    * 3. Filter out tasks that the task is already blocking
-   * 7. When a task is deleted, remove the link from the other task
    * ***/
 
   useEffect(() => {
