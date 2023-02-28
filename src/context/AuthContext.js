@@ -1,81 +1,55 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { auth, createUserProfileDocument, provider } from '_firebase'
-import {
-  signInWithRedirect,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-} from 'firebase/auth'
+import { signInWithRedirect, signOut } from 'firebase/auth'
 import { onSnapshot } from 'firebase/firestore'
-import { getAuth, updateProfile } from 'firebase/auth'
+import { getAuth } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
-import { disconnectClient, initClient } from 'gapiHandlers'
 import {
   getUserInfo,
   getDefaultUserInfo,
   initializeUserInfo,
 } from '../backend/handleUserInfo'
+import { googleLogout, useGoogleLogin } from '@react-oauth/google'
+import axios from 'axios'
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
-  const [isClientLoaded, setIsClientLoaded] = useState(false)
+  const [userGIS, setUserGIS] = useState(null)
+  const [profileGIS, setProfileGIS] = useState(null)
   let navigate = useNavigate()
-  const authUser = getAuth()
 
-  // Older version of initializing gapi for sending the token to the backend
-  // Not used in this implementation
-  // useEffect(() => {
-  //   gapi.load('client:auth2', () => {
-  //     gapi.auth2.init({
-  //       clientId: process.env.REACT_APP_CLIENT_ID,
-  //       scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-  //     })
-  //   })
-  // }, [])
+  const loginGIS = useGoogleLogin({
+    onSuccess: (codeResponse) => setUserGIS(codeResponse),
+    onError: (error) => console.log('Login Failed:', error),
+  })
+
+  // log out function to log the user out of google and set the profile array to null
+  const logoutGIS = () => {
+    console.log('Logging out of GIS...') // DEBUGGING
+    googleLogout()
+    setProfileGIS(null)
+  }
 
   useEffect(() => {
-    /* GAPI_TEMP_DEBUGGING */
-    /*
-    initClient((result) => {
-      if (result) {
-        console.log('Client initialized')
-        setIsClientLoaded(true)
-      } else {
-        console.log('Client not initialized')
-      }
-    })
-    */
-  }, [])
-
-  const setDisplayName = (name) => {
-    updateProfile(authUser.currentUser, {
-      displayName: name,
-    }).catch((error) => {
-      // An error occurred
-      // ...
-    })
-  }
-
-  const signinWithEmail = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password).then((cred) => {
-      setCurrentUser(cred.user)
-      localStorage.setItem('userAuth', JSON.stringify(cred.user))
-      navigate('/app/Checklist')
-    })
-  }
-
-  const signupWithEmail = async ({ email, password, name }) => {
-    return createUserWithEmailAndPassword(auth, email, password).then(
-      (cred) => {
-        setDisplayName(name)
-        setCurrentUser({ ...cred.user, displayName: name })
-        localStorage.setItem('userAuth', JSON.stringify(cred.user))
-        navigate('/app/Checklist')
-      },
-    )
-  }
+    if (userGIS) {
+      axios
+        .get(
+          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${userGIS.access_token}`,
+          {
+            headers: {
+              Authorization: `Bearer ${userGIS.access_token}`,
+              Accept: 'application/json',
+            },
+          },
+        )
+        .then((res) => {
+          setProfileGIS(res.data)
+        })
+        .catch((err) => console.log(err))
+    }
+  }, [userGIS])
 
   const signinGoogle = (e) => {
     e.preventDefault()
@@ -98,13 +72,11 @@ export const AuthProvider = ({ children }) => {
       })
   }
 
-  const signout = () => {
+  const signoutGoogle = () => {
     const userAuth = getAuth()
 
-    /* GAPI_TEMP_DEBUGGING */
-    /*
-    disconnectClient()
-    */
+    logoutGIS()
+
     signOut(userAuth)
       .then(() => {
         setCurrentUser(null)
@@ -115,7 +87,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (userAuth) => {
-      setLoading(false)
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth)
         onSnapshot(userRef, async (snapshot) => {
@@ -141,6 +112,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setCurrentUser(userAuth)
       }
+      setLoading(false)
     })
 
     return () => unsubscribe()
@@ -148,11 +120,12 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
-    isClientLoaded,
-    signupWithEmail,
-    signinWithEmail,
+    userGIS,
+    profileGIS,
     signinGoogle,
-    signout,
+    signoutGoogle,
+    loginGIS,
+    logoutGIS,
   }
 
   return (
