@@ -9,7 +9,11 @@ import {
   getDefaultUserInfo,
   initializeUserInfo,
 } from '../backend/handleUserInfo'
-import { googleLogout, useGoogleLogin } from '@react-oauth/google'
+import {
+  googleLogout,
+  useGoogleLogin,
+  hasGrantedAllScopesGoogle,
+} from '@react-oauth/google'
 import axios from 'axios'
 
 export const AuthContext = createContext()
@@ -21,8 +25,19 @@ export const AuthProvider = ({ children }) => {
   let navigate = useNavigate()
 
   const loginGIS = useGoogleLogin({
-    onSuccess: (codeResponse) => setUserGIS(codeResponse),
+    onSuccess: (codeResponse) => {
+      const hasAccess = hasGrantedAllScopesGoogle(
+        codeResponse,
+        'https://www.googleapis.com/auth/calendar',
+      )
+      if (!hasAccess) {
+        logoutGIS()
+      } else {
+        setUserGIS(codeResponse)
+      }
+    },
     onError: (error) => console.log('Login Failed:', error),
+    scope: 'https://www.googleapis.com/auth/calendar',
   })
 
   // log out function to log the user out of google and set the profile array to null
