@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
   // log out function to log the user out of google and set the profile array to null
   const logoutGIS = () => {
-    console.log('Logging out of GIS...') // DEBUGGING
+    console.log('Logging out of GIS')
     googleLogout()
     setProfileGIS(null)
   }
