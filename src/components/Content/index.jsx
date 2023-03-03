@@ -9,14 +9,12 @@ import './styles/light.scss'
 import React from 'react'
 
 export const Content = () => {
-  const { projectId, defaultGroup, dayId } = useParams()
+  const { defaultGroup, projectId } = useParams()
   const projectInfo = useSelectedProjectInfo(projectId)
   const currentView = projectInfo && projectInfo[0]?.projectIsList
 
   const getProject = () => {
-    if (dayId) {
-      return <Schedule />
-    } else if (defaultGroup) {
+    if (defaultGroup) {
       if (
         defaultGroup === 'Checklist' ||
         defaultGroup === 'Inbox' ||
@@ -28,8 +26,10 @@ export const Content = () => {
       } else {
         return null
       }
-    } else {
+    } else if (projectId) {
       return currentView ? <TaskList /> : <Board />
+    } else {
+      return null
     }
   }
 

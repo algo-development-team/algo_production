@@ -29,10 +29,6 @@ export const Views = () => {
             <Route path={':defaultGroup'} element={<Content />} />
           </Route>
 
-          <Route exact path={'/schedule/*'} element={<Layout />}>
-            <Route path={':dayId'} element={<Content />} />
-          </Route>
-
           <Route path={'/project/*'} element={<Layout />}>
             <Route path={':projectId'} element={<Content />} />
           </Route>

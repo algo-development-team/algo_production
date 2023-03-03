@@ -9,7 +9,7 @@ export const ProjectsButton = () => {
   )
   return (
     <Link
-      to='/app/Overview'
+      to='/project/Overview'
       className='home_button header-clickable'
       onClick={() =>
         setSelectedProject({
