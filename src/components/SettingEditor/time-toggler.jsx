@@ -24,11 +24,11 @@ export const TimeToggler = ({ time, changeTime, isHour, timeRangeTypeVal }) => {
       </p>
       <div className='display-col'>
         <i
-          class='arrow up'
+          class='arrow-md up'
           onClick={() => changeTime(true, isHour, timeRangeTypeVal)}
         />
         <i
-          class='arrow down'
+          class='arrow-md down'
           onClick={() => changeTime(false, isHour, timeRangeTypeVal)}
         />
       </div>

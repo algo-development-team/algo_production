@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { auth, createUserProfileDocument, provider } from '_firebase'
 import {
-  signInWithPopup,
+  signInWithRedirect,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -14,7 +14,7 @@ import {
   getUserInfo,
   getDefaultUserInfo,
   initializeUserInfo,
-} from 'backend/handleUserInfo'
+} from '../backend/handleUserInfo'
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
@@ -36,6 +36,8 @@ export const AuthProvider = ({ children }) => {
   // }, [])
 
   useEffect(() => {
+    /* GAPI_TEMP_DEBUGGING */
+    /*
     initClient((result) => {
       if (result) {
         console.log('Client initialized')
@@ -44,6 +46,7 @@ export const AuthProvider = ({ children }) => {
         console.log('Client not initialized')
       }
     })
+    */
   }, [])
 
   const setDisplayName = (name) => {
@@ -76,7 +79,7 @@ export const AuthProvider = ({ children }) => {
 
   const signinGoogle = (e) => {
     e.preventDefault()
-    signInWithPopup(auth, provider)
+    signInWithRedirect(auth, provider)
       .then((result) => {
         const user = result.user
         const userData = {
@@ -98,7 +101,10 @@ export const AuthProvider = ({ children }) => {
   const signout = () => {
     const userAuth = getAuth()
 
+    /* GAPI_TEMP_DEBUGGING */
+    /*
     disconnectClient()
+    */
     signOut(userAuth)
       .then(() => {
         setCurrentUser(null)

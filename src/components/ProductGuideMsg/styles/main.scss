@@ -21,7 +21,7 @@
     border: none;
     font-weight: 400;
     background-color: transparent;
-    color: #ffffde;
+    color: #fff;
     border-radius: 5px;
 
     &:focus {
@@ -113,7 +113,7 @@
   border-bottom: unset;
 }
 
-.arrow {
+.arrow-md {
   border: solid #999;
   border-width: 0 2px 2px 0;
   display: inline-block;

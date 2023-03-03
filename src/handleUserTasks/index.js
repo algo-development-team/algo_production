@@ -1,4 +1,11 @@
-import { collection, getDocs, query, where, orderBy } from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  updateDoc,
+} from 'firebase/firestore'
 import { db } from '_firebase'
 
 /*
@@ -88,6 +95,21 @@ export const getTask = async (userId, taskId) => {
     )
     const taskDocs = await getDocs(taskQuery)
     return taskDocs.docs[0].data()
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const updateTask = async (userId, taskId, newTask) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (task) => {
+      await updateDoc(task.ref, newTask)
+    })
   } catch (error) {
     console.log(error)
   }

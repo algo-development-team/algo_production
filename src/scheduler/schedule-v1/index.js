@@ -423,7 +423,7 @@ const changeAlgoCalendarSchedule = async (
     event.summary = timeBlock.name
     event.description = timeBlock.description
     event.colorId = getColorId(timeBlock.preference)
-    const item = await updateEvent(calendarId, event.id, event)
+    const newEvent = await updateEvent(calendarId, event.id, event)
 
     // console.log('updated item:', item?.id) // DEBUGGING
   }
@@ -438,7 +438,7 @@ const changeAlgoCalendarSchedule = async (
   if (events.length < timeBlocks.length) {
     for (let i = events.length; i < timeBlocks.length; i++) {
       const timeBlock = timeBlocks[i]
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         timeBlock.start.toISOString(),
         timeBlock.end.toISOString(),
@@ -453,10 +453,6 @@ const changeAlgoCalendarSchedule = async (
   }
 }
 
-/***
- * requirements:
- * tasks: task[] (from firestore)
- * ***/
 const getEventsInRange = (events, start, end) => {
   const between = []
   const startOuter = []

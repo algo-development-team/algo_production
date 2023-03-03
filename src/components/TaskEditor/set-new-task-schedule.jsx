@@ -28,7 +28,7 @@ export const SetNewTaskSchedule = ({
       let day = 'date__tomorrow'
       return day
     }
-    if (schedule?.day === 'Weekend') {
+    if (schedule?.day === '2 Days Later' || schedule?.day === '3 Days Later') {
       let day = 'date__weekend'
       return day
     }

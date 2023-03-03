@@ -96,7 +96,6 @@ export const createUserProfileDocument = async (userAuth) => {
   if (!userSnapshot.exists()) {
     const { displayName, email } = userAuth
     const createdAt = new Date()
-
     setDoc(userRef, { displayName, createdAt, email })
       .finally(() => batchWriteIcebreakerTasks(userAuth.uid))
       .catch((err) => console.log(err))

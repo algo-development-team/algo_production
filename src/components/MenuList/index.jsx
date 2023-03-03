@@ -9,7 +9,11 @@ import {
   useColumnEditorContextValue,
 } from 'context'
 import { useAuth } from 'hooks'
-import { columnTaskDelete, taskDelete, getTask } from '../../backend/handleUserTasks'
+import {
+  columnTaskDelete,
+  taskDelete,
+  getTask,
+} from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
@@ -18,6 +22,7 @@ import moment from 'moment'
 import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
 import { timeZone } from 'handleCalendars'
+import { updateTask } from 'handleUserTasks'
 
 export const MenuList = ({
   closeOverlay,
@@ -58,7 +63,13 @@ export const MenuList = ({
   }
 
   const handleTaskDelete = async () => {
-    await taskDelete(currentUser && currentUser.id, projectId, columnId, taskIndex, taskId)
+    await taskDelete(
+      currentUser && currentUser.id,
+      projectId,
+      columnId,
+      taskIndex,
+      taskId,
+    )
   }
 
   const deleteHandler = async (e) => {
@@ -68,7 +79,11 @@ export const MenuList = ({
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
       const newColumns = columns.filter((column) => column.id !== columnId)
-      await updateProjectColumns(currentUser && currentUser.id, projectId, newColumns)
+      await updateProjectColumns(
+        currentUser && currentUser.id,
+        projectId,
+        newColumns,
+      )
       await handleColumnTasksDelete()
     } else {
       await handleTaskDelete()
@@ -125,7 +140,7 @@ export const MenuList = ({
     const startTime = roundUp15Min(now)
     const endTime = moment(startTime).add(duration, 'minutes')
     if (!loading) {
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         startTime.toISOString(),
         endTime.toISOString(),
@@ -134,6 +149,12 @@ export const MenuList = ({
         task.description,
         getTaskColorId(task.priority),
       )
+      // update task's eventId
+      const updatedEventIds = Array.from(task.eventIds)
+      updatedEventIds.push(newEvent.id)
+      await updateTask(currentUser && currentUser.id, taskId, {
+        eventIds: updatedEventIds,
+      })
     }
   }
 

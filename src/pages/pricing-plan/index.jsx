@@ -4,12 +4,11 @@ import { Link } from 'react-router-dom'
 import './main.scss'
 import DescriptionBox from './description-box'
 import PriceDescriptionBox from './description-price-box'
-import inboxScreenshot from 'assets/png/Inbox.png'
-import useScreenType from 'react-screentype-hook'
+import { useResponsiveSizes } from 'hooks'
 
 export const PricingPlanPage = () => {
-  const screenType = useScreenType()
- 
+  const { sizes } = useResponsiveSizes()
+
   return (
     <main className='landing-page'>
       <header className='intro__header'>
@@ -56,30 +55,33 @@ export const PricingPlanPage = () => {
         </nav>
       </header>
 
-
       <div className='pricing-page'>
-        <div className='pricing-page__container' style={{ display: 'flex', flexDirection: screenType.isMobile ? 'column' : 'row', columnGap: '20px' }}>
+        <div
+          className='pricing-page__container'
+          style={{
+            display: 'flex',
+            flexDirection: sizes.smallPhone ? 'column' : 'row',
+            columnGap: '20px',
+          }}
+        >
           <div className='pricing-page__frame'>
             <div className='pricing-page__content'>
-
               <PriceDescriptionBox
-                title = "Free-Trial Plan"
-                price = "$0"
-                price_description = "For 2-Month"
-                description = ""  
+                title='Free-Trial Plan'
+                price='$0'
+                price_description='For 2-Month'
+                description=''
               />
-
             </div>
           </div>
 
           <div className='pricing-page__frame'>
             <div className='pricing-page__content'>
-
               <PriceDescriptionBox
-                title = "Basic Plan"
-                price = "$12"
-                price_description = "Per Month"
-                description = ""
+                title='Basic Plan'
+                price='$12'
+                price_description='Per Month'
+                description=''
               />
             </div>
           </div>
@@ -87,15 +89,15 @@ export const PricingPlanPage = () => {
       </div>
 
       <section className='section__content'>
-           <DescriptionBox
-             title = "Which plan is right for me?"
-             description = "The schedule generator algorithm reads events in your Google
+        <DescriptionBox
+          title='Which plan is right for me?'
+          description="The schedule generator algorithm reads events in your Google
              Calendar to identify empty time ranges, and it assigns your tasks
              from Algo as time blocks into your Google Calendar according to the
              task's relative priority and your preference in the setting. The schedule generator algorithm schedules both your work and
-             personal tasks."  />
+             personal tasks."
+        />
       </section>
-
     </main>
   )
 }

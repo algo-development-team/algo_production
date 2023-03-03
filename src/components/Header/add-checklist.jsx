@@ -4,16 +4,16 @@ import { checkSignInStatus } from 'gapiHandlers'
 import { scheduleToday } from 'scheduler/schedule-v1'
 import { useAuth, useScheduleCreated } from 'hooks'
 import { updateUserInfo } from '../../backend/handleUserInfo'
-import useScreenType from 'react-screentype-hook'
 import { useSignInStatusValue } from 'context'
 import { scheduleCalendar } from 'scheduler/schedule-v2'
+import { useResponsiveSizes } from 'hooks'
 
 export const AddChecklist = () => {
   const { setShowDialog } = useOverlayContextValue()
   const { currentUser, isClientLoaded } = useAuth()
   const { scheduleCreated } = useScheduleCreated()
   const { signInStatus, setSignInStatus } = useSignInStatusValue() // 0: Not Loaded, 1: Signed In, 2: Not Signed In
-  const screenType = useScreenType()
+  const { sizes } = useResponsiveSizes()
   const [isScheduleBeingGenerated, setIsScheduleBeingGenerated] =
     useState(false)
   const [scheduleButtonText, setScheduleButtonText] = useState(
@@ -22,15 +22,15 @@ export const AddChecklist = () => {
 
   const getScheduleButtonText = () => {
     if (signInStatus === 0) {
-      return `${!screenType.isMobile ? 'Google Calendar ' : ''}Loading`
+      return `${!sizes.smallPhone ? 'Google Calendar ' : ''}Loading`
     } else if (signInStatus === 2) {
-      return `${!screenType.isMobile ? 'Connect to ' : ''}Google Calendar`
+      return `${!sizes.smallPhone ? 'Connect to ' : ''}Google Calendar`
     } else if (isScheduleBeingGenerated) {
       return 'Running'
     } else if (scheduleCreated) {
-      return `${!screenType.isMobile ? 'Daily ' : ''}Schedule Created`
+      return `${!sizes.smallPhone ? 'Daily ' : ''}Schedule Created`
     } else {
-      return `Create ${!screenType.isMobile ? 'Daily ' : ''}Schedule`
+      return `Create ${!sizes.smallPhone ? 'Daily ' : ''}Schedule`
     }
   }
 
@@ -44,7 +44,7 @@ export const AddChecklist = () => {
 
   useEffect(() => {
     setScheduleButtonText(getScheduleButtonText())
-  }, [signInStatus, isScheduleBeingGenerated, scheduleCreated, screenType])
+  }, [signInStatus, isScheduleBeingGenerated, scheduleCreated, sizes])
 
   const handleScheduleToday = async () => {
     const signInStatus = await checkSignInStatus()
@@ -57,7 +57,7 @@ export const AddChecklist = () => {
       } else {
         // Calling Scheduler Algorithm for Today
         setIsScheduleBeingGenerated(true)
-        await scheduleToday(currentUser.id)
+        await scheduleCalendar(currentUser.id)
         setIsScheduleBeingGenerated(false)
         if (!scheduleCreated) {
           await updateUserInfo(currentUser.id, { scheduleCreated: true })

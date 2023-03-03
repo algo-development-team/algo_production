@@ -39,12 +39,10 @@ export const TaskDate = ({ date }) => {
       return 'Yesterday'
     }
     return moment(date, moment.defaultFormat).format('MMM DD')
-    // return moment(date, moment.defaultFormat).format('dddd')
   }
   return (
     <span className={`task__date ${getDateCustomClass()}`}>
       <ScheduleIcon width='14px' height='14px' />
-      {/* {moment(date, moment.defaultFormat).format("DD MMM")} */}
       {getDayName()}
     </span>
   )

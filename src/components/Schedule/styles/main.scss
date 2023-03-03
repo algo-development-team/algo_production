@@ -1,0 +1,190 @@
+@import 'scss/mixins.scss';
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  &-small-phone {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__menu-btn {
+    color: inherit;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    background-color: #282828;
+    width: 120px;
+  }
+
+  &__date-btn-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__date-btn-subtitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #3f4cda;
+    margin-bottom: 2px;
+  }
+
+  &__date-btn-icon-container {
+    display: flex;
+    align-items: center;
+  }
+
+  &__date-btn-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 5px;
+    margin-right: 5px;
+    background-color: #3f4cda;
+    cursor: default;
+  }
+}
+
+.prompts {
+  &__container {
+    margin-top: 1rem;
+  }
+
+  &__header-container {
+    background-color: #282828;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+  }
+
+  &__body-container {
+    background-color: #282828;
+    height: 25vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--extended {
+    background-color: #282828;
+    height: 55vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--closed {
+    display: none;
+  }
+
+  &__footer-container {
+    background-color: #282828;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 5px;
+  }
+
+  &__input-container {
+    width: 94%;
+    margin-left: 3%;
+    margin-right: 3%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    display: flex;
+  }
+
+  &__input {
+    font-size: 16px;
+    display: flex;
+    flex-grow: 1;
+    height: 24px;
+    border: none;
+    padding: 10px;
+    padding-left: 10px;
+    font-weight: 400;
+    background-color: #222222;
+    color: inherit;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    outline: none;
+  }
+
+  &__input-submit-btn {
+    font-size: 16px;
+    height: 44px;
+    width: 40px;
+    border: none;
+    font-weight: 400;
+    background-color: #222222;
+    color: inherit;
+    border-radius: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+}
+
+.events {
+  &__container {
+    margin-top: 1rem;
+  }
+
+  &__header-container {
+    background-color: #282828;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    height: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5px;
+  }
+
+  &__body-container {
+    background-color: #282828;
+    height: 30vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--extended {
+    background-color: #282828;
+    height: 55vh;
+    overflow-x: scroll;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__body-container--closed {
+    display: none;
+  }
+
+  &__footer-container {
+    background-color: #282828;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+  }
+}
