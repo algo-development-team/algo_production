@@ -5,10 +5,12 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import { useExternalEventsContextValue } from 'context'
+import { useAuth } from 'hooks'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
+  const { currentUser } = useAuth()
 
   useEffect(() => {
     const externalEvents = new Draggable(externalEventsRef.current, {
@@ -28,16 +30,12 @@ export const FullCalendar = () => {
         interactionPlugin,
         googleCalendarPlugin,
       ],
-      // googleCalendarApiKey: '<YOUR API KEY>',
-      // eventSources: [
-      //   {
-      //     googleCalendarId: 'abcd1234@group.calendar.google.com'
-      //   },
-      //   {
-      //     googleCalendarId: 'efgh5678@group.calendar.google.com',
-      //     className: 'nice-event'
-      //   }
-      // ],
+      googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+      eventSources: [
+        {
+          googleCalendarId: currentUser.email, // TEMPORARY PLACEHOLDER
+        },
+      ],
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
