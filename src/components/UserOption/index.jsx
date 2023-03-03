@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useThemeContextValue } from 'context'
 import { useAuth } from 'hooks'
@@ -6,7 +5,7 @@ import './styles/light.scss'
 import './styles/main.scss'
 
 export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
-  const { currentUser, signout } = useAuth()
+  const { currentUser, signoutGoogle } = useAuth()
   const { displayName, email } = currentUser || {}
   const formatedDisplayName = displayName?.replace(' ', '+') || null
   const { isLight, setIsLight } = useThemeContextValue()
@@ -18,7 +17,7 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
 
   const handleLogout = (event) => {
     event.preventDefault()
-    signout()
+    signoutGoogle()
   }
 
   return (
