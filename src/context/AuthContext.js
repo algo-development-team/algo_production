@@ -44,20 +44,22 @@ export const AuthProvider = ({ children }) => {
         logoutGIS()
       } else {
         setUserGIS(codeResponse)
-        axios
-          .post('http://127.0.0.1:8000/api/auth/', codeResponse)
-          .then((response) => {
-            // handle success
-            console.log('Response:', response.data)
-          })
-          .catch((error) => {
-            // handle error
-            console.error('Error:', error)
-          })
+        console.log('Code Response:', codeResponse) // TESTING
+        // axios
+        //   .post('http://localhost:8000/api/auth/', codeResponse)
+        //   .then((response) => {
+        //     // handle success
+        //     console.log('Response:', response.data)
+        //   })
+        //   .catch((error) => {
+        //     // handle error
+        //     console.error('Error:', error)
+        //   })
       }
     },
     onError: (error) => console.log('Login Failed:', error),
     scope: 'https://www.googleapis.com/auth/calendar',
+    // flow: 'auth-code',
   })
 
   // log out function to log the user out of google and set the profile array to null
@@ -69,6 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (userGIS) {
+      let token = null
       axios
         .get(
           `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${userGIS.access_token}`,
@@ -81,8 +84,22 @@ export const AuthProvider = ({ children }) => {
         )
         .then((res) => {
           setProfileGIS(res.data)
+          token = res.data
         })
         .catch((err) => console.log(err))
+      axios
+        .post(
+          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${process.env.REACT_APP_GOOGLE_API_KEY}`,
+          { token: token, returnSecureToken: true },
+        )
+        .then((response) => {
+          // handle success
+          console.log('Response:', response.data)
+        })
+        .catch((error) => {
+          // handle error
+          console.error('Error:', error)
+        })
     }
   }, [userGIS])
 
