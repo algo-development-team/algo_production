@@ -24,6 +24,16 @@ export const AuthProvider = ({ children }) => {
   const [profileGIS, setProfileGIS] = useState(null)
   let navigate = useNavigate()
 
+  // print userGIS using useEffect
+  useEffect(() => {
+    console.log('userGIS:', userGIS)
+  }, [userGIS])
+
+  // print profileGIS using useEffect
+  useEffect(() => {
+    console.log('profileGIS:', profileGIS)
+  }, [profileGIS])
+
   const loginGIS = useGoogleLogin({
     onSuccess: (codeResponse) => {
       const hasAccess = hasGrantedAllScopesGoogle(
@@ -34,6 +44,16 @@ export const AuthProvider = ({ children }) => {
         logoutGIS()
       } else {
         setUserGIS(codeResponse)
+        axios
+          .post('http://127.0.0.1:8000/api/auth/', codeResponse)
+          .then((response) => {
+            // handle success
+            console.log('Response:', response.data)
+          })
+          .catch((error) => {
+            // handle error
+            console.error('Error:', error)
+          })
       }
     },
     onError: (error) => console.log('Login Failed:', error),
@@ -51,7 +71,7 @@ export const AuthProvider = ({ children }) => {
     if (userGIS) {
       axios
         .get(
-          `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${userGIS.access_token}`,
+          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${userGIS.access_token}`,
           {
             headers: {
               Authorization: `Bearer ${userGIS.access_token}`,

@@ -2,7 +2,7 @@ import { Board } from 'components/BoardView'
 import { TaskList } from 'components/ListView'
 import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
-import { Calendar } from 'components/Calendar'
+import { FullCalendar } from 'components/FullCalendar'
 import { Schedule } from 'components/Schedule'
 import './styles/content.scss'
 import './styles/light.scss'
@@ -24,7 +24,7 @@ export const Content = () => {
       ) {
         return <TaskList />
       } else if (defaultGroup === 'Calendar') {
-        return <Calendar />
+        return <FullCalendar />
       } else {
         return null
       }
