@@ -138,6 +138,7 @@ export const Overlay = () => {
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
           />
         )
+      /* LOOK AT HERE FOR POPUP */
       case 'SET_SELECTED_TASKS':
         return (
           <SetSelectedTasksPopper

@@ -3,6 +3,7 @@ import { CustomProjects } from './custom-projects'
 import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
 import { useExternalEventsContextValue } from 'context'
+import { SearchBar } from './search-bar'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -16,39 +17,21 @@ export const Sidebar = (props) => {
         <div className='sidebar__overlay' onClick={props.onClick}></div>
         <aside className='sidebar'>
           <div ref={externalEventsRef}>
-            <p>
-              <strong>Draggable Events</strong>
-            </p>
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              style={{ maxWidth: '100px' }}
-            >
-              <div className='fc-event-main'>My Event 1</div>
+            <div style = {{marginBottom: "10px"}}>
+              <img src = "xxx" alt = "plus icon"/>
+              <img src = "xxx" alt = "filter icon" style = {{marginLeft: "20px"}}/>
             </div>
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              style={{ maxWidth: '100px' }}
-            >
-              <div className='fc-event-main'>My Event 2</div>
-            </div>
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              style={{ maxWidth: '100px' }}
-            >
-              <div className='fc-event-main'>My Event 3</div>
-            </div>
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              style={{ maxWidth: '100px' }}
-            >
-              <div className='fc-event-main'>My Event 4</div>
-            </div>
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              style={{ maxWidth: '100px' }}
-            >
-              <div className='fc-event-main'>My Event 5</div>
-            </div>
+          <SearchBar tasks={[
+  "Complete project report",
+  "Submit expenses",
+  "Schedule meeting with client",
+  "Review presentation",
+  "Prepare for interview",
+  "Send follow-up email",
+  "Order office supplies",
+  "Attend team training",
+  "Create project plan",
+]}/>
           </div>
         </aside>
       </>

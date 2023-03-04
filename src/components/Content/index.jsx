@@ -23,6 +23,8 @@ export const Content = () => {
         return <TaskList />
       } else if (defaultGroup === 'Calendar') {
         return <FullCalendar />
+      } else if (defaultGroup === 'Schedule') { // remove later
+         return <Schedule />
       } else {
         return null
       }
