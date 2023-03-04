@@ -115,6 +115,7 @@ export const PromptsContainer = ({
                 handlePromptInput()
               }
             }}
+            /* LOOK AT THIS SECTION FOR POPUP */
             onSelect={(e) => {
               setDialogProps(
                 Object.assign(

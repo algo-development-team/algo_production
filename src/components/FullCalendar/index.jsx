@@ -3,7 +3,6 @@ import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
-import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import { useExternalEventsContextValue } from 'context'
 import { useAuth } from 'hooks'
 
@@ -28,13 +27,6 @@ export const FullCalendar = () => {
         dayGridPlugin,
         timeGridPlugin,
         interactionPlugin,
-        googleCalendarPlugin,
-      ],
-      googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-      eventSources: [
-        {
-          googleCalendarId: currentUser.email, // TEMPORARY PLACEHOLDER
-        },
       ],
       headerToolbar: {
         left: 'prev,next today',
