@@ -3,7 +3,7 @@ import axios from 'axios'
 export const getValidToken = async (userId) => {
   try {
     const response = await axios.post(
-      'http://localhost:8080/api/google/getValidToken/',
+      `${process.env.REACT_APP_SERVER_URL}/api/google/getValidToken/`,
       {
         userId: userId,
       },
