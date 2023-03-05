@@ -47,16 +47,27 @@ export const AuthProvider = ({ children }) => {
       )
       if (!hasAccess) {
         logoutGoogle()
+        alert('Please grant access to your Google Calendar (check all boxes)')
       } else {
         axios
           .post('http://localhost:8080/api/google/login/', {
             code: codeResponse.code,
             userId: currentUser.id,
+            email: currentUser.email,
           })
-          .then((response) => {
+          .then(async (response) => {
             // handle success
-            setIsUserGoogleAuthenticated(true)
-            console.log('Login success')
+            const accessToken = await getValidToken(currentUser.id)
+
+            if (accessToken) {
+              setIsUserGoogleAuthenticated(true)
+              console.log('Login success')
+            } else {
+              console.log('Login failed')
+              alert(
+                'Please login with the same Google account as you used to log into Algo',
+              )
+            }
           })
           .catch((error) => {
             // handle error
