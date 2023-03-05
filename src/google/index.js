@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const getUserGoogleCalendarList = async (userId) => {
+export const getValidToken = async (userId) => {
   try {
     const response = await axios.post(
       'http://localhost:8080/api/google/getValidToken/',
@@ -9,6 +9,19 @@ export const getUserGoogleCalendarList = async (userId) => {
       },
     )
     const accessToken = response.data.accessToken
+
+    return accessToken
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+export const getUserGoogleCalendarList = async (userId) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
 
     const request = await fetch(
       `https://www.googleapis.com/calendar/v3/users/me/calendarList`,

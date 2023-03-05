@@ -9,6 +9,7 @@ import {
   getDefaultUserInfo,
   initializeUserInfo,
 } from '../backend/handleUserInfo'
+import { getValidToken } from '../google'
 import {
   googleLogout,
   useGoogleLogin,
@@ -20,8 +21,23 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
-  const [userGoogle, setUserGoogle] = useState(null)
+  const [isUserGoogleAuthenticated, setIsUserGoogleAuthenticated] =
+    useState(false)
   let navigate = useNavigate()
+
+  useEffect(() => {
+    const checkUserGoogleAuthenticated = async () => {
+      const accessToken = await getValidToken(currentUser.id)
+
+      if (accessToken) {
+        setIsUserGoogleAuthenticated(true)
+      }
+    }
+
+    if (currentUser) {
+      checkUserGoogleAuthenticated()
+    }
+  }, [currentUser])
 
   const loginGoogle = useGoogleLogin({
     onSuccess: (codeResponse) => {
@@ -32,20 +48,19 @@ export const AuthProvider = ({ children }) => {
       if (!hasAccess) {
         logoutGoogle()
       } else {
-        setUserGoogle(codeResponse)
-        console.log('Code Response:', codeResponse) // TESTING
         axios
-          .post('http://localhost:8080/api/google/auth/', {
+          .post('http://localhost:8080/api/google/login/', {
             code: codeResponse.code,
             userId: currentUser.id,
           })
           .then((response) => {
             // handle success
-            console.log('Success')
+            setIsUserGoogleAuthenticated(true)
+            console.log('Login success')
           })
           .catch((error) => {
             // handle error
-            console.error('Error:', error)
+            console.error('Login error:', error)
           })
       }
     },
@@ -54,11 +69,31 @@ export const AuthProvider = ({ children }) => {
     flow: 'auth-code',
   })
 
-  // log out function to log the user out of google and set the profile array to null
+  /* logs user directly out of Google OAuth2 */
   const logoutGoogle = () => {
-    console.log('Logging out of Google')
-    setUserGoogle(null)
+    console.log('Logging out of Google (hard)')
+    // log out from Google OAuth2 and remove user token info from Firestore
+    axios
+      .post('http://localhost:8080/api/google/logout/', {
+        userId: currentUser.id,
+      })
+      .then((response) => {
+        // handle success
+        setIsUserGoogleAuthenticated(false)
+        googleLogout()
+        console.log('Login success')
+      })
+      .catch((error) => {
+        // handle error
+        console.error('Login error:', error)
+      })
+  }
+
+  /* logs only out from current session */
+  const softLogoutGoogle = () => {
+    setIsUserGoogleAuthenticated(false)
     googleLogout()
+    console.log('Logging out of Google (soft)')
   }
 
   const signinGoogle = (e) => {
@@ -85,11 +120,10 @@ export const AuthProvider = ({ children }) => {
   const signoutGoogle = () => {
     const userAuth = getAuth()
 
-    logoutGoogle()
-
     signOut(userAuth)
       .then(() => {
         setCurrentUser(null)
+        softLogoutGoogle()
         localStorage.removeItem('userAuth')
       })
       .finally(() => navigate('/'))
@@ -130,7 +164,7 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
-    userGoogle,
+    isUserGoogleAuthenticated,
     signinGoogle,
     signoutGoogle,
     loginGoogle,

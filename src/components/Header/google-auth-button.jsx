@@ -2,7 +2,8 @@ import { useAuth } from 'hooks'
 import { getUserGoogleCalendarList } from 'google'
 
 export const GoogleAuthButton = () => {
-  const { currentUser, userGoogle, loginGoogle, logoutGoogle } = useAuth()
+  const { currentUser, isUserGoogleAuthenticated, loginGoogle, logoutGoogle } =
+    useAuth()
 
   if (!currentUser) {
     return <button disabled>Loading</button>
@@ -10,15 +11,15 @@ export const GoogleAuthButton = () => {
 
   return (
     <>
-      {userGoogle ? (
-        <button onClick={() => logoutGoogle()}>Log out 🚀 </button>
+      {isUserGoogleAuthenticated ? (
+        <>
+          <button onClick={() => logoutGoogle()}>Log out 🚀 </button>
+          <button onClick={() => getUserGoogleCalendarList(currentUser.id)}>
+            Get All Calendars 🚀{' '}
+          </button>
+        </>
       ) : (
         <button onClick={() => loginGoogle()}>Sign in with Google 🚀 </button>
-      )}
-      {userGoogle && currentUser && (
-        <button onClick={() => getUserGoogleCalendarList(currentUser.id)}>
-          Get All Calendars 🚀{' '}
-        </button>
       )}
     </>
   )
