@@ -20,88 +20,46 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
-  const [userGIS, setUserGIS] = useState(null)
-  const [profileGIS, setProfileGIS] = useState(null)
+  const [userGoogle, setUserGoogle] = useState(null)
   let navigate = useNavigate()
 
-  // print userGIS using useEffect
-  useEffect(() => {
-    console.log('userGIS:', userGIS)
-  }, [userGIS])
-
-  // print profileGIS using useEffect
-  useEffect(() => {
-    console.log('profileGIS:', profileGIS)
-  }, [profileGIS])
-
-  const loginGIS = useGoogleLogin({
+  const loginGoogle = useGoogleLogin({
     onSuccess: (codeResponse) => {
       const hasAccess = hasGrantedAllScopesGoogle(
         codeResponse,
         'https://www.googleapis.com/auth/calendar',
       )
       if (!hasAccess) {
-        logoutGIS()
+        logoutGoogle()
       } else {
-        setUserGIS(codeResponse)
+        setUserGoogle(codeResponse)
         console.log('Code Response:', codeResponse) // TESTING
-        // axios
-        //   .post('http://localhost:8000/api/auth/', codeResponse)
-        //   .then((response) => {
-        //     // handle success
-        //     console.log('Response:', response.data)
-        //   })
-        //   .catch((error) => {
-        //     // handle error
-        //     console.error('Error:', error)
-        //   })
+        axios
+          .post('http://localhost:8080/api/google/auth/', {
+            code: codeResponse.code,
+            userId: currentUser.id,
+          })
+          .then((response) => {
+            // handle success
+            console.log('Success')
+          })
+          .catch((error) => {
+            // handle error
+            console.error('Error:', error)
+          })
       }
     },
     onError: (error) => console.log('Login Failed:', error),
     scope: 'https://www.googleapis.com/auth/calendar',
-    // flow: 'auth-code',
+    flow: 'auth-code',
   })
 
   // log out function to log the user out of google and set the profile array to null
-  const logoutGIS = () => {
-    console.log('Logging out of GIS')
+  const logoutGoogle = () => {
+    console.log('Logging out of Google')
+    setUserGoogle(null)
     googleLogout()
-    setProfileGIS(null)
   }
-
-  useEffect(() => {
-    if (userGIS) {
-      let token = null
-      axios
-        .get(
-          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${userGIS.access_token}`,
-          {
-            headers: {
-              Authorization: `Bearer ${userGIS.access_token}`,
-              Accept: 'application/json',
-            },
-          },
-        )
-        .then((res) => {
-          setProfileGIS(res.data)
-          token = res.data
-        })
-        .catch((err) => console.log(err))
-      axios
-        .post(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${process.env.REACT_APP_GOOGLE_API_KEY}`,
-          { token: token, returnSecureToken: true },
-        )
-        .then((response) => {
-          // handle success
-          console.log('Response:', response.data)
-        })
-        .catch((error) => {
-          // handle error
-          console.error('Error:', error)
-        })
-    }
-  }, [userGIS])
 
   const signinGoogle = (e) => {
     e.preventDefault()
@@ -127,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   const signoutGoogle = () => {
     const userAuth = getAuth()
 
-    logoutGIS()
+    logoutGoogle()
 
     signOut(userAuth)
       .then(() => {
@@ -172,12 +130,11 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
-    userGIS,
-    profileGIS,
+    userGoogle,
     signinGoogle,
     signoutGoogle,
-    loginGIS,
-    logoutGIS,
+    loginGoogle,
+    logoutGoogle,
   }
 
   return (

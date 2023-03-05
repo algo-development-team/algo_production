@@ -1,4 +1,4 @@
-codeResponse / userGIS
+codeResponse / userGoogle
 {
   access_token: string,
   authuser: string,
