@@ -5,9 +5,12 @@ import { useThemeContextValue } from 'context'
 import { NavLink } from 'react-router-dom'
 import { ProjectTasksCounts } from './project-tasks-count'
 import { getDayId } from '../../handleDayId'
+import { useAuth } from 'hooks'
+import { inputIconSelection } from '../../handleAnalytics'
 
 export const DefaultProjects = () => {
   const { isLight } = useThemeContextValue()
+  const { currentUser } = useAuth()
 
   // generate a string of the current date in MM-DD-YYYY format
 
@@ -18,6 +21,7 @@ export const DefaultProjects = () => {
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }
+        onClick={() => inputIconSelection(currentUser && currentUser.id, "CALENDAR")}
       >
         <div className='project-group__group'>
           <div className='project-group__icon'>

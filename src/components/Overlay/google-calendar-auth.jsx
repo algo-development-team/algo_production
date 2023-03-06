@@ -1,10 +1,15 @@
 import { GoogleLogin, GoogleLogout } from 'react-google-login'
 import { useSignInStatusValue } from 'context'
+import { inputSignIn } from '../../handleAnalytics'
+import { useAuth } from 'hooks'
 
 export const GoogleCalendarAuth = ({ closeOverlay }) => {
   const { setSignInStatus } = useSignInStatusValue() // 0: Not Loaded, 1: Signed In, 2: Not Signed In
+  const { currentUser } = useAuth()
 
   const responseGoogle = async (response) => {
+
+    inputSignIn(currentUser.id, "GOOGLE_OAUTH")
     console.log('Google Login Success')
     setSignInStatus(1)
 

@@ -17,3 +17,14 @@
     background-color: #eee;
   }
 }
+
+.light .set-Taskbar {
+  border-color: #ccc;
+  color: black;
+  background-color: white;
+}
+.light .set-Taskbar:active {
+  background-color: rgb(205, 205, 205);
+  box-shadow: 0 2px 5px #555555;
+  transform: translateY(1px);
+}

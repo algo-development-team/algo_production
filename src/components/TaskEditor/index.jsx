@@ -89,6 +89,7 @@ export const TaskEditor = ({
   const { sizes } = useResponsiveSizes()
   const { defaultProject } = selectedProject
   const textAreaRef = useRef(null)
+
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
   /***
@@ -436,27 +437,6 @@ export const TaskEditor = ({
               placeholder={'Some Title...'}
             />
 
-            {/* Menu Buttons Section */}
-            <div
-              className='add-task__attributes'
-              style={{ marginBottom: '10px' }}
-            >
-              <div className='add-task__attributes--left'>
-                <MenuButton
-                  type='BLOCKS'
-                  value={showBlocksAdder}
-                  setValue={setShowBlocksAdder}
-                />
-                <MenuButton
-                  type='IS_BLOCKED_BY'
-                  value={showIsBlockedByAdder}
-                  setValue={setShowIsBlockedByAdder}
-                />
-              </div>
-              <div className='add-task__attributes--right'></div>
-            </div>
-
-            {/* Description Editor Section */}
             <textarea
               className='add-task__input textarea'
               value={taskDescription}
@@ -466,8 +446,6 @@ export const TaskEditor = ({
               type='text'
               placeholder='Some description...'
             />
-
-            {/* Project Editor Section */}
             <div
               className='add-task__attributes'
               style={{ marginBottom: '10px' }}

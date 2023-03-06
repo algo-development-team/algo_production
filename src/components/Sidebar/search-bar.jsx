@@ -10,8 +10,12 @@ export const SearchBar = ({ tasks }) => {
   const [useeffectusedonce, setUseeffectusedonce] = useState(false);
 
   useEffect(() => {
+    // if (searchResults.length === 0 && useeffectusedonce) {
+    //   resultsContainerRef.current.innerHTML = "";}
     if (searchResults.length === 0 && useeffectusedonce) {
       resultsContainerRef.current.innerHTML = "";}
+    // if (resultsContainerRef.current && searchResults.length > 0) {
+    //   resultsContainerRef.current.innerHTML = "";}
     if (resultsContainerRef.current && searchResults.length > 0) {
       resultsContainerRef.current.innerHTML = "";}
       setUseeffectusedonce(true);
@@ -103,6 +107,38 @@ export const SearchBar = ({ tasks }) => {
 
         </div>
       )}
+      {searchTerm === "" && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            marginTop: "10px",
+            maxHeight: "300px",
+            overflowY: "scroll",
+          }}
+          ref={resultsContainerRef}
+        >
+        </div>
+      )}
+      {/* {searchTerm !== "" && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            width: "100%",
+            marginTop: "10px",
+            maxHeight: "300px",
+            overflowY: "scroll",
+          }}
+          ref={resultsContainerRef}
+        >
+          {searchResults.length === 0 ? (
+            <div>No such task exists</div>
+          ) : null}
+
+        </div>
+      )} */}
     </div>
   );
 };
