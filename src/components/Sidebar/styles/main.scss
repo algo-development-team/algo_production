@@ -1,8 +1,8 @@
-@import "scss/mixins.scss";
+@import 'scss/mixins.scss';
 .sidebar {
   min-width: 248px;
   height: 100vh;
-  padding: 74px 2px 0 35px;
+  padding: 74px 3px 0 33px;
   background-color: #282828;
   display: flex;
   flex-direction: column;
@@ -19,7 +19,7 @@
   }
 
   .hide-sidebar & {
-    left: -284px !important;
+    left: -283px !important;
   }
   @include respond(tab-port) {
     &__overlay {
@@ -91,7 +91,6 @@
     font-size: 10px;
   }
 }
-
 
 .label {
   display: flex;
