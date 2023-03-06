@@ -34,9 +34,7 @@ export const getUserGoogleCalendarList = async (userId) => {
 
     const data = await request.json()
 
-    console.log('data:', data) // TESTING
-
-    return data
+    return data.items
   } catch (error) {
     console.log(error)
     return null

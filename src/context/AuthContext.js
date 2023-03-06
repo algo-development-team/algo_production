@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [isUserGoogleAuthenticated, setIsUserGoogleAuthenticated] =
     useState(false)
+
   let navigate = useNavigate()
 
   useEffect(() => {
