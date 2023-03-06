@@ -1,0 +1,23 @@
+codeResponse / userGoogle
+{
+  access_token: string,
+  authuser: string,
+  expires_in: number,
+  prompt: string,
+  scope: string,
+  token_type: string,
+}
+
+---
+
+profileGIS
+{
+  email: string,
+  email_verified: boolean,
+  family_name: string,
+  given_nameL string,
+  locale: string,
+  name: string,
+  picture: string,
+  sub: string,
+}

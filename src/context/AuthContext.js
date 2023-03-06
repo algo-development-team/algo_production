@@ -9,6 +9,7 @@ import {
   getDefaultUserInfo,
   initializeUserInfo,
 } from '../backend/handleUserInfo'
+import { getValidToken } from '../google'
 import {
   googleLogout,
   useGoogleLogin,
@@ -20,88 +21,92 @@ export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
-  const [userGIS, setUserGIS] = useState(null)
-  const [profileGIS, setProfileGIS] = useState(null)
+  const [isUserGoogleAuthenticated, setIsUserGoogleAuthenticated] =
+    useState(false)
+
   let navigate = useNavigate()
 
-  // print userGIS using useEffect
   useEffect(() => {
-    console.log('userGIS:', userGIS)
-  }, [userGIS])
+    const checkUserGoogleAuthenticated = async () => {
+      const accessToken = await getValidToken(currentUser.id)
 
-  // print profileGIS using useEffect
-  useEffect(() => {
-    console.log('profileGIS:', profileGIS)
-  }, [profileGIS])
+      if (accessToken) {
+        setIsUserGoogleAuthenticated(true)
+      }
+    }
 
-  const loginGIS = useGoogleLogin({
+    if (currentUser) {
+      checkUserGoogleAuthenticated()
+    }
+  }, [currentUser])
+
+  const loginGoogle = useGoogleLogin({
     onSuccess: (codeResponse) => {
       const hasAccess = hasGrantedAllScopesGoogle(
         codeResponse,
         'https://www.googleapis.com/auth/calendar',
       )
       if (!hasAccess) {
-        logoutGIS()
+        logoutGoogle()
+        alert('Please grant access to your Google Calendar (check all boxes)')
       } else {
-        setUserGIS(codeResponse)
-        console.log('Code Response:', codeResponse) // TESTING
-        // axios
-        //   .post('http://localhost:8000/api/auth/', codeResponse)
-        //   .then((response) => {
-        //     // handle success
-        //     console.log('Response:', response.data)
-        //   })
-        //   .catch((error) => {
-        //     // handle error
-        //     console.error('Error:', error)
-        //   })
+        axios
+          .post(`${process.env.REACT_APP_SERVER_URL}/api/google/login/`, {
+            code: codeResponse.code,
+            userId: currentUser.id,
+            email: currentUser.email,
+          })
+          .then(async (response) => {
+            // handle success
+            const accessToken = await getValidToken(currentUser.id)
+
+            if (accessToken) {
+              setIsUserGoogleAuthenticated(true)
+              console.log('Login success')
+            } else {
+              console.log('Login failed')
+              alert(
+                'Please login with the same Google account as you used to log into Algo',
+              )
+            }
+          })
+          .catch((error) => {
+            // handle error
+            console.error('Login error:', error)
+          })
       }
     },
     onError: (error) => console.log('Login Failed:', error),
     scope: 'https://www.googleapis.com/auth/calendar',
-    // flow: 'auth-code',
+    flow: 'auth-code',
   })
 
-  // log out function to log the user out of google and set the profile array to null
-  const logoutGIS = () => {
-    console.log('Logging out of GIS')
-    googleLogout()
-    setProfileGIS(null)
+  /* logs user directly out of Google OAuth2 */
+  const logoutGoogle = () => {
+    console.log('Logging out of Google (hard)')
+    // log out from Google OAuth2 and remove user token info from Firestore
+    axios
+      .post(`${process.env.REACT_APP_SERVER_URL}/api/google/logout/`, {
+        userId: currentUser.id,
+      })
+      .then((response) => {
+        // handle success
+        setIsUserGoogleAuthenticated(false)
+        googleLogout()
+        console.log('Login success')
+      })
+      .catch((error) => {
+        // handle error
+        console.error('Login error:', error)
+      })
   }
 
-  useEffect(() => {
-    if (userGIS) {
-      let token = null
-      axios
-        .get(
-          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${userGIS.access_token}`,
-          {
-            headers: {
-              Authorization: `Bearer ${userGIS.access_token}`,
-              Accept: 'application/json',
-            },
-          },
-        )
-        .then((res) => {
-          setProfileGIS(res.data)
-          token = res.data
-        })
-        .catch((err) => console.log(err))
-      axios
-        .post(
-          `https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=${process.env.REACT_APP_GOOGLE_API_KEY}`,
-          { token: token, returnSecureToken: true },
-        )
-        .then((response) => {
-          // handle success
-          console.log('Response:', response.data)
-        })
-        .catch((error) => {
-          // handle error
-          console.error('Error:', error)
-        })
-    }
-  }, [userGIS])
+  /* logs only out from current session */
+  const softLogoutGoogle = () => {
+    setIsUserGoogleAuthenticated(false)
+    googleLogout()
+    console.log('Logging out of Google (soft)')
+  }
 
   const signinGoogle = (e) => {
     e.preventDefault()
@@ -127,11 +132,10 @@ export const AuthProvider = ({ children }) => {
   const signoutGoogle = () => {
     const userAuth = getAuth()
 
-    logoutGIS()
-
     signOut(userAuth)
       .then(() => {
         setCurrentUser(null)
+        softLogoutGoogle()
         localStorage.removeItem('userAuth')
       })
       .finally(() => navigate('/'))
@@ -172,12 +176,11 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
-    userGIS,
-    profileGIS,
+    isUserGoogleAuthenticated,
     signinGoogle,
     signoutGoogle,
-    loginGIS,
-    logoutGIS,
+    loginGoogle,
+    logoutGoogle,
   }
 
   return (

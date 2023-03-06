@@ -10,8 +10,7 @@ import { QuickAddTask } from './quick-add-task'
 import { AddChecklist } from './add-checklist'
 import { GoogleCalendarButton } from './google-calendar'
 import { SettingButton } from './setting'
-import { GISAuthButton } from './gis-auth-button'
-import { useEffect } from 'react'
+import { GoogleAuthButton } from './google-auth-button'
 
 export const Header = (props) => {
   return (
@@ -25,7 +24,7 @@ export const Header = (props) => {
       <div className='header__right'>
         <AddChecklist />
         <QuickAddTask />
-        <GISAuthButton />
+        <GoogleAuthButton />
         <GoogleCalendarButton />
         <SettingButton />
         <Info />
