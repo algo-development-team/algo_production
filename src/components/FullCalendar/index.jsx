@@ -3,28 +3,21 @@ import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
-import { useExternalEventsContextValue, useGoogleValue } from 'context'
+import { useExternalEventsContextValue } from 'context'
 import { generatePushId } from '../../utils'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
-  const { googleCalendars } = useGoogleValue()
   const [events, setEvents] = useState([])
-
-  useEffect(() => {
-    console.log('googleCalendars:', googleCalendars) // TESTING
-  }, [googleCalendars])
-
-  useEffect(() => {
-    console.log('events', events) // TESTING
-  }, [events])
+  const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
     const externalEvents = new Draggable(externalEventsRef.current, {
       itemSelector: '.fc-event',
       eventData: function (eventEl) {
         return {
+          id: generatePushId(),
           title: eventEl.innerText,
         }
       },
@@ -46,10 +39,10 @@ export const FullCalendar = () => {
       slotLabelInterval: '01:00:00',
       eventClick: function (info) {
         if (window.confirm('Are you sure you want to delete this event?')) {
-          // remove from calendar
-          info.event.remove()
           // remove from state
           setEvents(events.filter((event) => event.id !== info.event.id))
+          // remove from calendar
+          info.event.remove()
         }
       },
       select: function (info) {
@@ -63,22 +56,27 @@ export const FullCalendar = () => {
         setEvents([...events, newEvent])
       },
       events: events,
-      slotMinHeight: 20,
+      now: new Date(), // set the current time
+      nowIndicator: true, // display a red line through the current time
     })
 
     calendar.render()
 
+    // Update the current time every 5 minutes
+    const intervalId = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 5 * 60 * 1000) // 5 minutes in milliseconds
+
     return () => {
       calendar.destroy()
       externalEvents.destroy()
+      clearInterval(intervalId)
     }
-  }, [events, externalEventsRef])
+  }, [events, externalEventsRef, currentTime])
 
   return (
     <div>
-      <div>
-        <div ref={calendarRef}></div>
-      </div>
+      <div ref={calendarRef}></div>
     </div>
   )
 }
