@@ -4,11 +4,9 @@ export const getTaskColorId = (priority) => {
     case 1:
       return 2 // Low: green
     case 2:
-      return 7 // Average: turquoise
+      return 7 // Medium: turquoise
     case 3:
       return 6 // High: orange
-    case 4:
-      return 6 // ASAP: orange
     default:
       return 7 // default: turquoise
   }

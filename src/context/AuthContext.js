@@ -1,85 +1,116 @@
 import React, { createContext, useState, useEffect } from 'react'
 import { auth, createUserProfileDocument, provider } from '_firebase'
-import {
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-} from 'firebase/auth'
+import { signInWithRedirect, signOut } from 'firebase/auth'
 import { onSnapshot } from 'firebase/firestore'
-import { getAuth, updateProfile } from 'firebase/auth'
+import { getAuth } from 'firebase/auth'
 import { useNavigate } from 'react-router-dom'
-import { disconnectClient, initClient } from 'gapiHandlers'
 import {
   getUserInfo,
   getDefaultUserInfo,
   initializeUserInfo,
-} from 'handleUserInfo'
-import { inputSignIn } from '../handleAnalytics'
-
-
+} from '../backend/handleUserInfo'
+import { getValidToken } from '../google'
+import {
+  googleLogout,
+  useGoogleLogin,
+  hasGrantedAllScopesGoogle,
+} from '@react-oauth/google'
+import axios from 'axios'
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
   const [loading, setLoading] = useState(true)
-  const [isClientLoaded, setIsClientLoaded] = useState(false)
-  let navigate = useNavigate()
-  const authUser = getAuth()
+  const [isUserGoogleAuthenticated, setIsUserGoogleAuthenticated] =
+    useState(false)
 
-  // Older version of initializing gapi for sending the token to the backend
-  // Not used in this implementation
-  // useEffect(() => {
-  //   gapi.load('client:auth2', () => {
-  //     gapi.auth2.init({
-  //       clientId: process.env.REACT_APP_CLIENT_ID,
-  //       scope: 'openid email profile https://www.googleapis.com/auth/calendar',
-  //     })
-  //   })
-  // }, [])
+  let navigate = useNavigate()
 
   useEffect(() => {
-    initClient((result) => {
-      if (result) {
-        console.log('Client initialized')
-        setIsClientLoaded(true)
-      } else {
-        console.log('Client not initialized')
+    const checkUserGoogleAuthenticated = async () => {
+      const accessToken = await getValidToken(currentUser.id)
+
+      if (accessToken) {
+        setIsUserGoogleAuthenticated(true)
       }
-    })
-  }, [])
+    }
 
-  const setDisplayName = (name) => {
-    updateProfile(authUser.currentUser, {
-      displayName: name,
-    }).catch((error) => {
-      // An error occurred
-      // ...
-    })
+    if (currentUser) {
+      checkUserGoogleAuthenticated()
+    }
+  }, [currentUser])
+
+  const loginGoogle = useGoogleLogin({
+    onSuccess: (codeResponse) => {
+      const hasAccess = hasGrantedAllScopesGoogle(
+        codeResponse,
+        'https://www.googleapis.com/auth/calendar',
+      )
+      if (!hasAccess) {
+        logoutGoogle()
+        alert('Please grant access to your Google Calendar (check all boxes)')
+      } else {
+        axios
+          .post(`${process.env.REACT_APP_SERVER_URL}/api/google/login/`, {
+            code: codeResponse.code,
+            userId: currentUser.id,
+            email: currentUser.email,
+          })
+          .then(async (response) => {
+            // handle success
+            const accessToken = await getValidToken(currentUser.id)
+
+            if (accessToken) {
+              setIsUserGoogleAuthenticated(true)
+              console.log('Login success')
+            } else {
+              console.log('Login failed')
+              alert(
+                'Please login with the same Google account as you used to log into Algo',
+              )
+            }
+          })
+          .catch((error) => {
+            // handle error
+            console.error('Login error:', error)
+          })
+      }
+    },
+    onError: (error) => console.log('Login Failed:', error),
+    scope: 'https://www.googleapis.com/auth/calendar',
+    flow: 'auth-code',
+  })
+
+  /* logs user directly out of Google OAuth2 */
+  const logoutGoogle = () => {
+    console.log('Logging out of Google (hard)')
+    // log out from Google OAuth2 and remove user token info from Firestore
+    axios
+      .post(`${process.env.REACT_APP_SERVER_URL}/api/google/logout/`, {
+        userId: currentUser.id,
+      })
+      .then((response) => {
+        // handle success
+        setIsUserGoogleAuthenticated(false)
+        googleLogout()
+        console.log('Login success')
+      })
+      .catch((error) => {
+        // handle error
+        console.error('Login error:', error)
+      })
   }
 
-  const signinWithEmail = (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password).then((cred) => {
-      setCurrentUser(cred.user)
-      localStorage.setItem('userAuth', JSON.stringify(cred.user))
-      navigate('/app/Checklist')
-    })
-  }
-
-  const signupWithEmail = async ({ email, password, name }) => {
-    return createUserWithEmailAndPassword(auth, email, password).then(
-      (cred) => {
-        setDisplayName(name)
-        setCurrentUser({ ...cred.user, displayName: name })
-        localStorage.setItem('userAuth', JSON.stringify(cred.user))
-        navigate('/app/Checklist')
-      },
-    )
+  /* logs only out from current session */
+  const softLogoutGoogle = () => {
+    setIsUserGoogleAuthenticated(false)
+    googleLogout()
+    console.log('Logging out of Google (soft)')
   }
 
   const signinGoogle = (e) => {
     e.preventDefault()
-    signInWithPopup(auth, provider)
+    signInWithRedirect(auth, provider)
       .then((result) => {
         const user = result.user
         const userData = {
@@ -101,13 +132,13 @@ export const AuthProvider = ({ children }) => {
       })
   }
 
-  const signout = () => {
+  const signoutGoogle = () => {
     const userAuth = getAuth()
 
-    disconnectClient()
     signOut(userAuth)
       .then(() => {
         setCurrentUser(null)
+        softLogoutGoogle()
         localStorage.removeItem('userAuth')
       })
       .finally(() => navigate('/'))
@@ -115,7 +146,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (userAuth) => {
-      setLoading(false)
       if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth)
         onSnapshot(userRef, async (snapshot) => {
@@ -141,6 +171,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setCurrentUser(userAuth)
       }
+      setLoading(false)
     })
 
     return () => unsubscribe()
@@ -148,11 +179,11 @@ export const AuthProvider = ({ children }) => {
 
   const authValue = {
     currentUser,
-    isClientLoaded,
-    signupWithEmail,
-    signinWithEmail,
+    isUserGoogleAuthenticated,
     signinGoogle,
-    signout,
+    signoutGoogle,
+    loginGoogle,
+    logoutGoogle,
   }
 
   return (

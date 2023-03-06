@@ -1,4 +1,4 @@
-export default function DescriptionBoxLeft({ title, description, imagesrc }) {
+export default function DescriptionBoxLeft({ description, imagesrc }) {
   return (
     <div>
       <style
@@ -9,9 +9,6 @@ export default function DescriptionBoxLeft({ title, description, imagesrc }) {
       />
       <div className='container'>
       <div>
-          <div style={{ textAlign: 'center', fontSize: '23px' , font: "500 100%/1.5 system-ui" }}>
-           {title}
-          </div>
         <div className='text'>
           <p style={{ textAlign: 'center', fontSize: '15px' }}>{description}</p>
         </div>

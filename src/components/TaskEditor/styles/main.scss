@@ -26,7 +26,7 @@
     border: none;
     font-weight: 400;
     background-color: transparent;
-    color: #ffffde;
+    color: #fff;
     border-radius: 5px;
 
     &.title {
@@ -138,4 +138,36 @@
 .quick-add__container {
   margin-bottom: unset !important;
   border-bottom: unset;
+}
+
+.set-new-task__linked-tasks {
+  padding: 12px;
+  display: flex;
+  background-color: #282828;
+  margin-bottom: 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #ffffff1a;
+  box-shadow: 0 10px 10px #0000001a, 0 6px 3px #0000001f;
+  position: relative;
+  align-items: center;
+  color: inherit;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+  }
+
+  &__bubble-text {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-right: 5px;
+    border-radius: 14px;
+    background-color: #424242;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
 }

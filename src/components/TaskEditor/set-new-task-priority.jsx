@@ -19,35 +19,21 @@ export const SetNewTaskPriority = ({
 
   const getPriorityStyle = () => {
     if (taskPriority === 1) {
-      let day = 'date__today'
-      return day
-    }
-    if (taskPriority === 2) {
-      let day = 'date__weekend'
-      return day
-    }
-    if (taskPriority === 3) {
-      let day = 'date__tomorrow'
-      return day
-    }
-    if (taskPriority === 4) {
-      let day = 'date__overdue'
-      return day
+      return 'date__today'
+    } else if (taskPriority === 2) {
+      return 'date__weekend'
+    } else if (taskPriority === 3) {
+      return 'date__tomorrow'
     }
   }
 
   const getPriorityText = (taskPriority) => {
     if (taskPriority === 1) {
       return 'Low'
-    }
-    if (taskPriority === 2) {
-      return 'Average'
-    }
-    if (taskPriority === 3) {
+    } else if (taskPriority === 2) {
+      return 'Medium'
+    } else if (taskPriority === 3) {
       return 'High'
-    }
-    if (taskPriority === 4) {
-      return 'ASAP'
     }
   }
 

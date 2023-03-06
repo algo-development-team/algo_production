@@ -1,8 +1,5 @@
 import { ReactComponent as NextWeekIcon } from 'assets/svg/next-week.svg'
-import { ReactComponent as NoDateIcon } from 'assets/svg/none.svg'
-import { ReactComponent as SetScheduleIcon } from 'assets/svg/set-schedule.svg'
-import { ReactComponent as WeekendIcon } from 'assets/svg/weekend.svg'
-import { TodayIcon } from 'components/today-icon'
+
 import './light.scss'
 import './main.scss'
 
@@ -16,20 +13,8 @@ export const SetNewTaskPriorityPopper = ({
   yPosition,
   parentPosition,
 }) => {
-  const setOne = () => {
-    setTaskPriority(1)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const setTwo = () => {
-    setTaskPriority(2)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const setThree = () => {
-    setTaskPriority(3)
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const setFour = () => {
-    setTaskPriority(4)
+  const setPriority = (priority) => {
+    setTaskPriority(priority)
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
@@ -54,39 +39,35 @@ export const SetNewTaskPriorityPopper = ({
         }}
       >
         <ul>
-          <li className='set-schedule__popper--option' onClick={() => setOne()}>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setPriority(1)}
+          >
             <div className=''>
               <NextWeekIcon fill={'#25b84c'} />
             </div>
 
             <p className='set-new-task__schedule--name'>Low</p>
           </li>
-          <li className='set-schedule__popper--option' onClick={() => setTwo()}>
+          <li
+            className='set-schedule__popper--option'
+            onClick={() => setPriority(2)}
+          >
             <div className=''>
               <NextWeekIcon fill={'#5297ff'} />
             </div>
 
-            <p className='set-new-task__schedule--name'>Average</p>
+            <p className='set-new-task__schedule--name'>Medium</p>
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => setThree()}
+            onClick={() => setPriority(3)}
           >
             <div className=''>
               <NextWeekIcon fill={'#ff9a14'} />
             </div>
 
             <p className='set-new-task__schedule--name'>High</p>
-          </li>
-          <li
-            className='set-schedule__popper--option'
-            onClick={() => setFour()}
-          >
-            <div className=''>
-              <NextWeekIcon fill={'#ff7066'} />
-            </div>
-
-            <p className='set-new-task__schedule--name'>ASAP</p>
           </li>
         </ul>
       </div>

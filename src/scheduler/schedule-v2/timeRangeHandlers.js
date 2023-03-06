@@ -2,6 +2,8 @@ import { roundUp15Min, roundDown15Min } from 'handleMoment'
 import moment from 'moment'
 import { timeType } from 'enums'
 
+const MAX_NUM_CHUNKS = 8 // 2h
+
 /* helper function */
 /* returns time and time ranges for today (all immutable) */
 /* parameter: sleepTimeRange: string (HH:MM-HH:MM), workTimeRange: string (HH:MM-HH:MM), */
@@ -60,6 +62,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
   const nowRoundedImmutable = Object.freeze(roundUp15Min(now.clone()))
   const todayImmutable = Object.freeze(today)
   const dayRangeImmutable = Object.freeze(dayRange)
+  const sleepRangeImmutable = Object.freeze(sleepRange)
   const workRangeImmutable = Object.freeze(workRange)
 
   return {
@@ -67,6 +70,7 @@ export const getTodayTimeRanges = (sleepTimeRange, workTimeRange) => {
     today: todayImmutable,
     dayRange: dayRangeImmutable,
     workRange: workRangeImmutable,
+    sleepRange: sleepRangeImmutable,
   }
 }
 
@@ -77,7 +81,7 @@ export const getWeekTimeRanges = (
   workTimeRange,
   startingDay,
 ) => {
-  const { now, today, dayRange, workRange } = getTodayTimeRanges(
+  const { now, today, dayRange, workRange, sleepRange } = getTodayTimeRanges(
     sleepTimeRange,
     workTimeRange,
   )
@@ -109,15 +113,25 @@ export const getWeekTimeRanges = (
       workRange[1].clone().add(i, 'day'),
     ])
   }
+  const sleepRanges = []
+  for (let i = 0; i <= numDays; i++) {
+    sleepRanges.push([
+      sleepRange[0].clone().add(i, 'day'),
+      sleepRange[1].clone().add(i, 'day'),
+    ])
+  }
 
   const weekRangeImmutable = Object.freeze(weekRange)
   const dayRangesImmutable = Object.freeze(dayRanges)
   const workRangesImmutable = Object.freeze(workRanges)
+  const sleepRangesImmutable = Object.freeze(sleepRanges)
+
   return {
     now: now,
     weekRange: weekRangeImmutable,
     dayRanges: dayRangesImmutable,
     workRanges: workRangesImmutable,
+    sleepRanges: sleepRangesImmutable,
   }
 }
 
@@ -134,6 +148,47 @@ export const getBufferRange = (timeRange) => {
     .add(2, 'hour')
     .add(15, 'minute')
   return [timeMin, timeMax]
+}
+
+/***
+ * requirements:
+ * events must not be all day events (must have start.dateTime and end.dateTime)
+ * startBufferAmount and endBufferAmount must be in minutes
+ * ***/
+export const getEventIdToAllocatedTimeLengthMap = (events, now) => {
+  const getEventIdToTimeLengthMap = {}
+  for (const event of events) {
+    let timeLength = 0
+    if (
+      moment(event.start.dateTime).isBefore(now) &&
+      moment(event.end.dateTime).isAfter(now)
+    ) {
+      timeLength = now.diff(moment(event.start.dateTime), 'minute')
+    } else if (moment(event.end.dateTime).isSameOrBefore(now)) {
+      timeLength = moment(event.end.dateTime).diff(
+        moment(event.start.dateTime),
+        'minute',
+      )
+    }
+    getEventIdToTimeLengthMap[event.id] = timeLength
+  }
+  return getEventIdToTimeLengthMap
+}
+
+/***
+ * requirements:
+ * workRanges: [moment.Moment, moment.Moment][]
+ * workDays: boolean[] (len: 7)
+ * ***/
+export const getFilteredWorkRanges = (workRanges, workDays) => {
+  const filteredWorkRanges = []
+  for (const workRange of workRanges) {
+    const day = workRange[0].day()
+    if (workDays[day]) {
+      filteredWorkRanges.push([workRange[0].clone(), workRange[1].clone()])
+    }
+  }
+  return filteredWorkRanges
 }
 
 /***
@@ -162,6 +217,27 @@ export const getBufferRangeForEvents = (
       start: bufferStartEvent,
       end: bufferEndEvent,
     })
+  }
+  return bufferRanges
+}
+
+export const getBufferRangeForTimeRangesExclusive = (
+  timeRanges,
+  startBufferAmount,
+  endBufferAmount,
+) => {
+  const bufferRanges = []
+  for (const timeRange of timeRanges) {
+    const bufferStart = timeRange[0]
+      .clone()
+      .subtract(startBufferAmount, 'minute')
+    const bufferEnd = timeRange[1].clone().add(endBufferAmount, 'minute')
+    bufferRanges.push({
+      id: null,
+      start: bufferStart,
+      end: timeRange[0].clone(),
+    })
+    bufferRanges.push({ id: null, start: timeRange[1].clone(), end: bufferEnd })
   }
   return bufferRanges
 }
@@ -279,7 +355,7 @@ export const getAvailableTimeRanges = (timesWithInfo) => {
  * timeEndDay: moment object
  * currently only returns available time ranges, can be expanded in future to return blocked time ranges as well
  * ***/
-export const getAvailableTimeRangesSingleDay = async (
+export const getAvailableTimeRangesSingleDay = (
   events,
   timeStartDay,
   timeEndDay,
@@ -341,7 +417,6 @@ const sliceIntoSubarr = (arr, size) => {
  * ***/
 export const groupChunkRangesIntoBlocks = (
   chunkRanges,
-  maxNumChunks,
   workTimeStart,
   workTimeEnd,
   hasWorkTime,
@@ -393,11 +468,11 @@ export const groupChunkRangesIntoBlocks = (
   const workBlocksSliced = []
   const personalBlocksSliced = []
   for (const block of workBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     workBlocksSliced.push(...slicedBlock)
   }
   for (const block of personalBlocks) {
-    const slicedBlock = sliceIntoSubarr(block, maxNumChunks)
+    const slicedBlock = sliceIntoSubarr(block, MAX_NUM_CHUNKS)
     personalBlocksSliced.push(...slicedBlock)
   }
   return {

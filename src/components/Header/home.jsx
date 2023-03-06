@@ -1,4 +1,3 @@
-import { ReactComponent as HomeIcon } from 'assets/svg/home.svg'
 import { useProjects, useSelectedProject } from 'hooks'
 import { Link, useParams } from 'react-router-dom'
 export const HomeButton = () => {
@@ -10,16 +9,17 @@ export const HomeButton = () => {
   )
   return (
     <Link
-      to='/app/Checklist'
+      to='/app/Calendar'
       className='home_button header-clickable'
       onClick={() =>
         setSelectedProject({
-          selectedProjectName: 'Checklist',
+          selectedProjectName: 'Calendar',
           defaultProject: true,
         })
       }
+      style={{ marginBottom: '5px', marginLeft: '10px' }}
     >
-      <HomeIcon strokeWidth='.1' />
+      <h2>Algo</h2>
     </Link>
   )
 }

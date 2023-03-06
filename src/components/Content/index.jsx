@@ -1,15 +1,15 @@
-import { Board } from 'components/BoardView/index'
+import { Board } from 'components/BoardView'
 import { TaskList } from 'components/ListView'
 import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
-import { Calendar } from 'components/Calendar'
+import { FullCalendar } from 'components/FullCalendar'
+import { Schedule } from 'components/Schedule'
 import './styles/content.scss'
 import './styles/light.scss'
-import ScrollContainer from "react-indiana-drag-scroll";
-import  React  from 'react';
+import React from 'react'
 
 export const Content = () => {
-  const { projectId, defaultGroup } = useParams()
+  const { defaultGroup, projectId } = useParams()
   const projectInfo = useSelectedProjectInfo(projectId)
   const currentView = projectInfo && projectInfo[0]?.projectIsList
 
@@ -22,20 +22,22 @@ export const Content = () => {
       ) {
         return <TaskList />
       } else if (defaultGroup === 'Calendar') {
-        return <Calendar />
+        return <FullCalendar />
+      } else if (defaultGroup === 'Schedule') { // remove later
+         return <Schedule />
       } else {
         return null
       }
-    } else {
+    } else if (projectId) {
       return currentView ? <TaskList /> : <Board />
+    } else {
+      return null
     }
   }
 
   return (
     <div className='content'>
-      <ScrollContainer className="container">
-       <div className='project__wrapper'>{getProject()}</div>
-       </ScrollContainer>
+      <div className='project__wrapper'>{getProject()}</div>
     </div>
   )
 }

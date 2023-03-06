@@ -1,26 +1,19 @@
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { useChecklist, useCalendarInfo } from 'hooks'
-import { updateUserInfo } from 'handleUserInfo'
+import { updateUserInfo } from '../../backend/handleUserInfo'
+import { updateProjectColumns } from '../../backend/handleUserProjects'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
   useColumnEditorContextValue,
 } from 'context'
-import {
-  collection,
-  deleteDoc,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
 import { useAuth } from 'hooks'
-import { db } from '_firebase'
 import {
-  getTaskDocsInProjectColumnNotCompleted,
+  columnTaskDelete,
+  taskDelete,
   getTask,
-} from '../../handleUserTasks'
+} from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
 import { useParams } from 'react-router-dom'
@@ -29,8 +22,7 @@ import moment from 'moment'
 import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
 import { timeZone } from 'handleCalendars'
-import { inputTaskAction } from '../../handleAnalytics'
-import { inputExpandTasks } from '../../handleAnalytics'
+import { updateTask } from 'handleUserTasks'
 
 export const MenuList = ({
   closeOverlay,
@@ -62,68 +54,22 @@ export const MenuList = ({
 
   const handleColumnDelete = async () => {
     const newColumns = columns.filter((column) => column.id !== columnId)
-
-    try {
-      const projectQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/projects`),
-        where('projectId', '==', projectId),
-      )
-      const projectDocs = await getDocs(projectQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await updateDoc(projectDoc.ref, {
-          columns: newColumns,
-        })
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    await updateProjectColumns(currentUser.id, projectId, newColumns)
   }
 
   const handleColumnTasksDelete = async () => {
-    try {
-      const taskQuery = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('projectId', '==', projectId),
-        where('boardStatus', '==', columnId),
-      )
-      const taskDocs = await getDocs(taskQuery)
-      taskDocs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
-      })
-    } catch (error) {
-      console.log(error)
-    }
+    // column task delete
+    await columnTaskDelete(currentUser && currentUser.id, projectId, columnId)
   }
 
   const handleTaskDelete = async () => {
-    try {
-      const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
-        currentUser && currentUser.id,
-        projectId,
-        columnId,
-      )
-
-      columnTaskDocs.forEach(async (taskDoc) => {
-        if (taskDoc.data().index > taskIndex) {
-          await updateDoc(taskDoc.ref, {
-            index: taskDoc.data().index - 1,
-          })
-        }
-      })
-      // UPDATE TASK INDEX HERE (COMPLETED)
-      const q = await query(
-        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
-        where('taskId', '==', taskId),
-      )
-      const taskDocs = await getDocs(q)
-      taskDocs.forEach(async (taskDoc) => {
-        await deleteDoc(taskDoc.ref)
-      })
-
-    inputTaskAction(currentUser.id, "DELETE")
-    } catch (error) {
-      console.log(error)
-    }
+    await taskDelete(
+      currentUser && currentUser.id,
+      projectId,
+      columnId,
+      taskIndex,
+      taskId,
+    )
   }
 
   const deleteHandler = async (e) => {
@@ -132,7 +78,12 @@ export const MenuList = ({
     if (targetIsProject) {
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
-      await handleColumnDelete()
+      const newColumns = columns.filter((column) => column.id !== columnId)
+      await updateProjectColumns(
+        currentUser && currentUser.id,
+        projectId,
+        newColumns,
+      )
       await handleColumnTasksDelete()
     } else {
       await handleTaskDelete()
@@ -164,7 +115,7 @@ export const MenuList = ({
         checklist: newChecklist,
       })
 
-      inputExpandTasks(currentUser.id, "ADD_CHECKLIST")
+      //inputExpandTasks(currentUser.id, "ADD_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -179,7 +130,7 @@ export const MenuList = ({
         checklist: newChecklist,
       })
 
-      inputExpandTasks(currentUser.id, "REMOVE_CHECKLIST")
+      //inputExpandTasks(currentUser.id, "REMOVE_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -193,7 +144,7 @@ export const MenuList = ({
     const startTime = roundUp15Min(now)
     const endTime = moment(startTime).add(duration, 'minutes')
     if (!loading) {
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         startTime.toISOString(),
         endTime.toISOString(),
@@ -202,8 +153,14 @@ export const MenuList = ({
         task.description,
         getTaskColorId(task.priority),
       )
+      // update task's eventId
+      const updatedEventIds = Array.from(task.eventIds)
+      updatedEventIds.push(newEvent.id)
+      await updateTask(currentUser && currentUser.id, taskId, {
+        eventIds: updatedEventIds,
+      })
     }
-    inputExpandTasks(currentUser.id, "DO_NOW_CALENDAR")
+    //inputExpandTasks(currentUser.id, "DO_NOW_CALENDAR")
   }
 
   const computeXPosition = () => {

@@ -29,6 +29,12 @@
     margin: 0 auto;
     padding-bottom: 10rem;
   }
+  &-list__wrapper-page {
+    padding-left: 55px;
+    padding-right: 55px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
   &__checkbox {
     width: 18px;
     border: grey 1px solid;

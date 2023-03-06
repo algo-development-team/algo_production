@@ -10,11 +10,11 @@ import {
   getTimesWithInfoSorted,
   getAvailableTimeRanges,
 } from './timeRanges'
-import { getUserInfo, updateUserInfo } from 'handleUserInfo'
+import { getUserInfo, updateUserInfo } from 'backend/handleUserInfo'
 import moment from 'moment'
-import { timeType } from 'enums'
-import { getAllUserTasks } from 'handleUserTasks'
-import { getAllUserProjects } from 'handleUserProjects'
+import { timeType } from '../../enums'
+import { getAllUserTasks } from '../../backend/handleUserTasks'
+import { getAllUserProjects } from '../../backend/handleUserProjects'
 
 const MAX_NUM_CHUNKS = 8 // 2h
 const PRIORITY_RANGE = Object.freeze([1, 3])
@@ -423,7 +423,7 @@ const changeAlgoCalendarSchedule = async (
     event.summary = timeBlock.name
     event.description = timeBlock.description
     event.colorId = getColorId(timeBlock.preference)
-    const item = await updateEvent(calendarId, event.id, event)
+    const newEvent = await updateEvent(calendarId, event.id, event)
 
     // console.log('updated item:', item?.id) // DEBUGGING
   }
@@ -438,7 +438,7 @@ const changeAlgoCalendarSchedule = async (
   if (events.length < timeBlocks.length) {
     for (let i = events.length; i < timeBlocks.length; i++) {
       const timeBlock = timeBlocks[i]
-      const item = await insertEvent(
+      const newEvent = await insertEvent(
         calendarId,
         timeBlock.start.toISOString(),
         timeBlock.end.toISOString(),
@@ -453,10 +453,6 @@ const changeAlgoCalendarSchedule = async (
   }
 }
 
-/***
- * requirements:
- * tasks: task[] (from firestore)
- * ***/
 const getEventsInRange = (events, start, end) => {
   const between = []
   const startOuter = []

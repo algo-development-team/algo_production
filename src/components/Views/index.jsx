@@ -9,7 +9,7 @@ import { PrivacyPolicyPage } from 'pages/privacy-policy-page'
 import { Route, Routes } from 'react-router-dom'
 import { TermsOfServicePage } from 'pages/terms-of-service'
 import { PricingPlanPage } from 'pages/pricing-plan'
-import { PaymentPage } from 'components/PaymentLayout/payment-plan'
+import { PaymentPage } from 'components/Payment'
 
 export const Views = () => {
   return (
@@ -23,12 +23,10 @@ export const Views = () => {
         </Route>
 
         <Route element={<DashBoardRoutes />}>
-          <Route exact path={'/payment'} element={<PaymentPage />}/>
+          <Route exact path={'/payment'} element={<PaymentPage />} />
+
           <Route exact path={'/app/*'} element={<Layout />}>
-            <Route
-              path={':defaultGroup'}
-              element={<Content isDefaultGroup />}
-            />
+            <Route path={':defaultGroup'} element={<Content />} />
           </Route>
 
           <Route path={'/project/*'} element={<Layout />}>
