@@ -3,10 +3,14 @@ import { colorIdToHexCode } from 'constants'
 import { useState } from 'react'
 import { cropLabel } from 'handleLabel'
 import featherIcon from 'assets/svg/feather-sprite.svg'
+import { useUnselectedCalendarIds, useAuth } from 'hooks'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 
 export const CalendarList = () => {
   const { googleCalendars } = useGoogleValue()
-  const [unselectedCalendarIds, setUnselectedCalendarIds] = useState([])
+  const { currentUser } = useAuth()
+  const { unselectedCalendarIds, setUnselectedCalendarIds } =
+    useUnselectedCalendarIds()
   const [showCalendarList, setShowCalendarList] = useState(true)
 
   return (
@@ -54,19 +58,20 @@ export const CalendarList = () => {
                 accentColor: colorIdToHexCode[googleCalendar.colorId],
                 marginRight: '8px',
               }}
-              onClick={() => {
+              onClick={async () => {
+                let updatedUnselectedCalendarIds = [...unselectedCalendarIds]
                 if (unselectedCalendarIds.includes(googleCalendar.id)) {
-                  setUnselectedCalendarIds((prevUnselectedCalendarIds) =>
-                    prevUnselectedCalendarIds.filter(
+                  updatedUnselectedCalendarIds =
+                    updatedUnselectedCalendarIds.filter(
                       (id) => id !== googleCalendar.id,
-                    ),
-                  )
+                    )
                 } else {
-                  setUnselectedCalendarIds((prevUnselectedCalendarIds) => [
-                    ...prevUnselectedCalendarIds,
-                    googleCalendar.id,
-                  ])
+                  updatedUnselectedCalendarIds.push(googleCalendar.id)
                 }
+                setUnselectedCalendarIds(updatedUnselectedCalendarIds)
+                await updateUserInfo(currentUser && currentUser.id, {
+                  unselectedCalendarIds: updatedUnselectedCalendarIds,
+                })
               }}
             />
             <label for={googleCalendar.calendarId}>
