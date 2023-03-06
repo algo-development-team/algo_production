@@ -39,6 +39,52 @@ export const Sidebar = ( props ) => {
           </button>
           
           <SearchBar/>
+
+          {/*Add Task Function*/}
+          <div>
+              {AddTasks && !FilterTasks &&(
+                <>
+                  <button
+                    className=' action add-task__actions--add-task'
+                    onClick={() => {
+                      setAddTasks(false)
+                    }}
+                  >
+                    Add
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAddTasks(false)
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+           </div>
+
+          {/*Filter Task Function*/}
+          <div>
+              {FilterTasks && !AddTasks && (
+                <>
+                  <button
+                    className=' action add-task__actions--add-task'
+                    onClick={() => {
+                      setFilterTasks(false)
+                    }}
+                  >
+                    Link
+                  </button>
+                  <button
+                    onClick={() => {
+                      setFilterTasks(false)
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
         </div>
         <CalendarList />
       </aside>
