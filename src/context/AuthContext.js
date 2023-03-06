@@ -17,6 +17,7 @@ import {
 } from '@react-oauth/google'
 import axios from 'axios'
 
+
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
@@ -121,7 +122,7 @@ export const AuthProvider = ({ children }) => {
         setCurrentUser(userData)
         localStorage.setItem('userAuth', JSON.stringify(userData))
 
-        inputSignIn(user.uid, "SIGN-IN")
+        //inputSignIn(user.uid, "SIGN-IN")
 
         navigate('/app/Checklist')
       })
