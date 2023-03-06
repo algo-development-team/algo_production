@@ -114,6 +114,8 @@ export const MenuList = ({
       await updateUserInfo(currentUser && currentUser.id, {
         checklist: newChecklist,
       })
+
+      //inputExpandTasks(currentUser.id, "ADD_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -127,6 +129,8 @@ export const MenuList = ({
       await updateUserInfo(currentUser && currentUser.id, {
         checklist: newChecklist,
       })
+
+      //inputExpandTasks(currentUser.id, "REMOVE_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -156,6 +160,7 @@ export const MenuList = ({
         eventIds: updatedEventIds,
       })
     }
+    //inputExpandTasks(currentUser.id, "DO_NOW_CALENDAR")
   }
 
   const computeXPosition = () => {

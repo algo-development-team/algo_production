@@ -1,6 +1,7 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useThemeContextValue } from 'context'
 import { useAuth } from 'hooks'
+import { inputSignIn } from '../../handleAnalytics'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -15,7 +16,7 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
     event.stopPropagation()
   }
 
-  const handleLogout = (event) => {
+  const handleLogout = async (event) => {
     event.preventDefault()
     signoutGoogle()
   }
@@ -78,7 +79,7 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
               <use href={`${featherIcon}#log-out`}></use>
             </svg>
 
-            <div className='user-options__item--content'>Log Out</div>
+            <div className='user-options__item--content' >Log Out</div>
           </li>
         </ul>
       </div>

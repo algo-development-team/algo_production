@@ -3,11 +3,15 @@ import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
 import { CalendarList } from './calendar-list'
 import { SearchField } from './search-field'
+import { useState } from 'react'
+import { Taskbar } from './task-bar'
 import './styles/light.scss'
 import './styles/main.scss'
 
 export const Sidebar = (props) => {
   const { defaultGroup } = useParams()
+  const [AddTasks, setAddTasks] = useState(false)
+  const [FilterTasks, setFilterTasks] = useState(false)
 
   if (defaultGroup === 'Calendar') {
     return (
@@ -18,10 +22,19 @@ export const Sidebar = (props) => {
           style={{ paddingLeft: '18px', paddingRight: '18px' }}
         >
           <div>
-            <div style={{ marginBottom: '10px' }}>
-              <img src='xxx' alt='plus icon' />
-              <img src='xxx' alt='filter icon' style={{ marginLeft: '20px' }} />
-            </div>
+            <button style={{ display: 'flex' }}>
+              <Taskbar
+                type='ADD_TASKS'
+                value={AddTasks}
+                setValue={setAddTasks}
+              />
+              <Taskbar
+                type='FILTER_TASKS'
+                value={FilterTasks}
+                setValue={setFilterTasks}
+              />
+            </button>
+
             <SearchField />
           </div>
           <CalendarList />

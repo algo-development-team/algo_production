@@ -8,10 +8,6 @@ export const SearchField = () => {
   const { externalEventsRef } = useExternalEventsContextValue()
   const { tasks } = useTasks()
 
-  useEffect(() => {
-    console.log('tasks:', tasks) // TESTING
-  }, [tasks])
-
   const searchTasks = (searchText, tasks) => {
     if (!searchText) {
       return tasks

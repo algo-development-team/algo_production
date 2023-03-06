@@ -24,8 +24,6 @@ export const useTasks = () => {
   useEffect(() => {
     setLoading(true)
 
-    console.log('this is running...')
-
     let q = null
     if (selectedProject === 'Calendar') {
       q = query(
