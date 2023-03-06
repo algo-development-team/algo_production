@@ -30,6 +30,7 @@ import { roundUp15Min } from 'handleMoment'
 import { getTaskColorId } from 'handleColorId'
 import { timeZone } from 'handleCalendars'
 import { inputTaskAction } from '../../handleAnalytics'
+import { inputExpandTasks } from '../../handleAnalytics'
 
 export const MenuList = ({
   closeOverlay,
@@ -162,6 +163,8 @@ export const MenuList = ({
       await updateUserInfo(currentUser && currentUser.id, {
         checklist: newChecklist,
       })
+
+      inputExpandTasks(currentUser.id, "ADD_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -175,6 +178,8 @@ export const MenuList = ({
       await updateUserInfo(currentUser && currentUser.id, {
         checklist: newChecklist,
       })
+
+      inputExpandTasks(currentUser.id, "REMOVE_CHECKLIST")
     } catch (error) {
       console.log(error)
     }
@@ -198,6 +203,7 @@ export const MenuList = ({
         getTaskColorId(task.priority),
       )
     }
+    inputExpandTasks(currentUser.id, "DO_NOW_CALENDAR")
   }
 
   const computeXPosition = () => {

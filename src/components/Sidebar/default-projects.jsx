@@ -5,8 +5,12 @@ import { TodayIcon } from 'components/today-icon'
 import { useThemeContextValue } from 'context'
 import { NavLink } from 'react-router-dom'
 import { ProjectTasksCounts } from './project-tasks-count'
+import { inputIconSelection } from '../../handleAnalytics'
+import { useAuth } from 'hooks'
+
 export const DefaultProjects = () => {
   const { isLight } = useThemeContextValue()
+  const { currentUser } = useAuth()
 
   return (
     <div className='project-group__wrapper'>
@@ -15,6 +19,7 @@ export const DefaultProjects = () => {
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }
+        onClick={() => inputIconSelection(currentUser && currentUser.id, "CHECKLIST")}
       >
         <div className='project-group__group'>
           <div className='project-group__icon'>
@@ -31,6 +36,7 @@ export const DefaultProjects = () => {
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }
+        onClick={() => inputIconSelection(currentUser && currentUser.id, "CALENDAR")}
       >
         <div className='project-group__group'>
           <div className='project-group__icon'>
@@ -45,15 +51,14 @@ export const DefaultProjects = () => {
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }
+        onClick={() => inputIconSelection(currentUser && currentUser.id, "INBOX")}
       >
         <div className='project-group__group'>
           <div className='project-group__icon'>
             <InboxIcon fill={`${isLight ? '#246fe0' : '#5297ff'}`} />
           </div>
-
           <div className='project-group__name'>Inbox</div>
         </div>
-
         <ProjectTasksCounts isDefaultGroup name={'Inbox'} />
       </NavLink>
       <NavLink
@@ -61,6 +66,7 @@ export const DefaultProjects = () => {
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }
+        onClick={() => inputIconSelection(currentUser && currentUser.id, "SCHEDULED")}
       >
         <div className='project-group__group'>
           <div className='project-group__icon'>

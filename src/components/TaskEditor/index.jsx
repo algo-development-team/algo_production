@@ -32,6 +32,7 @@ import { updateUserInfo } from 'handleUserInfo'
 import { useAutosizeTextArea, useChecklist } from 'hooks'
 import useScreenType from 'react-screentype-hook'
 import { inputTaskAction } from '../../handleAnalytics'
+import { Editor } from '@tinymce/tinymce-react';
 
 export const TaskEditor = ({
   column,
@@ -71,6 +72,7 @@ export const TaskEditor = ({
   const { checklist } = useChecklist()
   const screenType = useScreenType()
   const textAreaRef = useRef(null)
+  const editorRef = useRef();
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
@@ -421,8 +423,14 @@ export const TaskEditor = ({
               type='text'
               placeholder={'Some Title...'}
             />
-
-            <textarea
+            
+            <Editor 
+             //className='add-task__input Editor'
+              onInit={ (evt, editor) => editorRef.current = editor}
+              type='text'
+              placeholder='Some description...'
+            />
+            {/* <textarea
               className='add-task__input textarea'
               value={taskDescription}
               onChange={(e) => setTaskDescription(e.target.value)}
@@ -430,7 +438,16 @@ export const TaskEditor = ({
               rows={1}
               type='text'
               placeholder='Some description...'
-            />
+            /> */}
+            {/* <textarea
+              className='add-task__input textarea'
+              value={taskDescription}
+              onChange={(e) => setTaskDescription(e.target.value)}
+              ref={textAreaRef}
+              rows={1}
+              type='text'
+              placeholder='Some description...'
+            /> */}
             <div
               className='add-task__attributes'
               style={{ marginBottom: '10px' }}

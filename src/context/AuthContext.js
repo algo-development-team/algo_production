@@ -15,6 +15,9 @@ import {
   getDefaultUserInfo,
   initializeUserInfo,
 } from 'handleUserInfo'
+import { inputSignIn } from '../handleAnalytics'
+
+
 
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
@@ -86,6 +89,9 @@ export const AuthProvider = ({ children }) => {
         }
         setCurrentUser(userData)
         localStorage.setItem('userAuth', JSON.stringify(userData))
+
+        inputSignIn(user.uid, "SIGN-IN")
+
         navigate('/app/Checklist')
       })
       .catch((error) => {
