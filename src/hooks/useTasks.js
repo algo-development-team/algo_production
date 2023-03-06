@@ -25,7 +25,12 @@ export const useTasks = () => {
     setLoading(true)
 
     let q = null
-    if (selectedProject && !collatedTasksExist(selectedProject)) {
+    if (selectedProject === 'Calendar') {
+      q = query(
+        collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
+        orderBy('index', 'asc'),
+      )
+    } else if (selectedProject && !collatedTasksExist(selectedProject)) {
       q = query(
         collection(db, 'user', `${currentUser && currentUser.id}/tasks`),
         where('projectId', '==', selectedProject),
