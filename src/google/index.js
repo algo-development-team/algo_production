@@ -40,3 +40,36 @@ export const getUserGoogleCalendarList = async (userId) => {
     return null
   }
 }
+
+export const getUserGoogleCalendarEvents = async (userId, calendarIds) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    console.log('accessToken:', accessToken) // TESTING
+
+    if (!accessToken) return null
+
+    const itemsList = []
+
+    for (let i = 0; i < calendarIds.length; i++) {
+      const request = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarIds[i]}/events`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      )
+      const data = await request.json()
+
+      console.log(`data.items ${i}:`, data.items) // TESTING
+
+      itemsList.push(data.items)
+    }
+
+    return itemsList
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}

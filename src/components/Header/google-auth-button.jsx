@@ -15,9 +15,12 @@ export const GoogleAuthButton = () => {
         <>
           <button onClick={() => logoutGoogle()}>Log out 🚀 </button>
           <button
-            onClick={() =>
-              console.log(getUserGoogleCalendarList(currentUser.id))
-            }
+            onClick={async () => {
+              const googleCalendarList = await getUserGoogleCalendarList(
+                currentUser.id,
+              )
+              console.log('googleCalendarList:', googleCalendarList) // TESTING
+            }}
           >
             Get All Calendars 🚀{' '}
           </button>

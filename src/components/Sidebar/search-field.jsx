@@ -123,6 +123,7 @@ export const SearchField = ({addValue, setAddValue, filterValue, setFilterValue}
           return (
             <div
               className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
+              data-event={JSON.stringify(task)}
               style={{
                 width: '100%',
                 height: `${task.timeLength}px`,
