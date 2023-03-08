@@ -13,9 +13,9 @@ export const Taskbar = ({ type, value, setValue }) => {
 
     const getTaskbarText = (type) => {
         if (type === 'ADD_TASKS') {
-        return 'Add Tasks'
+        return 'Add'
         } else if (type === 'FILTER_TASKS') {
-        return 'Filter Tasks'
+        return 'Filter'
         }
     }
 
@@ -41,7 +41,9 @@ export const Taskbar = ({ type, value, setValue }) => {
             className='set-Taskbar'
             onClick={() => callTaskbarHandlerFunction(type)}
             >
-                {getTaskbarIcon(type)}
+                <div style={{color:'white'}}>
+                    {getTaskbarIcon(type)}
+                </div>
                 {getTaskbarText(type)}
             </div>
         </>

@@ -1,30 +1,39 @@
-import { useState } from 'react'
 import { CustomProjects } from './custom-projects'
 import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
-import { useExternalEventsContextValue } from 'context'
-import { SearchBar } from './search-bar'
-import { Taskbar } from './task-bar'
 import { CalendarList } from './calendar-list'
+import { SearchField } from './search-field'
+import { useState, useEffect } from 'react'
+import { Taskbar } from './task-bar'
 import './styles/light.scss'
 import './styles/main.scss'
 
-
-export const Sidebar = ( props ) => {
+export const Sidebar = (props) => {
   const { defaultGroup } = useParams()
-  const { externalEventsRef } = useExternalEventsContextValue()
   const [AddTasks, setAddTasks] = useState(false)
   const [FilterTasks, setFilterTasks] = useState(false)
 
+  useEffect(() => {
+    if (FilterTasks) {
+      setAddTasks(false)
+    }
+  }, [FilterTasks])
+
+  useEffect(() => {
+    if (AddTasks) {
+      setFilterTasks(false)
+    }
+  }, [AddTasks])
+
   if (defaultGroup === 'Calendar') {
-    return (   
+    return (
       <>
        <div className='sidebar__overlay' onClick={props.onClick}></div>
       <aside
         className='sidebar'
         style={{ paddingLeft: '18px', paddingRight: '18px' }}
       >
-        <div ref={externalEventsRef}>
+        <div>
           <button style={{ display: 'flex' }}>
             <Taskbar
             type= 'ADD_TASKS'
@@ -38,53 +47,13 @@ export const Sidebar = ( props ) => {
             />
           </button>
           
-          <SearchBar/>
+          <SearchField
+            addValue= {AddTasks}
+            setAddValue={setAddTasks}
+            filterValue= {FilterTasks}
+            setFilterValue={setFilterTasks}
+          />
 
-          {/*Add Task Function*/}
-          <div>
-              {AddTasks && !FilterTasks &&(
-                <>
-                  <button
-                    className=' action add-task__actions--add-task'
-                    onClick={() => {
-                      setAddTasks(false)
-                    }}
-                  >
-                    Add
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAddTasks(false)
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-           </div>
-
-          {/*Filter Task Function*/}
-          <div>
-              {FilterTasks && !AddTasks && (
-                <>
-                  <button
-                    className=' action add-task__actions--add-task'
-                    onClick={() => {
-                      setFilterTasks(false)
-                    }}
-                  >
-                    Link
-                  </button>
-                  <button
-                    onClick={() => {
-                      setFilterTasks(false)
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </>
-              )}
-            </div>
         </div>
         <CalendarList />
       </aside>

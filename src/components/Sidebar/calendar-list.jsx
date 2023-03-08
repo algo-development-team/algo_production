@@ -26,7 +26,7 @@ export const CalendarList = () => {
         <div
           className='custom-project-group__icon'
           style={{
-            transform: `rotate(${showCalendarList ? 0 : 180}deg)`,
+            transform: `rotate(${showCalendarList ? 180 : 0}deg)`,
             cursor: 'pointer',
           }}
           onClick={() => setShowCalendarList(!showCalendarList)}
@@ -44,7 +44,7 @@ export const CalendarList = () => {
       </div>
       <div
         style={{
-          maxHeight: showCalendarList ? 0 : '140px',
+          maxHeight: showCalendarList ? '20vh' : 0,
           overflowY: 'scroll',
         }}
       >
