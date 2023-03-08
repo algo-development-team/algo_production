@@ -44,7 +44,7 @@ export const CalendarList = () => {
       </div>
       <div
         style={{
-          maxHeight: showCalendarList ? '140px' : 0,
+          maxHeight: showCalendarList ? '20vh' : 0,
           overflowY: 'scroll',
         }}
       >

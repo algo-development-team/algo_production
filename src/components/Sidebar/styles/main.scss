@@ -1,6 +1,7 @@
 @import 'scss/mixins.scss';
 .sidebar {
-  min-width: 248px;
+  //min-width: 248px;
+  width: 248px;
   height: 100vh;
   padding: 74px 3px 0 33px;
   background-color: #282828;
@@ -50,7 +51,7 @@
   width: 100px;
   box-shadow: 0 2px 5px #999;
   color: white;
-  background-color: rgb(80, 79, 79);
+  background-color: rgb(32, 31, 31);
   &:not(:last-child) {
     margin-right: 0.4rem;
   }
@@ -169,120 +170,29 @@
   }
 }
 
-.task-count {
-  color: #777;
-  font-size: 12px;
-  font-weight: 100;
-  width: 24px;
-  text-align: center;
-  &__red {
-    color: #ff7f74;
-  }
-}
-.custom-project {
-  display: flex;
-  flex-direction: row;
-  margin-left: 0px;
-  padding: 5px 12px 5px 7px;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  // &:hover {
-  //   background-color: #363636;
-  //   border-radius: 5px;
-  //   .menu__trigger {
-  //     opacity: 1;
-  //     padding: 0;
-  //   }
-  // }
+.taskbar {
+  margin: 0.4rem 0;
+  background-color: inherit;
 
-  &.active {
-    background-color: #363636;
-    border-radius: 5px;
-  }
-
-  &__info {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  &__icon {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 0.6rem;
-  }
-  &__info {
-    display: flex;
-    align-items: center;
-  }
-  &__dot {
-    width: 10px;
-    height: 10px;
-    background-color: #fefbfb;
-    border-radius: 50%;
-  }
-
-  &__name {
-    margin: 0.4rem 0;
-  }
-
-  &-group {
-    &__title-group {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      margin-top: 1rem;
-      margin-bottom: 0.4rem;
-      padding: 5px 12px 5px 7px;
-      cursor: pointer;
-      &:hover {
-        .custom-project-group__add-project {
-          opacity: 1;
-        }
-      }
-      @include respond(tab-port) {
-        .custom-project-group__add-project {
-          opacity: 1;
-        }
+  &__actions {
+    background-color: inherit;
+    button {
+      &:not(:last-child) {
+        margin-right: 0.4rem;
       }
     }
 
-    &__icon {
-      margin-right: 12px;
-      display: flex;
-      align-items: center;
+    &--add-task {
+      background-color: #58a9eb;
+      color: #feffff;
+      width: 60px;
+      margin-Right: 5px;
     }
-    &__name {
-      font-weight: 700;
-    }
-
-    &__wrapper {
-      margin-bottom: 1rem;
-    }
-    &__add-project {
-      margin-left: auto;
-      cursor: pointer;
-      opacity: 0;
-      display: flex;
-      place-items: center;
-      padding: 0.2rem;
-      background-color: unset;
-      svg {
-        stroke: #ddd;
-      }
-      &:hover {
-        background-color: #363636;
-      }
-      &--icon {
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-content: center;
-        border-radius: 2px;
-      }
+    &--cancel {
+      background-color: #f5f5f5;
+      border: 1px solid #555;
+      width: 60px;
+      margin-Bottom: 10px;
     }
   }
 }
