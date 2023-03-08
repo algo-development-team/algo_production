@@ -61,6 +61,8 @@ export const AuthProvider = ({ children }) => {
             // handle success
             const accessToken = await getValidToken(currentUser.id)
 
+            console.log('accessToken:', accessToken) // TESTING
+
             if (accessToken) {
               setIsUserGoogleAuthenticated(true)
               console.log('Login success')
