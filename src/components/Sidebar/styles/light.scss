@@ -20,8 +20,8 @@
 
 .light .set-Taskbar {
   border-color: #ccc;
-  color: black;
-  background-color: white;
+  background-color: inherit;
+  color:inherit
 }
 .light .set-Taskbar:active {
   background-color: rgb(205, 205, 205);
