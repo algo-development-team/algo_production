@@ -11,11 +11,6 @@ import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 
-/*
- * events cache
- * 2. use localstorge to store events, making it instantly appearing when reloading the page
- */
-
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -185,15 +180,3 @@ export const FullCalendar = () => {
     </div>
   )
 }
-
-/*
-events: {
-  googleCalendarId: currentUser.email, // replace with your calendar ID
-  className: 'gcal-event',
-  editable: true,
-  displayEventEnd: true,
-  color: '#378006',
-  textColor: '#fff',
-  borderColor: '#378006',
-}
-*/
