@@ -131,17 +131,17 @@ export const SearchField = ({addValue, setAddValue, filterValue, setFilterValue}
               }}
             >
               {task.timeLength < 60 ? (
-                <div className='fc-event-main'>
+                <div className='fc-event-main' style = {{marginLeft: '5px'}}>
                   <span style={{ marginRight: '10px' }}>{task.name}</span>
-                  <span>{displayHourMin(task.timeLength)}</span>
+                  <span id = "time-length">{displayHourMin(task.timeLength)}</span>
                 </div>
               ) : (
-                <>
+                <div style = {{marginLeft: '5px'}}>
                   <div className='fc-event-main'>{task.name}</div>
-                  <div className='fc-event-main'>
+                  <div className='fc-event-main' id = "time-length">
                     {displayHourMin(task.timeLength)}
                   </div>
-                </>
+                </div>
               )}
             </div>
           )

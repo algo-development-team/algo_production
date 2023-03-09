@@ -10,6 +10,7 @@ import { getUserGoogleCalendarEvents } from '../../google'
 import { useGoogleValue } from 'context'
 import { useAuth } from 'hooks'
 import moment from 'moment'
+import './calendar.scss'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
@@ -28,7 +29,6 @@ export const FullCalendar = () => {
         currentUser.id,
         googleCalendarIds,
       )
-      console.log('fetchedEvents:', fetchedEvents) // TESTING
     }
 
     if (currentUser && googleCalendars.length > 0) {
@@ -40,9 +40,11 @@ export const FullCalendar = () => {
     const externalEvents = new Draggable(externalEventsRef.current, {
       itemSelector: '.fc-event',
       eventData: function (eventEl) {
+        const draggedEvent = JSON.parse(eventEl.dataset.event)
         return {
           id: generatePushId(),
           title: eventEl.innerText,
+          duration: `00:${draggedEvent.timeLength}`,
         }
       },
     })
@@ -62,7 +64,10 @@ export const FullCalendar = () => {
       },
       editable: true,
       droppable: true,
+      // scrollTimeReset: false,
+      // scrollTime: null,
       selectable: true,
+      eventBorderColor: '#3788D8',
       initialView: 'timeGridWeek', // set the default view to timeGridWeek
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
