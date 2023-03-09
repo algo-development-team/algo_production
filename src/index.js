@@ -4,15 +4,12 @@ import './index.css'
 import App from './App'
 import { OverlayContextProvider } from './context/overlay-context'
 import { ThemeContextProvider } from './context/theme-context'
-import { ExternalEventsContextProvider } from './context/external-events-context'
 
 ReactDOM.render(
   <React.StrictMode>
     <ThemeContextProvider>
       <OverlayContextProvider>
-        <ExternalEventsContextProvider>
-          <App />
-        </ExternalEventsContextProvider>
+        <App />
       </OverlayContextProvider>
     </ThemeContextProvider>
   </React.StrictMode>,

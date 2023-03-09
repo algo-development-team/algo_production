@@ -1,17 +1,20 @@
-.fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link {
-    box-shadow: 0 0 0 0px var(--fc-page-bg-color) !important;
+.fc-timegrid-event-harness-inset .fc-timegrid-event,
+.fc-timegrid-event.fc-event-mirror,
+.fc-timegrid-more-link {
+  box-shadow: 0 0 0 0px var(--fc-page-bg-color) !important;
 }
-.fc-theme-standard td, .fc-theme-standard th {
-    border: 1px solid #0000003d;
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 1px solid #0000003d;
 }
 :root {
-    --fc-today-bg-color: rgba(66, 66, 66, 0);
+  --fc-today-bg-color: rgba(255, 255, 255, 0);
 }
 .fc-theme-standard .fc-scrollgrid {
-    border: 1px solid #92929271;
+  border: 1px solid #92929271;
 }
 .fc-v-event .fc-event-main {
-    color: var(--fc-event-text-color);
-    height: 100%;
-    margin-left: 5px;
+  color: var(--fc-event-text-color);
+  height: 100%;
+  margin-left: 5px;
 }
