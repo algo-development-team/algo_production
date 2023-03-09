@@ -6,29 +6,58 @@ import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
 import { generatePushId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
-import { getUserGoogleCalendarEvents } from '../../google'
+import { getUserGoogleCalendarsEvents } from '../../google'
 import { useGoogleValue } from 'context'
-import { useAuth } from 'hooks'
+import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
+import { connectFirestoreEmulator } from 'firebase/firestore'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
-  const [events, setEvents] = useState([])
+  const [calendarsEvents, setCalendarsEvents] = useState({})
   const [currentTime, setCurrentTime] = useState(new Date())
   const { googleCalendars } = useGoogleValue()
   const { currentUser } = useAuth()
+  const { unselectedCalendarIds } = useUnselectedCalendarIds()
+
+  const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
+    let events = []
+    for (const key in mixedCalendarsEvents) {
+      if (!unselectedCalendarIds.includes(key)) {
+        events = events.concat(mixedCalendarsEvents[key])
+      }
+    }
+    return events
+  }
 
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
       )
-      const fetchedEvents = await getUserGoogleCalendarEvents(
+      const fetchedCalendarsEvents = await getUserGoogleCalendarsEvents(
         currentUser.id,
         googleCalendarIds,
       )
-      console.log('fetchedEvents:', fetchedEvents) // TESTING
+
+      console.log('fetchedCalendarsEvents:', fetchedCalendarsEvents) // TESTING
+
+      const calendarsEventsData = {}
+      calendarsEventsData.custom = []
+      for (const key in fetchedCalendarsEvents) {
+        const eventsData = fetchedCalendarsEvents[key].map((event) => {
+          return {
+            id: event.id,
+            title: event.summary,
+            start: event.start?.dateTime || event.start?.date,
+            end: event.end?.dateTime || event.end?.date,
+            url: event.htmlLink,
+          }
+        })
+        calendarsEventsData[key] = eventsData
+      }
+      setCalendarsEvents(calendarsEventsData)
     }
 
     if (currentUser && googleCalendars.length > 0) {
@@ -78,13 +107,21 @@ export const FullCalendar = () => {
             .add(draggedEvent.timeLength, 'minutes')
             .toDate(),
         }
-        setEvents([...events, newEvent])
+        setCalendarsEvents({
+          ...calendarsEvents,
+          custom: [...calendarsEvents.custom, newEvent],
+        })
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault()
         if (window.confirm('Are you sure you want to delete this event?')) {
           // remove from state
-          setEvents(events.filter((event) => event.id !== info.event.id))
+          setCalendarsEvents({
+            ...calendarsEvents,
+            custom: calendarsEvents.custom.filter(
+              (event) => event.id !== info.event.id,
+            ),
+          })
           // remove from calendar
           info.event.remove()
         }
@@ -97,17 +134,12 @@ export const FullCalendar = () => {
           end: info.endStr,
         }
 
-        setEvents([...events, newEvent])
+        setCalendarsEvents({
+          ...calendarsEvents,
+          custom: [...calendarsEvents.custom, newEvent],
+        })
       },
-      events: events,
-      eventSources: googleCalendars.map((googleCalendar) => {
-        return {
-          googleCalendarId: googleCalendar.id,
-          className: 'gcal-event',
-          editable: true,
-          displayEventEnd: true,
-        }
-      }),
+      events: getSelectedCalendarsEvents(calendarsEvents),
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
     })
@@ -119,19 +151,18 @@ export const FullCalendar = () => {
       setCurrentTime(new Date())
     }, 5 * 60 * 1000) // 5 minutes in milliseconds
 
-    // Refresh the events every 5 minutes
-    setInterval(() => {
-      calendar.getEventSources().forEach((eventSource) => {
-        eventSource.refetch()
-      })
-    }, 5 * 60 * 1000)
-
     return () => {
       calendar.destroy()
       externalEvents.destroy()
       clearInterval(intervalId)
     }
-  }, [events, externalEventsRef, currentTime, googleCalendars])
+  }, [
+    calendarsEvents,
+    unselectedCalendarIds,
+    externalEventsRef,
+    currentTime,
+    googleCalendars,
+  ])
 
   return (
     <div>

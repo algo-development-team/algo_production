@@ -41,7 +41,7 @@ export const getUserGoogleCalendarList = async (userId) => {
   }
 }
 
-export const getUserGoogleCalendarEvents = async (userId, calendarIds) => {
+export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
   try {
     const accessToken = await getValidToken(userId)
 
@@ -49,25 +49,34 @@ export const getUserGoogleCalendarEvents = async (userId, calendarIds) => {
 
     if (!accessToken) return null
 
-    const itemsList = []
+    const calendarsItems = {}
 
     for (let i = 0; i < calendarIds.length; i++) {
-      const request = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/${calendarIds[i]}/events`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
+      let nextPageToken = ''
+      let items = []
+
+      do {
+        // set maxResults to a high number to fetch all events
+        const request = await fetch(
+          `https://www.googleapis.com/calendar/v3/calendars/${calendarIds[i]}/events?maxResults=2500&pageToken=${nextPageToken}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
           },
-        },
-      )
-      const data = await request.json()
+        )
+        const data = await request.json()
 
-      console.log(`data.items ${i}:`, data.items) // TESTING
+        console.log(`data.items ${i}:`, data.items) // TESTING
 
-      itemsList.push(data.items)
+        items = items.concat(data.items)
+        nextPageToken = data.nextPageToken || ''
+      } while (nextPageToken)
+
+      calendarsItems[calendarIds[i]] = items
     }
 
-    return itemsList
+    return calendarsItems
   } catch (error) {
     console.log(error)
     return null
