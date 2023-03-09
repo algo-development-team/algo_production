@@ -9,6 +9,8 @@ import {
 import { BrowserRouter as Router } from 'react-router-dom'
 import { Views } from 'components/Views'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { ExternalEventsContextProvider } from './context/external-events-context'
+import { CalendarsEventsContextProvider } from './context/calendars-events-context'
 
 function App() {
   return (
@@ -17,7 +19,11 @@ function App() {
         <AuthProvider>
           <SignInStatusContextProvider>
             <GoogleContextProvider>
-              <Views />
+              <ExternalEventsContextProvider>
+                <CalendarsEventsContextProvider>
+                  <Views />
+                </CalendarsEventsContextProvider>
+              </ExternalEventsContextProvider>
             </GoogleContextProvider>
           </SignInStatusContextProvider>
         </AuthProvider>

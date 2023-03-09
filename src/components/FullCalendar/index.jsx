@@ -7,19 +7,23 @@ import { useExternalEventsContextValue } from 'context'
 import { generatePushId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import { getUserGoogleCalendarsEvents } from '../../google'
-import { useGoogleValue } from 'context'
+import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
-import { connectFirestoreEmulator } from 'firebase/firestore'
+
+/*
+ * events cache
+ * 2. use localstorge to store events, making it instantly appearing when reloading the page
+ */
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
-  const [calendarsEvents, setCalendarsEvents] = useState({})
   const [currentTime, setCurrentTime] = useState(new Date())
   const { googleCalendars } = useGoogleValue()
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
+  const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
@@ -33,6 +37,13 @@ export const FullCalendar = () => {
 
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
+      const cachedCalendarsEvents = localStorage.getItem(
+        'algo_calendars_events',
+      )
+      if (cachedCalendarsEvents) {
+        setCalendarsEvents(JSON.parse(cachedCalendarsEvents))
+      }
+
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
       )
@@ -40,8 +51,6 @@ export const FullCalendar = () => {
         currentUser.id,
         googleCalendarIds,
       )
-
-      console.log('fetchedCalendarsEvents:', fetchedCalendarsEvents) // TESTING
 
       const calendarsEventsData = {}
       calendarsEventsData.custom = []
@@ -58,6 +67,12 @@ export const FullCalendar = () => {
         calendarsEventsData[key] = eventsData
       }
       setCalendarsEvents(calendarsEventsData)
+
+      // cache the events
+      localStorage.setItem(
+        'algo_calendars_events',
+        JSON.stringify(calendarsEventsData),
+      )
     }
 
     if (currentUser && googleCalendars.length > 0) {

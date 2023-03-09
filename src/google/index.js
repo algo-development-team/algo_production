@@ -45,8 +45,6 @@ export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
   try {
     const accessToken = await getValidToken(userId)
 
-    console.log('accessToken:', accessToken) // TESTING
-
     if (!accessToken) return null
 
     const calendarsItems = {}
@@ -66,8 +64,6 @@ export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
           },
         )
         const data = await request.json()
-
-        console.log(`data.items ${i}:`, data.items) // TESTING
 
         items = items.concat(data.items)
         nextPageToken = data.nextPageToken || ''
