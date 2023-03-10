@@ -32,7 +32,7 @@ export const Overlay = () => {
   const renderSwitch = (params) => {
     switch (showDialog) {
       case 'BLOCK':
-        return <Block closeOverlay={closeOverlay} />
+        return <Block closeOverlay={closeOverlay} taskname={dialogProps.taskname} taskinfo={dialogProps.info}/>
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':

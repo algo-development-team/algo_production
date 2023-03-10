@@ -11,7 +11,6 @@ import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
-import { BlockEditor } from './BlockEditor'
 import { useOverlayContextValue } from 'context'
 
 export const FullCalendar = () => {
@@ -131,6 +130,10 @@ export const FullCalendar = () => {
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault();
+        const clickedEvent = info.event;
+        const taskname = clickedEvent.title;
+        const taskdescription = clickedEvent.description;
+        setDialogProps({ taskname: taskname,  taskdescription: taskdescription, info: info, });
         setShowDialog('BLOCK')
       },
       select: function (info) {
@@ -177,3 +180,54 @@ export const FullCalendar = () => {
     </div>
   )
 }
+
+
+// drop: function (info) {
+//   const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
+//   const newEvent = {
+//     id: generatePushId(),
+//     title: draggedEvent.name,
+//     start: info.date,
+//     allDay: info.allDay,
+//     end: moment(info.date)
+//       .add(draggedEvent.timeLength, 'minutes')
+//       .toDate(),
+//   }
+//   setCalendarsEvents({
+//     ...calendarsEvents,
+//     custom: [...calendarsEvents.custom, newEvent],
+//   })
+// },
+// eventClick: function (info) {
+//   info.jsEvent.preventDefault()
+//   if (window.confirm('Are you sure you want to delete this event?')) {
+//     // remove from state
+//     setCalendarsEvents({
+//       ...calendarsEvents,
+//       custom: calendarsEvents.custom.filter(
+//         (event) => event.id !== info.event.id,
+//       ),
+//     })
+//     // remove from calendar
+//     info.event.remove()
+//   }
+// },
+// select: function (info) {
+//   const newEvent = {
+//     id: generatePushId(),
+//     title: 'New Event',
+//     start: info.startStr,
+//     end: info.endStr,
+//   }
+
+//   setCalendarsEvents({
+//     ...calendarsEvents,
+//     custom: [...calendarsEvents.custom, newEvent],
+//   })
+// },
+// events: getSelectedCalendarsEvents(calendarsEvents),
+// now: new Date(), // set the current time
+// nowIndicator: true, // display a red line through the current time
+// })
+
+// calendar.render()
