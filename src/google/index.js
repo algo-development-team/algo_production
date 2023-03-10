@@ -164,3 +164,35 @@ export const deleteEventFromUserGoogleCalendar = async (userId, eventId) => {
     return null
   }
 }
+
+// write a function that partially updates an event from a calendar
+export const updateEventFromUserGoogleCalendar = async (
+  userId,
+  eventId,
+  event,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      },
+    )
+
+    const data = await request.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}

@@ -4,18 +4,20 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
-import { generatePushId } from '../../utils'
+import { generateEventId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import {
   getUserGoogleCalendarsEvents,
   addEventToUserGoogleCalendar,
   deleteEventFromUserGoogleCalendar,
+  updateEventFromUserGoogleCalendar,
 } from '../../google'
 import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
+import { RRule } from 'rrule'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
@@ -33,7 +35,13 @@ export const FullCalendar = () => {
         events = events.concat(mixedCalendarsEvents[key])
       }
     }
+
     return events
+  }
+
+  function mapWeekday(num) {
+    const mapping = [1, 2, 3, 4, 5, 6, 0]
+    return mapping[num]
   }
 
   useEffect(() => {
@@ -55,12 +63,48 @@ export const FullCalendar = () => {
       const newCalendarsEvents = { ...calendarsEvents }
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
-          return {
-            id: event.id,
-            title: event.summary,
-            start: event.start?.dateTime || event.start?.date,
-            end: event.end?.dateTime || event.end?.date,
-            url: event.htmlLink,
+          if (event.recurrence) {
+            const rule = new RRule.fromString(
+              event.recurrence[event.recurrence.length - 1],
+            )
+            const recurrenceObject = rule.origOptions
+
+            console.log('-----------------')
+            console.log(event.summary, '/', recurrenceObject)
+
+            const recurringEvent = {
+              id: event.id,
+              title: event.summary,
+              startRecur:
+                moment.utc(event.start?.dateTime).format('YYYY-MM-DD') ||
+                event.start?.date,
+              daysOfWeek:
+                recurrenceObject?.byweekday?.map((weekdayInfo) =>
+                  mapWeekday(weekdayInfo.weekday),
+                ) || [],
+              startTime:
+                moment.utc(event.start?.dateTime).format('HH:mm') || null,
+              endTime: moment.utc(event.end?.dateTime).format('HH:mm') || null,
+              url: event.htmlLink,
+            }
+
+            if (recurrenceObject.until) {
+              recurringEvent.endRecur = moment
+                .utc(recurrenceObject.until)
+                .format('YYYY-MM-DD')
+            }
+
+            return recurringEvent
+          } else {
+            const nonRecurringEvent = {
+              id: event.id,
+              title: event.summary,
+              start: event.start?.dateTime || event.start?.date,
+              end: event.end?.dateTime || event.end?.date,
+              url: event.htmlLink,
+            }
+
+            return nonRecurringEvent
           }
         })
         newCalendarsEvents[key] = eventsData
@@ -85,7 +129,7 @@ export const FullCalendar = () => {
       eventData: function (eventEl) {
         const draggedEvent = JSON.parse(eventEl.dataset.event)
         return {
-          id: generatePushId(),
+          id: generateEventId(),
           title: eventEl.innerText,
           duration: `00:${draggedEvent.timeLength}`,
         }
@@ -118,9 +162,11 @@ export const FullCalendar = () => {
       drop: function (info) {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
+        const id = generateEventId()
+
         // add to FullCalendar
         const newEvent = {
-          id: generatePushId(),
+          id: id,
           title: draggedEvent.name,
           start: info.date,
           allDay: info.allDay,
@@ -133,12 +179,12 @@ export const FullCalendar = () => {
           custom: [...calendarsEvents.custom, newEvent],
         })
 
-        // add to Google Calendar
         const newGoogleCalendarEvent = {
+          id: id,
           summary: draggedEvent.name,
           description: draggedEvent.description,
           start: {
-            dateTime: info.date.toISOString(),
+            dateTime: info.dateStr,
             timeZone: timeZone,
           },
           end: {
@@ -157,12 +203,15 @@ export const FullCalendar = () => {
         // delete from FullCalendar
         if (window.confirm('Are you sure you want to delete this event?')) {
           // remove from state
-          setCalendarsEvents({
-            ...calendarsEvents,
-            custom: calendarsEvents.custom.filter(
+          // iterate through all calendar events keys and remove the event from the correct calendar
+          const newCalendarsEvents = { ...calendarsEvents }
+          for (const key in newCalendarsEvents) {
+            newCalendarsEvents[key] = newCalendarsEvents[key].filter(
               (event) => event.id !== info.event.id,
-            ),
-          })
+            )
+          }
+
+          setCalendarsEvents(newCalendarsEvents)
           // remove from calendar
           info.event.remove()
 
@@ -171,15 +220,15 @@ export const FullCalendar = () => {
         }
       },
       select: function (info) {
+        const id = generateEventId()
+
         // add to FullCalendar
         const newEvent = {
-          id: generatePushId(),
+          id: id,
           title: 'New Event',
           start: info.startStr,
           end: info.endStr,
         }
-
-        console.log('newEvent', newEvent) // TESTING
 
         setCalendarsEvents({
           ...calendarsEvents,
@@ -188,6 +237,7 @@ export const FullCalendar = () => {
 
         // add to Google Calendar
         const newGoogleCalendarEvent = {
+          id: id,
           summary: 'New Event',
           start: {
             dateTime: info.startStr,
@@ -200,6 +250,46 @@ export const FullCalendar = () => {
         }
 
         addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
+      },
+      eventResize: function (eventResizeInfo) {
+        const { event } = eventResizeInfo
+
+        const updatedGoogleCalendarEvent = {
+          start: {
+            dateTime: event.startStr,
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: event.endStr,
+            timeZone: timeZone,
+          },
+        }
+
+        updateEventFromUserGoogleCalendar(
+          currentUser.id,
+          event.id,
+          updatedGoogleCalendarEvent,
+        )
+      },
+      eventDrop: function (eventDropInfo) {
+        const { event } = eventDropInfo
+
+        const updatedGoogleCalendarEvent = {
+          start: {
+            dateTime: event.startStr,
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: event.endStr,
+            timeZone: timeZone,
+          },
+        }
+
+        updateEventFromUserGoogleCalendar(
+          currentUser.id,
+          event.id,
+          updatedGoogleCalendarEvent,
+        )
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
       now: new Date(), // set the current time

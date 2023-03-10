@@ -35,6 +35,7 @@
     "react-scripts": "^5.0.0",
     "react-stripe-elements": "^6.1.2",
     "react-switch": "^7.0.0",
+    "rrule": "^2.7.2",
     "stripe": "^11.8.0",
     "web-vitals": "^2.1.4"
   },
