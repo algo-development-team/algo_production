@@ -603,7 +603,7 @@ export const SettingEditor = ({ closeOverlay }) => {
             type='submit'
             disabled={disableSubmitBtn ? true : false}
           >
-            {disableSubmitBtn ? 'Loading' : 'Save'}
+            {disableSubmitBtn ? 'Loading' : 'Sav'}
           </button>
           <button
             className={` action  ${
