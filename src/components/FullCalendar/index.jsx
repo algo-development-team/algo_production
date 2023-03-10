@@ -11,6 +11,8 @@ import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
+import { BlockEditor } from './BlockEditor'
+import { useOverlayContextValue } from 'context'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
@@ -20,6 +22,7 @@ export const FullCalendar = () => {
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
   const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
@@ -127,18 +130,8 @@ export const FullCalendar = () => {
         })
       },
       eventClick: function (info) {
-        info.jsEvent.preventDefault()
-        if (window.confirm('Are you sure you want to delete this event?')) {
-          // remove from state
-          setCalendarsEvents({
-            ...calendarsEvents,
-            custom: calendarsEvents.custom.filter(
-              (event) => event.id !== info.event.id,
-            ),
-          })
-          // remove from calendar
-          info.event.remove()
-        }
+        info.jsEvent.preventDefault();
+        setShowDialog('BLOCK')
       },
       select: function (info) {
         const newEvent = {

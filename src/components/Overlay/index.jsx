@@ -19,6 +19,7 @@ import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
 import { ScheduleCreated } from './schedule-created'
 import { ProductGuide } from './product-guide'
+import { Block } from './block'
 
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
@@ -30,6 +31,8 @@ export const Overlay = () => {
   }, [])
   const renderSwitch = (params) => {
     switch (showDialog) {
+      case 'BLOCK':
+        return <Block closeOverlay={closeOverlay} />
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
