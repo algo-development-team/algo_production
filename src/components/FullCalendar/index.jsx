@@ -6,11 +6,16 @@ import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
 import { generatePushId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
-import { getUserGoogleCalendarsEvents } from '../../google'
+import {
+  getUserGoogleCalendarsEvents,
+  addEventToUserGoogleCalendar,
+  deleteEventFromUserGoogleCalendar,
+} from '../../google'
 import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
+import { timeZone } from 'handleCalendars'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
@@ -112,6 +117,8 @@ export const FullCalendar = () => {
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
       drop: function (info) {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
+
+        // add to FullCalendar
         const newEvent = {
           id: generatePushId(),
           title: draggedEvent.name,
@@ -125,9 +132,29 @@ export const FullCalendar = () => {
           ...calendarsEvents,
           custom: [...calendarsEvents.custom, newEvent],
         })
+
+        // add to Google Calendar
+        const newGoogleCalendarEvent = {
+          summary: draggedEvent.name,
+          description: draggedEvent.description,
+          start: {
+            dateTime: info.date.toISOString(),
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: moment(info.date)
+              .add(draggedEvent.timeLength, 'minutes')
+              .toISOString(),
+            timeZone: timeZone,
+          },
+        }
+
+        addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault()
+
+        // delete from FullCalendar
         if (window.confirm('Are you sure you want to delete this event?')) {
           // remove from state
           setCalendarsEvents({
@@ -138,9 +165,13 @@ export const FullCalendar = () => {
           })
           // remove from calendar
           info.event.remove()
+
+          // delete from Google Calendar
+          deleteEventFromUserGoogleCalendar(currentUser.id, info.event.id)
         }
       },
       select: function (info) {
+        // add to FullCalendar
         const newEvent = {
           id: generatePushId(),
           title: 'New Event',
@@ -148,10 +179,27 @@ export const FullCalendar = () => {
           end: info.endStr,
         }
 
+        console.log('newEvent', newEvent) // TESTING
+
         setCalendarsEvents({
           ...calendarsEvents,
           custom: [...calendarsEvents.custom, newEvent],
         })
+
+        // add to Google Calendar
+        const newGoogleCalendarEvent = {
+          summary: 'New Event',
+          start: {
+            dateTime: info.startStr,
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: info.endStr,
+            timeZone: timeZone,
+          },
+        }
+
+        addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
       now: new Date(), // set the current time

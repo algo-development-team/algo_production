@@ -17,7 +17,6 @@ import {
 } from '@react-oauth/google'
 import axios from 'axios'
 
-
 export const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState({})
@@ -60,8 +59,6 @@ export const AuthProvider = ({ children }) => {
           .then(async (response) => {
             // handle success
             const accessToken = await getValidToken(currentUser.id)
-
-            console.log('accessToken:', accessToken) // TESTING
 
             if (accessToken) {
               setIsUserGoogleAuthenticated(true)

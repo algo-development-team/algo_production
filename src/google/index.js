@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { updateUserInfo } from '../backend/handleUserInfo'
 
 export const getValidToken = async (userId) => {
   try {
@@ -73,6 +74,91 @@ export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
     }
 
     return calendarsItems
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+// write a function that adds a new calendar to a user's Google Calendar list
+export const addCalendarToUserGoogleCalendarList = async (
+  userId,
+  calendarName,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          summary: calendarName,
+        }),
+      },
+    )
+
+    const data = await request.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+// write a function that adds a new event to a calendar
+export const addEventToUserGoogleCalendar = async (userId, event) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(event),
+      },
+    )
+
+    const data = await request.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+// write a function that deletes an event from a calendar
+export const deleteEventFromUserGoogleCalendar = async (userId, eventId) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    )
+
+    return true
   } catch (error) {
     console.log(error)
     return null
