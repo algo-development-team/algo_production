@@ -4,7 +4,7 @@ import { createContext, useContext } from 'react'
 export const CalendarsEventsContext = createContext()
 
 export const CalendarsEventsContextProvider = ({ children }) => {
-  const [calendarsEvents, setCalendarsEvents] = useState([])
+  const [calendarsEvents, setCalendarsEvents] = useState({ custom: [] })
 
   return (
     <CalendarsEventsContext.Provider

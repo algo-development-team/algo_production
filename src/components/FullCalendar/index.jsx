@@ -47,8 +47,7 @@ export const FullCalendar = () => {
         currentUser.id,
         googleCalendarIds,
       )
-      const calendarsEventsData = {}
-      calendarsEventsData.custom = []
+      const newCalendarsEvents = { ...calendarsEvents }
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           return {
@@ -59,14 +58,14 @@ export const FullCalendar = () => {
             url: event.htmlLink,
           }
         })
-        calendarsEventsData[key] = eventsData
+        newCalendarsEvents[key] = eventsData
       }
-      setCalendarsEvents(calendarsEventsData)
+      setCalendarsEvents(newCalendarsEvents)
 
       // cache the events
       localStorage.setItem(
         'algo_calendars_events',
-        JSON.stringify(calendarsEventsData),
+        JSON.stringify(newCalendarsEvents),
       )
     }
 
