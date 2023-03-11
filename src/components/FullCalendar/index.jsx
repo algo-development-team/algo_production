@@ -63,7 +63,7 @@ export const FullCalendar = () => {
         (googleCalendar) => googleCalendar.id,
       )
       const fetchedCalendarsEvents = await getUserGoogleCalendarsEvents(
-        currentUser.id,
+        currentUser && currentUser.id,
         googleCalendarIds,
       )
       const newCalendarsEvents = { ...calendarsEvents }
@@ -143,6 +143,8 @@ export const FullCalendar = () => {
         }
       },
     })
+
+    if (!currentUser) return null
 
     const calendar = new Calendar(calendarRef.current, {
       height: 'calc(100vh - 64px)',

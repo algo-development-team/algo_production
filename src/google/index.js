@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { updateUserInfo } from '../backend/handleUserInfo'
 
 export const getValidToken = async (userId) => {
   try {
