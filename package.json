@@ -7,6 +7,7 @@
     "@fullcalendar/daygrid": "^6.1.4",
     "@fullcalendar/google-calendar": "^6.1.4",
     "@fullcalendar/interaction": "^6.1.4",
+    "@fullcalendar/rrule": "^6.1.4",
     "@fullcalendar/timegrid": "^6.1.4",
     "@react-oauth/google": "^0.8.0",
     "@stripe/react-stripe-js": "^1.16.4",

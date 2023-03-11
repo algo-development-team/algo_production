@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
+import rrulePlugin from '@fullcalendar/rrule'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
 import { generateEventId } from '../../utils'
@@ -39,9 +40,14 @@ export const FullCalendar = () => {
     return events
   }
 
-  function mapWeekday(num) {
-    const mapping = [1, 2, 3, 4, 5, 6, 0]
-    return mapping[num]
+  const mapWeekday = (weekday) => {
+    const mapping = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']
+    return mapping[weekday]
+  }
+
+  const mapFreq = (freq) => {
+    const mapping = ['yearly', 'monthly', 'weekly', 'daily']
+    return mapping[freq]
   }
 
   useEffect(() => {
@@ -69,30 +75,37 @@ export const FullCalendar = () => {
             )
             const recurrenceObject = rule.origOptions
 
-            console.log('-----------------')
-            console.log(event.summary, '/', recurrenceObject)
-
             const recurringEvent = {
               id: event.id,
               title: event.summary,
-              startRecur:
-                moment.utc(event.start?.dateTime).format('YYYY-MM-DD') ||
-                event.start?.date,
-              daysOfWeek:
-                recurrenceObject?.byweekday?.map((weekdayInfo) =>
-                  mapWeekday(weekdayInfo.weekday),
-                ) || [],
-              startTime:
-                moment.utc(event.start?.dateTime).format('HH:mm') || null,
-              endTime: moment.utc(event.end?.dateTime).format('HH:mm') || null,
+              rrule: {
+                freq: mapFreq(recurrenceObject.freq),
+                dtstart: event.start?.dateTime || event.start?.date,
+              },
               url: event.htmlLink,
             }
 
-            if (recurrenceObject.until) {
-              recurringEvent.endRecur = moment
-                .utc(recurrenceObject.until)
-                .format('YYYY-MM-DD')
+            if (recurrenceObject.interval) {
+              recurringEvent.rrule.interval = recurrenceObject.interval
             }
+
+            if (recurrenceObject.byweekday) {
+              recurringEvent.rrule.byweekday = recurrenceObject.byweekday.map(
+                ({ weekday }) => mapWeekday(weekday),
+              )
+            }
+
+            if (recurrenceObject.until) {
+              recurringEvent.rrule.until = moment(
+                recurrenceObject.until,
+              ).format('YYYY-MM-DD')
+            }
+
+            /* TESTING START */
+            console.log('-----------------')
+            console.log(event.summary, '/', recurrenceObject)
+            console.log(event.summary, '/', recurringEvent)
+            /* TESTING END */
 
             return recurringEvent
           } else {
@@ -107,6 +120,7 @@ export const FullCalendar = () => {
             return nonRecurringEvent
           }
         })
+
         newCalendarsEvents[key] = eventsData
       }
       setCalendarsEvents(newCalendarsEvents)
@@ -139,6 +153,7 @@ export const FullCalendar = () => {
     const calendar = new Calendar(calendarRef.current, {
       height: 'calc(100vh - 64px)',
       plugins: [
+        rrulePlugin,
         dayGridPlugin,
         timeGridPlugin,
         interactionPlugin,
