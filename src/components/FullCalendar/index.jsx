@@ -101,12 +101,6 @@ export const FullCalendar = () => {
               ).format('YYYY-MM-DD')
             }
 
-            /* TESTING START */
-            console.log('-----------------')
-            console.log(event.summary, '/', recurrenceObject)
-            console.log(event.summary, '/', recurringEvent)
-            /* TESTING END */
-
             return recurringEvent
           } else {
             const nonRecurringEvent = {
