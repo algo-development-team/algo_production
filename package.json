@@ -38,6 +38,7 @@
     "react-switch": "^7.0.0",
     "rrule": "^2.7.2",
     "stripe": "^11.8.0",
+    "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

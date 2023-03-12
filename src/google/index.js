@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid'
 
 export const getValidToken = async (userId) => {
   try {
@@ -47,9 +48,11 @@ export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
 
     if (!accessToken) return null
 
-    const calendarsItems = {}
+    const fetchedCalendarsEvents = {}
+    const fetcehdNextSyncTokens = {}
 
     for (let i = 0; i < calendarIds.length; i++) {
+      let nextSyncToken = ''
       let nextPageToken = ''
       let items = []
 
@@ -67,15 +70,55 @@ export const getUserGoogleCalendarsEvents = async (userId, calendarIds) => {
 
         items = items.concat(data.items)
         nextPageToken = data.nextPageToken || ''
+        nextSyncToken = data.nextSyncToken || ''
       } while (nextPageToken)
 
-      calendarsItems[calendarIds[i]] = items
+      fetchedCalendarsEvents[calendarIds[i]] = items
+      fetcehdNextSyncTokens[calendarIds[i]] = nextSyncToken
     }
 
-    return calendarsItems
+    return {
+      fetchedCalendarsEvents: fetchedCalendarsEvents,
+      nextSyncTokens: fetcehdNextSyncTokens,
+    }
   } catch (error) {
     console.log(error)
     return null
+  }
+}
+
+export const getUserGoogleCalendarEventsIncSync = async (
+  userId,
+  calendarId,
+  syncToken,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    let nextPageToken = ''
+    let items = []
+
+    do {
+      // set maxResults to a high number to fetch all events
+      const request = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events?maxResults=2500&syncToken=${syncToken}pageToken=${nextPageToken}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      )
+      const data = await request.json()
+
+      items = items.concat(data.items)
+      nextPageToken = data.nextPageToken || ''
+    } while (nextPageToken)
+
+    return items
+  } catch (error) {
+    console.log(error)
   }
 }
 
@@ -193,5 +236,34 @@ export const updateEventFromUserGoogleCalendar = async (
   } catch (error) {
     console.log(error)
     return null
+  }
+}
+
+export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`
+    const webhookUrl = 'https://<NGROK_URL_BODY>/webhooks/google/calendar'
+    const requestBody = {
+      id: uuidv4(),
+      type: 'web_hook',
+      address: webhookUrl,
+    }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    })
+    const data = await response.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
   }
 }

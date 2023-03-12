@@ -12,6 +12,7 @@ import {
   addEventToUserGoogleCalendar,
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
+  addWebhookToGoogleCalendar,
 } from '../../google'
 import { useGoogleValue, useCalendarsEventsValue } from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
@@ -28,6 +29,32 @@ export const FullCalendar = () => {
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
   const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
+  const [nextSyncTokens, setNextSyncTokens] = useState({})
+  const [resourceIds, setResourceIds] = useState({})
+
+  useEffect(() => {
+    const ws = new WebSocket('wss://<NGROK_URL_BODY>/webhooks/google/calendar')
+
+    ws.addEventListener('open', (event) => {
+      console.log('WebSocket connection established')
+    })
+
+    ws.addEventListener('message', (event) => {
+      console.log(`Received message: ${event.data}`)
+    })
+
+    return () => {
+      ws.close()
+    }
+  }, [])
+
+  useEffect(() => {
+    console.log('nextSyncTokens:', nextSyncTokens) // TESTING
+  }, [nextSyncTokens])
+
+  useEffect(() => {
+    console.log('resourceIds:', resourceIds) // TESTING
+  }, [resourceIds])
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
@@ -62,10 +89,12 @@ export const FullCalendar = () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
       )
-      const fetchedCalendarsEvents = await getUserGoogleCalendarsEvents(
-        currentUser && currentUser.id,
-        googleCalendarIds,
-      )
+      const { fetchedCalendarsEvents, nextSyncTokens } =
+        await getUserGoogleCalendarsEvents(
+          currentUser && currentUser.id,
+          googleCalendarIds,
+        )
+      setNextSyncTokens(nextSyncTokens)
       const newCalendarsEvents = { ...calendarsEvents }
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
@@ -128,6 +157,15 @@ export const FullCalendar = () => {
 
     if (currentUser && googleCalendars.length > 0) {
       fetchGoogleCalendarEvents()
+      const fetchedResourceIds = {}
+      googleCalendars.forEach(async (googleCalendar) => {
+        const result = await addWebhookToGoogleCalendar(
+          currentUser.id,
+          googleCalendar.id,
+        )
+        fetchedResourceIds[googleCalendar.id] = result.resourceId
+      })
+      setResourceIds(fetchedResourceIds)
     }
   }, [currentUser, googleCalendars])
 
