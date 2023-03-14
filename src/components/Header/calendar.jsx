@@ -18,7 +18,7 @@ export const CalendarButton = () => {
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'center',
-        marginLeft: '15px',
+        marginLeft: '10px',
       }}
     >
       <Link

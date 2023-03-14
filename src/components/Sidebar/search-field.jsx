@@ -4,6 +4,8 @@ import { useTasks, useScheduledTasks } from 'hooks'
 import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
 import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
+import { getHighlightBlue } from '../../handleColorPalette'
+import { useThemeContextValue } from 'context'
 
 export const SearchField = ({
   addValue,
@@ -16,6 +18,7 @@ export const SearchField = ({
   const { tasks } = useTasks()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
+  const { isLight } = useThemeContextValue()
 
   useEffect(() => {
     const updateUnscheduledTasks = () => {
@@ -140,7 +143,7 @@ export const SearchField = ({
                 width: '100%',
                 height: `${task.timeLength}px`,
                 marginBottom: '10px',
-                backgroundColor: '#4C9AFF',
+                backgroundColor: getHighlightBlue(isLight),
               }}
             >
               {task.timeLength < 60 ? (
