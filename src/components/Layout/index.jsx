@@ -43,10 +43,6 @@ export const Layout = () => {
   const { setShowDialog } = useOverlayContextValue()
 
   useEffect(() => {
-    console.log('params:', params) // TESTING
-  }, [params])
-
-  useEffect(() => {
     const showProductGuide = async () => {
       const timer = setTimeout(async () => {
         setShowDialog('PRODUCT_GUIDE')
