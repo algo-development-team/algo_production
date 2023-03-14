@@ -53,14 +53,6 @@ export const FullCalendar = () => {
     }
   }, [])
 
-  useEffect(() => {
-    console.log('nextSyncTokens:', nextSyncTokens) // TESTING
-  }, [nextSyncTokens])
-
-  useEffect(() => {
-    console.log('resourceIds:', resourceIds) // TESTING
-  }, [resourceIds])
-
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
     for (const key in mixedCalendarsEvents) {
@@ -298,8 +290,6 @@ export const FullCalendar = () => {
             }
           }
 
-          console.log('calendarId:', calendarId) // TESTING
-
           // delete from Google Calendar
           deleteEventFromUserGoogleCalendar(
             currentUser.id,
@@ -375,8 +365,6 @@ export const FullCalendar = () => {
           }
         }
 
-        console.log('calendarId:', calendarId) // TESTING
-
         updateEventFromUserGoogleCalendar(
           currentUser.id,
           calendarId,
@@ -415,8 +403,6 @@ export const FullCalendar = () => {
           }
         }
 
-        console.log('calendarId:', calendarId) // TESTING
-
         updateEventFromUserGoogleCalendar(
           currentUser.id,
           calendarId,
@@ -427,6 +413,7 @@ export const FullCalendar = () => {
       events: getSelectedCalendarsEvents(calendarsEvents),
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
+      handleWindowResize: true,
     })
 
     calendar.render()
@@ -449,9 +436,5 @@ export const FullCalendar = () => {
     googleCalendars,
   ])
 
-  return (
-    <div>
-      <div ref={calendarRef}></div>
-    </div>
-  )
+  return <div ref={calendarRef}></div>
 }

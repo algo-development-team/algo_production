@@ -15,16 +15,36 @@ import { useOverlayContextValue } from 'context'
 export const Layout = () => {
   const { isLight } = useThemeContextValue()
   const [showSidebar, setShowSidebar] = useState(true)
-  const toggleSidebar = useCallback(() => setShowSidebar((value) => !value))
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
   const params = useParams()
+
   useEffect(() => {
-    const { innerWidth: width } = window
-    width < 900 && setShowSidebar(false)
-  }, [params])
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const toggleSidebar = useCallback(() => {
+    const { defaultGroup: group } = params
+    if (group === 'Calendar' && windowWidth >= 900) return
+    setShowSidebar((value) => !value)
+  })
+  useEffect(() => {
+    const { defaultGroup: group } = params
+    if (group === 'Calendar' && windowWidth >= 900) {
+      setShowSidebar(true)
+    } else if (windowWidth < 900) {
+      setShowSidebar(false)
+    }
+  }, [windowWidth, params])
   const { loading } = useProjects()
   const { currentUser } = useAuth()
   const { isSetup } = useIsSetup()
   const { setShowDialog } = useOverlayContextValue()
+
+  useEffect(() => {
+    console.log('params:', params) // TESTING
+  }, [params])
 
   useEffect(() => {
     const showProductGuide = async () => {
