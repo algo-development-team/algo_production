@@ -14,7 +14,11 @@ import {
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
 } from '../../google'
-import { useGoogleValue, useCalendarsEventsValue } from 'context'
+import {
+  useGoogleValue,
+  useCalendarsEventsValue,
+  useThemeContextValue,
+} from 'context'
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
@@ -34,6 +38,7 @@ export const FullCalendar = () => {
   const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
+  const { isLight } = useThemeContextValue()
 
   useEffect(() => {
     const ws = new WebSocket(
@@ -200,7 +205,6 @@ export const FullCalendar = () => {
       // scrollTimeReset: false,
       // scrollTime: null,
       selectable: true,
-      eventBorderColor: '#3788D8',
       initialView: 'timeGridWeek', // set the default view to timeGridWeek
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
@@ -414,6 +418,7 @@ export const FullCalendar = () => {
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,
+      eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
 
     calendar.render()
@@ -429,6 +434,7 @@ export const FullCalendar = () => {
       clearInterval(intervalId)
     }
   }, [
+    isLight,
     calendarsEvents,
     unselectedCalendarIds,
     externalEventsRef,
