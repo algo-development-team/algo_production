@@ -22,6 +22,8 @@ import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 
+const USER_SELECTED_CALENDAR = 'primary'
+
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -247,7 +249,11 @@ export const FullCalendar = () => {
           },
         }
 
-        addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
+        addEventToUserGoogleCalendar(
+          currentUser.id,
+          USER_SELECTED_CALENDAR,
+          newGoogleCalendarEvent,
+        )
 
         /* stores the taskId to scheduledTasks array in eventsInfo collection */
         const eventsInfo = await getEventsInfo(currentUser.id)
@@ -275,8 +281,31 @@ export const FullCalendar = () => {
           // remove from calendar
           info.event.remove()
 
+          /* find the id of calendar that the event belongs to */
+          let calendarId = null
+          for (const key in calendarsEvents) {
+            if (
+              calendarsEvents[key].find(
+                (calendarEvent) => calendarEvent.id === info.event.id,
+              )
+            ) {
+              if (key === 'custom') {
+                calendarId = USER_SELECTED_CALENDAR
+              } else {
+                calendarId = key
+              }
+              break
+            }
+          }
+
+          console.log('calendarId:', calendarId) // TESTING
+
           // delete from Google Calendar
-          deleteEventFromUserGoogleCalendar(currentUser.id, info.event.id)
+          deleteEventFromUserGoogleCalendar(
+            currentUser.id,
+            calendarId,
+            info.event.id,
+          )
         }
       },
       select: function (info) {
@@ -309,7 +338,11 @@ export const FullCalendar = () => {
           },
         }
 
-        addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
+        addEventToUserGoogleCalendar(
+          currentUser.id,
+          USER_SELECTED_CALENDAR,
+          newGoogleCalendarEvent,
+        )
       },
       eventResize: function (eventResizeInfo) {
         const { event } = eventResizeInfo
@@ -325,8 +358,28 @@ export const FullCalendar = () => {
           },
         }
 
+        /* find the id of calendar that the event belongs to */
+        let calendarId = null
+        for (const key in calendarsEvents) {
+          if (
+            calendarsEvents[key].find(
+              (calendarEvent) => calendarEvent.id === event.id,
+            )
+          ) {
+            if (key === 'custom') {
+              calendarId = USER_SELECTED_CALENDAR
+            } else {
+              calendarId = key
+            }
+            break
+          }
+        }
+
+        console.log('calendarId:', calendarId) // TESTING
+
         updateEventFromUserGoogleCalendar(
           currentUser.id,
+          calendarId,
           event.id,
           updatedGoogleCalendarEvent,
         )
@@ -345,8 +398,28 @@ export const FullCalendar = () => {
           },
         }
 
+        /* find the id of calendar that the event belongs to */
+        let calendarId = null
+        for (const key in calendarsEvents) {
+          if (
+            calendarsEvents[key].find(
+              (calendarEvent) => calendarEvent.id === event.id,
+            )
+          ) {
+            if (key === 'custom') {
+              calendarId = USER_SELECTED_CALENDAR
+            } else {
+              calendarId = key
+            }
+            break
+          }
+        }
+
+        console.log('calendarId:', calendarId) // TESTING
+
         updateEventFromUserGoogleCalendar(
           currentUser.id,
+          calendarId,
           event.id,
           updatedGoogleCalendarEvent,
         )

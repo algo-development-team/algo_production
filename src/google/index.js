@@ -156,14 +156,18 @@ export const addCalendarToUserGoogleCalendarList = async (
 }
 
 // write a function that adds a new event to a calendar
-export const addEventToUserGoogleCalendar = async (userId, event) => {
+export const addEventToUserGoogleCalendar = async (
+  userId,
+  calendarId,
+  event,
+) => {
   try {
     const accessToken = await getValidToken(userId)
 
     if (!accessToken) return null
 
     const request = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events`,
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
       {
         method: 'POST',
         headers: {
@@ -184,14 +188,18 @@ export const addEventToUserGoogleCalendar = async (userId, event) => {
 }
 
 // write a function that deletes an event from a calendar
-export const deleteEventFromUserGoogleCalendar = async (userId, eventId) => {
+export const deleteEventFromUserGoogleCalendar = async (
+  userId,
+  calendarId,
+  eventId,
+) => {
   try {
     const accessToken = await getValidToken(userId)
 
     if (!accessToken) return null
 
     const request = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
       {
         method: 'DELETE',
         headers: {
@@ -210,6 +218,7 @@ export const deleteEventFromUserGoogleCalendar = async (userId, eventId) => {
 // write a function that partially updates an event from a calendar
 export const updateEventFromUserGoogleCalendar = async (
   userId,
+  calendarId,
   eventId,
   event,
 ) => {
@@ -219,7 +228,7 @@ export const updateEventFromUserGoogleCalendar = async (
     if (!accessToken) return null
 
     const request = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
       {
         method: 'PATCH',
         headers: {

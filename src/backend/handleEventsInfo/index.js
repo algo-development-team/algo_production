@@ -11,7 +11,6 @@ export const getEventsInfo = async (userId) => {
     eventsInfoDocs.forEach((eventsInfoDoc) => {
       eventsInfoDocList.push(eventsInfoDoc.data())
     })
-    console.log(eventsInfoDocList)
     return eventsInfoDocList[0]
   } catch (error) {
     console.log(error)
