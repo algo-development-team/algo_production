@@ -20,6 +20,7 @@ import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
+import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 
 export const FullCalendar = () => {
   const calendarRef = useRef(null)
@@ -33,7 +34,9 @@ export const FullCalendar = () => {
   const [resourceIds, setResourceIds] = useState({})
 
   useEffect(() => {
-    const ws = new WebSocket('wss://<NGROK_URL_BODY>/webhooks/google/calendar')
+    const ws = new WebSocket(
+      `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
+    )
 
     ws.addEventListener('open', (event) => {
       console.log('WebSocket connection established')
@@ -208,7 +211,7 @@ export const FullCalendar = () => {
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
-      drop: function (info) {
+      drop: async function (info) {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
         const id = generateEventId()
@@ -245,6 +248,14 @@ export const FullCalendar = () => {
         }
 
         addEventToUserGoogleCalendar(currentUser.id, newGoogleCalendarEvent)
+
+        /* stores the taskId to scheduledTasks array in eventsInfo collection */
+        const eventsInfo = await getEventsInfo(currentUser.id)
+        const scheduledTasks = eventsInfo.scheduledTasks
+        const newScheduledTasks = [...scheduledTasks, draggedEvent.taskId]
+        updateEventsInfo(currentUser.id, {
+          scheduledTasks: newScheduledTasks,
+        })
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault()
