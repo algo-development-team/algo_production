@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }) => {
 
         //inputSignIn(user.uid, "SIGN-IN")
 
-        navigate('/app/Checklist')
+        navigate('/app/Calendar')
       })
       .catch((error) => {
         const errorCode = error.code
