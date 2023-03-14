@@ -6,8 +6,6 @@ import { CalendarButton } from './calendar'
 import { ProjectsButton } from './projects'
 import './light.scss'
 import './main.scss'
-import { GoogleCalendarButton } from './google-calendar'
-import { SettingButton } from './setting'
 import { GoogleAuthButton } from './google-auth-button'
 
 export const Header = (props) => {
@@ -23,7 +21,6 @@ export const Header = (props) => {
         <GoogleAuthButton />
         {/* update the content of info later */}
         {/* <Info />  */}
-        <SettingButton />
         <Avatar />
       </div>
     </div>

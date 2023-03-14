@@ -10,16 +10,16 @@ export const GoogleAuthButton = () => {
   }
 
   return (
-    <div style={{ marginRight: '10px' }}>
+    <div>
       {isUserGoogleAuthenticated ? (
         <div
           style={{
             display: 'flex',
-            backgroundColor: 'grey',
             alignItems: 'center',
             paddingRight: '5px',
             borderRadius: '5px',
           }}
+          className='google-auth-button'
         >
           <GoogleCalendarIcon strokeWidth='.1' />
           <span onClick={() => logoutGoogle()}>Disconnect Google Calendar</span>
@@ -28,11 +28,11 @@ export const GoogleAuthButton = () => {
         <div
           style={{
             display: 'flex',
-            backgroundColor: 'grey',
             alignItems: 'center',
             paddingRight: '5px',
             borderRadius: '5px',
           }}
+          className='google-auth-button'
         >
           <GoogleCalendarIcon strokeWidth='.1' />
           <span onClick={() => loginGoogle()}>Integrate Google Calendar</span>

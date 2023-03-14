@@ -15,7 +15,7 @@ export const Avatar = () => {
   }
   return (
     <div
-      style={{ marginLeft: '10px' }}
+      style={{ marginLeft: '15px' }}
       className='avatar'
       onClick={(event) =>
         userOptionsTrigger(event, event.currentTarget.getBoundingClientRect())

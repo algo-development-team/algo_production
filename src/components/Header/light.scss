@@ -1,12 +1,16 @@
 .light .header {
-  background-color: #333;
-  color: #fff;
+  background-color: #ffffff;
+  color: #333;
   border-color: #f1f1f1;
-  box-shadow: unset;
+  box-shadow: 0 1px 3px 0 #00000026;
   &__left,
   &__right {
     svg {
       stroke: #fff;
     }
   }
+}
+
+.light .google-auth-button {
+  background-color: #f1f1f1;
 }
