@@ -418,6 +418,7 @@ export const FullCalendar = () => {
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,
+      eventBackgroundColor: '#4C9AFF',
       eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
 

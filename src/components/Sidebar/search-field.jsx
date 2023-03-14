@@ -140,6 +140,7 @@ export const SearchField = ({
                 width: '100%',
                 height: `${task.timeLength}px`,
                 marginBottom: '10px',
+                backgroundColor: '#4C9AFF',
               }}
             >
               {task.timeLength < 60 ? (
