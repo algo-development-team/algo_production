@@ -7,6 +7,7 @@
     "@fullcalendar/daygrid": "^6.1.4",
     "@fullcalendar/google-calendar": "^6.1.4",
     "@fullcalendar/interaction": "^6.1.4",
+    "@fullcalendar/rrule": "^6.1.4",
     "@fullcalendar/timegrid": "^6.1.4",
     "@react-oauth/google": "^0.8.0",
     "@stripe/react-stripe-js": "^1.16.4",
@@ -35,7 +36,9 @@
     "react-scripts": "^5.0.0",
     "react-stripe-elements": "^6.1.2",
     "react-switch": "^7.0.0",
+    "rrule": "^2.7.2",
     "stripe": "^11.8.0",
+    "uuid": "^9.0.0",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
