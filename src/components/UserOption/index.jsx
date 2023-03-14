@@ -1,7 +1,7 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useThemeContextValue } from 'context'
 import { useAuth } from 'hooks'
-import { inputSignIn } from '../../handleAnalytics'
+import { useOverlayContextValue } from 'context'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -10,6 +10,7 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
   const { displayName, email } = currentUser || {}
   const formatedDisplayName = displayName?.replace(' ', '+') || null
   const { isLight, setIsLight } = useThemeContextValue()
+  const { setShowDialog } = useOverlayContextValue()
 
   const themeToggleHandler = (event) => {
     setIsLight(!isLight)
@@ -50,6 +51,17 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
           </li>
           <li
             className='user-options__item'
+            onClick={() => setShowDialog('SETTING')}
+          >
+            <div
+              className='user-options__item--content'
+              style={{ paddingLeft: '24px' }}
+            >
+              Personal Settings
+            </div>
+          </li>
+          <li
+            className='user-options__item'
             onClick={(event) => themeToggleHandler(event)}
           >
             <svg
@@ -79,7 +91,7 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
               <use href={`${featherIcon}#log-out`}></use>
             </svg>
 
-            <div className='user-options__item--content' >Log Out</div>
+            <div className='user-options__item--content'>Log Out</div>
           </li>
         </ul>
       </div>

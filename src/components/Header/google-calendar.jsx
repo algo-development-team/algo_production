@@ -7,11 +7,13 @@ export const GoogleCalendarButton = () => {
 
   return (
     <a
-      href='https://calendar.google.com/calendar/u/0/r/day'
+      href='https://calendar.google.com/calendar/u/0/r/week'
       target='_blank'
       rel='noreferrer'
       className='home_button header-clickable'
-      onClick={() => inputIconSelection(currentUser && currentUser.id, "GOOGLE_CALENDAR")}
+      onClick={() =>
+        inputIconSelection(currentUser && currentUser.id, 'GOOGLE_CALENDAR')
+      }
     >
       <GoogleCalendarIcon strokeWidth='.1' />
     </a>

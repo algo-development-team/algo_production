@@ -6,10 +6,6 @@ import { CalendarButton } from './calendar'
 import { ProjectsButton } from './projects'
 import './light.scss'
 import './main.scss'
-import { QuickAddTask } from './quick-add-task'
-import { AddChecklist } from './add-checklist'
-import { GoogleCalendarButton } from './google-calendar'
-import { SettingButton } from './setting'
 import { GoogleAuthButton } from './google-auth-button'
 
 export const Header = (props) => {
@@ -22,15 +18,10 @@ export const Header = (props) => {
         <ProjectsButton />
       </div>
       <div className='header__right'>
-        <AddChecklist />
-        <QuickAddTask />
         <GoogleAuthButton />
-        <GoogleCalendarButton />
-        <SettingButton />
-        <Info />
-        <span style={{ marginLeft: '5px' }}>
-          <Avatar />
-        </span>
+        {/* update the content of info later */}
+        {/* <Info />  */}
+        <Avatar />
       </div>
     </div>
   )

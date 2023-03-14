@@ -1,5 +1,9 @@
 import { useProjects, useSelectedProject } from 'hooks'
 import { Link, useParams } from 'react-router-dom'
+import { useThemeContextValue } from 'context'
+import { ReactComponent as AlgoLogoNameWhiteIcon } from 'assets/svg/algo_logo_name_white.svg'
+import { ReactComponent as AlgoLogoNameDarkIcon } from 'assets/svg/algo_logo_name_dark.svg'
+
 export const HomeButton = () => {
   const params = useParams()
   const { projects } = useProjects()
@@ -7,6 +11,8 @@ export const HomeButton = () => {
     params,
     projects,
   )
+  const { isLight } = useThemeContextValue()
+
   return (
     <Link
       to='/app/Calendar'
@@ -17,9 +23,14 @@ export const HomeButton = () => {
           defaultProject: true,
         })
       }
-      style={{ marginBottom: '5px', marginLeft: '10px' }}
     >
-      <h2>Algo</h2>
+      <div className='quick-add-task header-clickable'>
+        {isLight ? (
+          <AlgoLogoNameWhiteIcon strokeWidth={0.1} width={100} fill='white' />
+        ) : (
+          <AlgoLogoNameDarkIcon strokeWidth={0.1} width={100} fill='white' />
+        )}
+      </div>
     </Link>
   )
 }

@@ -25,6 +25,7 @@ import './calendar.scss'
 import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
+import { getHighlightBlue } from '../../handleColorPalette'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -418,6 +419,7 @@ export const FullCalendar = () => {
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,
+      eventBackgroundColor: getHighlightBlue(isLight),
       eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
 
