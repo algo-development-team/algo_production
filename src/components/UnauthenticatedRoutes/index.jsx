@@ -4,5 +4,5 @@ import { Navigate, Outlet } from 'react-router-dom'
 export const UnauthenticatedRoutes = () => {
   const { currentUser } = useAuth()
 
-  return currentUser ? <Navigate to={'/app/Checklist'} /> : <Outlet />
+  return currentUser ? <Navigate to={'/app/Calendar'} /> : <Outlet />
 }

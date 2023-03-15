@@ -1,5 +1,5 @@
 import { useAuth } from 'hooks'
-import { getUserGoogleCalendarList } from 'google'
+import { ReactComponent as GoogleCalendarIcon } from 'assets/svg/google-calendar.svg'
 
 export const GoogleAuthButton = () => {
   const { currentUser, isUserGoogleAuthenticated, loginGoogle, logoutGoogle } =
@@ -10,24 +10,34 @@ export const GoogleAuthButton = () => {
   }
 
   return (
-    <>
+    <div>
       {isUserGoogleAuthenticated ? (
-        <>
-          <button onClick={() => logoutGoogle()}>Log out 🚀 </button>
-          <button
-            onClick={async () => {
-              const googleCalendarList = await getUserGoogleCalendarList(
-                currentUser.id,
-              )
-              console.log('googleCalendarList:', googleCalendarList) // TESTING
-            }}
-          >
-            Get All Calendars 🚀{' '}
-          </button>
-        </>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingRight: '5px',
+            borderRadius: '5px',
+          }}
+          className='google-auth-button'
+        >
+          <GoogleCalendarIcon strokeWidth='.1' />
+          <span onClick={() => logoutGoogle()}>Disconnect Google Calendar</span>
+        </div>
       ) : (
-        <button onClick={() => loginGoogle()}>Sign in with Google 🚀 </button>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            paddingRight: '5px',
+            borderRadius: '5px',
+          }}
+          className='google-auth-button'
+        >
+          <GoogleCalendarIcon strokeWidth='.1' />
+          <span onClick={() => loginGoogle()}>Integrate Google Calendar</span>
+        </div>
       )}
-    </>
+    </div>
   )
 }

@@ -8,6 +8,8 @@ export const GoogleContext = createContext()
 export const GoogleContextProvider = ({ children }) => {
   const { currentUser, isUserGoogleAuthenticated } = useAuth()
   const [googleCalendars, setGoogleCalendars] = useState([])
+  const [googleCalendarsListChanged, setGoogleCalendarsListChanged] =
+    useState(0)
 
   useEffect(() => {
     const fetchGoogleCalendars = async () => {
@@ -19,10 +21,16 @@ export const GoogleContextProvider = ({ children }) => {
     if (currentUser && isUserGoogleAuthenticated) {
       fetchGoogleCalendars()
     }
-  }, [currentUser, isUserGoogleAuthenticated])
+  }, [currentUser, isUserGoogleAuthenticated, googleCalendarsListChanged])
 
   return (
-    <GoogleContext.Provider value={{ googleCalendars }}>
+    <GoogleContext.Provider
+      value={{
+        googleCalendars,
+        googleCalendarsListChanged,
+        setGoogleCalendarsListChanged,
+      }}
+    >
       {children}
     </GoogleContext.Provider>
   )
