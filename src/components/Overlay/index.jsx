@@ -23,6 +23,7 @@ import { Block } from './block'
 
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
+
   const closeOverlay = () => {
     setShowDialog('')
   }
@@ -32,7 +33,7 @@ export const Overlay = () => {
   const renderSwitch = (params) => {
     switch (showDialog) {
       case 'BLOCK':
-        return <Block closeOverlay={closeOverlay} taskname={dialogProps.taskname} taskinfo={dialogProps.info}/>
+        return <Block closeOverlay={closeOverlay} taskname={dialogProps.taskname} info={dialogProps.info} start={dialogProps.start} end={dialogProps.end}/>
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':

@@ -22,3 +22,8 @@
   border-bottom: 0;
   height: 0.1px !important;
 }
+.fc .fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 2em;
+  max-height: 100px;
+  position: relative;
+}

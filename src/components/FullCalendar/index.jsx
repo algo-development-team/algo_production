@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useContext } from 'react'
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -12,8 +12,13 @@ import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
 import { useOverlayContextValue } from 'context'
+import { CalendarContainer } from 'react-datepicker'
+import { CopyValue } from 'context/CopyContext.js'
 
 export const FullCalendar = () => {
+  const [view, setView] = useState(`dayGridWeek`)
+  const [infoEvent, setInfoEvent] = useState(null)
+  const { C, setC } = CopyValue()
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -22,6 +27,9 @@ export const FullCalendar = () => {
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
   const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
+  const [count, setCount] = useState(0)
+
+  
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
@@ -104,11 +112,17 @@ export const FullCalendar = () => {
       },
       editable: true,
       droppable: true,
-      // scrollTimeReset: false,
-      // scrollTime: null,
+      dayMaxEventRows: true,
+      views: {
+        timeGrid: {
+          dayMaxEventRows: 6 // adjust to 6 only for timeGridWeek/timeGridDay
+        }
+      },    
+      scrollTimeReset: false,
+      scrollTime: "12:00",
       selectable: true,
       eventBorderColor: '#3788D8',
-      initialView: 'timeGridWeek', // set the default view to timeGridWeek
+      initialView: `${view}`, // set the default view to timeGridWeek
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
@@ -128,12 +142,20 @@ export const FullCalendar = () => {
           custom: [...calendarsEvents.custom, newEvent],
         })
       },
+      datesSet: function(info) {
+        setView(info.view.type)
+      },
       eventClick: function (info) {
+        setInfoEvent(info.event)
         info.jsEvent.preventDefault();
         const clickedEvent = info.event;
+
         const taskname = clickedEvent.title;
         const taskdescription = clickedEvent.description;
-        setDialogProps({ taskname: taskname,  taskdescription: taskdescription, info: info, });
+        const start = new Date(clickedEvent.start);
+        const end = new Date(clickedEvent.end);
+
+        setDialogProps({ taskname: taskname, taskdescription: taskdescription, info: info, start: start, end: end });
         setShowDialog('BLOCK')
       },
       select: function (info) {
@@ -155,12 +177,19 @@ export const FullCalendar = () => {
     })
 
     calendar.render()
-
+    
     // Update the current time every 5 minutes
     const intervalId = setInterval(() => {
       setCurrentTime(new Date())
     }, 5 * 60 * 1000) // 5 minutes in milliseconds
 
+    if(C == true){
+      const copiedEvent = {...infoEvent};
+      calendar.addEvent(copiedEvent);
+      console.log(copiedEvent);
+      setC(false);
+    }
+    
     return () => {
       calendar.destroy()
       externalEvents.destroy()
@@ -172,6 +201,7 @@ export const FullCalendar = () => {
     externalEventsRef,
     currentTime,
     googleCalendars,
+    C,
   ])
 
   return (

@@ -11,6 +11,7 @@ import { Views } from 'components/Views'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { ExternalEventsContextProvider } from './context/external-events-context'
 import { CalendarsEventsContextProvider } from './context/calendars-events-context'
+import { CopyContextProvider } from './context/CopyContext.js'
 
 function App() {
   return (
@@ -21,7 +22,9 @@ function App() {
             <GoogleContextProvider>
               <ExternalEventsContextProvider>
                 <CalendarsEventsContextProvider>
-                  <Views />
+                  <CopyContextProvider>
+                   <Views />
+                  </CopyContextProvider>
                 </CalendarsEventsContextProvider>
               </ExternalEventsContextProvider>
             </GoogleContextProvider>
