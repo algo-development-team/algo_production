@@ -11,6 +11,14 @@ export const GoogleAuthButton = () => {
     return <button disabled>Loading</button>
   }
 
+  const handleGoogleAuth = () => {
+    if (isUserGoogleAuthenticated) {
+      logoutGoogle()
+    } else {
+      loginGoogle()
+    }
+  }
+
   const getButtonText = () => {
     if (sizes.phone) {
       if (isUserGoogleAuthenticated) {
@@ -39,7 +47,7 @@ export const GoogleAuthButton = () => {
       className='google-auth-button'
     >
       <GoogleCalendarIcon strokeWidth='.1' />
-      <span onClick={() => logoutGoogle()}>{getButtonText()}</span>
+      <span onClick={() => handleGoogleAuth()}>{getButtonText()}</span>
     </div>
   )
 }
