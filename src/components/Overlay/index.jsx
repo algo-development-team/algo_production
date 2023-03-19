@@ -40,6 +40,7 @@ export const Overlay = () => {
             taskname={dialogProps.taskname}
             info={dialogProps.info}
             remove={dialogProps.remove}
+            copy={dialogProps.copy}
             start={dialogProps.start}
             end={dialogProps.end}
           />

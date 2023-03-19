@@ -27,6 +27,7 @@ import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 import { getHighlightBlue } from '../../handleColorPalette'
 import { useOverlayContextValue } from 'context'
+import { generatePushId } from 'utils'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -248,6 +249,7 @@ export const FullCalendar = () => {
           },
         }
 
+        // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,
@@ -311,6 +313,42 @@ export const FullCalendar = () => {
               info.event.id,
             )
           },
+          copy: () => {
+            const id = generateEventId()
+            const newEvent = {
+              end: info.event.endStr,
+              id: id,
+              start: info.event.startStr,
+              title: info.event.title,
+            }
+
+            setCalendarsEvents({
+              ...calendarsEvents,
+              custom: [...calendarsEvents.custom, newEvent],
+            })
+            calendar.addEvent(newEvent)
+
+            // add to Google Calendar
+            const newGoogleCalendarEvent = {
+              id: id,
+              summary: info.event.title,
+              start: {
+                dateTime: info.event.startStr,
+                timeZone: timeZone,
+              },
+              end: {
+                dateTime: info.event.endStr,
+                timeZone: timeZone,
+              },
+            }
+
+            // add to Google Calendar
+            addEventToUserGoogleCalendar(
+              currentUser.id,
+              USER_SELECTED_CALENDAR,
+              newGoogleCalendarEvent,
+            )
+          },
           start: start,
           end: end,
         })
@@ -346,6 +384,7 @@ export const FullCalendar = () => {
           },
         }
 
+        // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,

@@ -10,7 +10,6 @@ import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import './datepicker.scss'
 import moment from 'moment'
-import { generatePushId } from 'utils'
 import TimePicker from 'react-time-picker'
 
 export const Block = ({
@@ -19,6 +18,7 @@ export const Block = ({
   taskdescription,
   info,
   remove,
+  copy,
   start,
   end,
 }) => {
@@ -119,16 +119,7 @@ export const Block = ({
   }
 
   const handleCopy = () => {
-    info.jsEvent.preventDefault()
-    const eventToCopy = info.event
-    const copiedEvent = { ...eventToCopy }
-    const newId = generatePushId()
-    copiedEvent.id = newId
-    setCalendarsEvents({
-      ...calendarsEvents,
-      custom: [...calendarsEvents.custom, copiedEvent],
-    })
-    // calendar.addEvent(copiedEvent);
+    copy()
     closeOverlay()
   }
 
@@ -238,16 +229,7 @@ export const Block = ({
                     marginBottom: '10px',
                   }}
                 >
-                  <div className='add-task__attributes'>
-                    <button
-                      onClick={() => {
-                        info.jsEvent.preventDefault()
-                        console.log('info', info) // DEBUGGING
-                      }}
-                    >
-                      Get Info
-                    </button>
-                  </div>
+                  <div className='add-task__attributes'></div>
                 </div>
               </div>
             </form>
