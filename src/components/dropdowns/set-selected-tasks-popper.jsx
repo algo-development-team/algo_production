@@ -1,7 +1,6 @@
 import './light.scss'
 import './main.scss'
 
-/* LOOK AT HERE FOR POPUP */
 export const SetSelectedTasksPopper = ({
   tasks,
   selectedTasks,

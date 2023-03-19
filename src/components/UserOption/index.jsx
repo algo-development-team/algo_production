@@ -93,6 +93,14 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
 
             <div className='user-options__item--content'>Log Out</div>
           </li>
+          <li className='user-options__item' onClick={(e) => closeOverlay(e)}>
+            <div
+              className='user-options__item--content'
+              style={{ paddingLeft: '24px' }}
+            >
+              Close
+            </div>
+          </li>
         </ul>
       </div>
     </div>

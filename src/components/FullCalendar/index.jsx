@@ -26,6 +26,8 @@ import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 import { getHighlightBlue } from '../../handleColorPalette'
+import { useOverlayContextValue } from 'context'
+import { generatePushId } from 'utils'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -40,6 +42,7 @@ export const FullCalendar = () => {
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
   useEffect(() => {
     const ws = new WebSocket(
@@ -246,6 +249,7 @@ export const FullCalendar = () => {
           },
         }
 
+        // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,
@@ -262,46 +266,93 @@ export const FullCalendar = () => {
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault()
+        const clickedEvent = info.event
 
-        // delete from FullCalendar
-        if (window.confirm('Are you sure you want to delete this event?')) {
-          // remove from state
-          // iterate through all calendar events keys and remove the event from the correct calendar
-          const newCalendarsEvents = { ...calendarsEvents }
-          for (const key in newCalendarsEvents) {
-            newCalendarsEvents[key] = newCalendarsEvents[key].filter(
-              (event) => event.id !== info.event.id,
-            )
-          }
+        const taskname = clickedEvent.title
+        const taskdescription = clickedEvent.description
+        const start = new Date(clickedEvent.start)
+        const end = new Date(clickedEvent.end)
 
-          setCalendarsEvents(newCalendarsEvents)
-          // remove from calendar
-          info.event.remove()
-
-          /* find the id of calendar that the event belongs to */
-          let calendarId = null
-          for (const key in calendarsEvents) {
-            if (
-              calendarsEvents[key].find(
-                (calendarEvent) => calendarEvent.id === info.event.id,
+        setDialogProps({
+          taskname: taskname,
+          taskdescription: taskdescription,
+          info: info,
+          remove: () => {
+            const newCalendarsEvents = { ...calendarsEvents }
+            for (const key in newCalendarsEvents) {
+              newCalendarsEvents[key] = newCalendarsEvents[key].filter(
+                (event) => event.id !== info.event.id,
               )
-            ) {
-              if (key === 'custom') {
-                calendarId = USER_SELECTED_CALENDAR
-              } else {
-                calendarId = key
-              }
-              break
             }
-          }
 
-          // delete from Google Calendar
-          deleteEventFromUserGoogleCalendar(
-            currentUser.id,
-            calendarId,
-            info.event.id,
-          )
-        }
+            setCalendarsEvents(newCalendarsEvents)
+            // remove from calendar
+            info.event.remove()
+
+            /* find the id of calendar that the event belongs to */
+            let calendarId = null
+            for (const key in calendarsEvents) {
+              if (
+                calendarsEvents[key].find(
+                  (calendarEvent) => calendarEvent.id === info.event.id,
+                )
+              ) {
+                if (key === 'custom') {
+                  calendarId = USER_SELECTED_CALENDAR
+                } else {
+                  calendarId = key
+                }
+                break
+              }
+            }
+
+            // delete from Google Calendar
+            deleteEventFromUserGoogleCalendar(
+              currentUser.id,
+              calendarId,
+              info.event.id,
+            )
+          },
+          copy: () => {
+            const id = generateEventId()
+            const newEvent = {
+              end: info.event.endStr,
+              id: id,
+              start: info.event.startStr,
+              title: info.event.title,
+            }
+
+            setCalendarsEvents({
+              ...calendarsEvents,
+              custom: [...calendarsEvents.custom, newEvent],
+            })
+            calendar.addEvent(newEvent)
+
+            // add to Google Calendar
+            const newGoogleCalendarEvent = {
+              id: id,
+              summary: info.event.title,
+              start: {
+                dateTime: info.event.startStr,
+                timeZone: timeZone,
+              },
+              end: {
+                dateTime: info.event.endStr,
+                timeZone: timeZone,
+              },
+            }
+
+            // add to Google Calendar
+            addEventToUserGoogleCalendar(
+              currentUser.id,
+              USER_SELECTED_CALENDAR,
+              newGoogleCalendarEvent,
+            )
+          },
+          start: start,
+          end: end,
+        })
+        setShowDialog('BLOCK')
       },
       select: function (info) {
         const id = generateEventId()
@@ -333,6 +384,7 @@ export const FullCalendar = () => {
           },
         }
 
+        // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,

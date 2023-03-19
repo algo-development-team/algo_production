@@ -19,17 +19,32 @@ import { GoogleCalendarAuth } from './google-calendar-auth'
 import { Setting } from './setting'
 import { ScheduleCreated } from './schedule-created'
 import { ProductGuide } from './product-guide'
+import { Block } from './block'
 
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
   const closeOverlay = () => {
     setShowDialog('')
   }
+
   useEffect(() => {
     setShowDialog(false)
   }, [])
+
   const renderSwitch = (params) => {
     switch (showDialog) {
+      case 'BLOCK':
+        return (
+          <Block
+            closeOverlay={closeOverlay}
+            taskname={dialogProps.taskname}
+            info={dialogProps.info}
+            remove={dialogProps.remove}
+            copy={dialogProps.copy}
+            start={dialogProps.start}
+            end={dialogProps.end}
+          />
+        )
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
@@ -139,7 +154,6 @@ export const Overlay = () => {
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
           />
         )
-      /* LOOK AT HERE FOR POPUP */
       case 'SET_SELECTED_TASKS':
         return (
           <SetSelectedTasksPopper
