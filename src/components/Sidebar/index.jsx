@@ -5,6 +5,7 @@ import { CalendarList } from './calendar-list'
 import { SearchField } from './search-field'
 import { useState, useEffect } from 'react'
 import { Taskbar } from './task-bar'
+import { AutoScheduleButton } from './auto-schedule-button'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -28,35 +29,35 @@ export const Sidebar = (props) => {
   if (defaultGroup === 'Calendar') {
     return (
       <>
-       <div className='sidebar__overlay' onClick={props.onClick}></div>
-      <aside
-        className='sidebar'
-        style={{ paddingLeft: '18px', paddingRight: '18px' }}
-      >
-        <div>
-          <button style={{ display: 'flex' }}>
-            <Taskbar
-            type= 'ADD_TASKS'
-            value={AddTasks}
-            setValue={setAddTasks}
-            />
-            <Taskbar
-            type= 'FILTER_TASKS'
-            value={FilterTasks}
-            setValue={setFilterTasks}
-            />
-          </button>
-          
-          <SearchField
-            addValue= {AddTasks}
-            setAddValue={setAddTasks}
-            filterValue= {FilterTasks}
-            setFilterValue={setFilterTasks}
-          />
+        <div className='sidebar__overlay' onClick={props.onClick}></div>
+        <aside
+          className='sidebar'
+          style={{ paddingLeft: '18px', paddingRight: '18px' }}
+        >
+          <div>
+            <button style={{ display: 'flex' }}>
+              <Taskbar
+                type='ADD_TASKS'
+                value={AddTasks}
+                setValue={setAddTasks}
+              />
+              <Taskbar
+                type='FILTER_TASKS'
+                value={FilterTasks}
+                setValue={setFilterTasks}
+              />
+            </button>
 
-        </div>
-        <CalendarList />
-      </aside>
+            <SearchField
+              addValue={AddTasks}
+              setAddValue={setAddTasks}
+              filterValue={FilterTasks}
+              setFilterValue={setFilterTasks}
+            />
+          </div>
+          <CalendarList />
+          <AutoScheduleButton />
+        </aside>
       </>
     )
   }
