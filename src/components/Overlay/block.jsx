@@ -53,7 +53,7 @@ export const Block = ({
     <>
       <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
         <div
-          className={`add-task__wrapper`}
+          // className='event__wrapper'
           onClick={(event) => {
             event.stopPropagation()
           }}
