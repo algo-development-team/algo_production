@@ -107,7 +107,7 @@ export const Block = ({
                     ref={textAreaRef}
                     rows={1}
                     type='text'
-                    placeholder={`${taskdescription}`}
+                    placeholder='Write something...'
                   />
                 </div>
                 <div
