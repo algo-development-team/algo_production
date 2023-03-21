@@ -24,10 +24,15 @@ import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
-import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
+import {
+  getEventsInfo,
+  updateEventsInfo,
+} from '../../backend/handleUserEventsInfo'
+import { quickAddTask } from '../../backend/handleUserTasks'
 import { getHighlightBlue } from '../../handleColorPalette'
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
+import { generatePushId } from 'utils'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -277,18 +282,15 @@ export const FullCalendar = () => {
       },
       eventClick: function (info) {
         info.jsEvent.preventDefault()
-        const clickedEvent = info.event
 
-        const taskname = clickedEvent.title
+        const taskname = info.event.title
         const taskdescription = info.event.extendedProps?.description
-
-        const start = new Date(clickedEvent.start)
-        const end = new Date(clickedEvent.end)
+        const start = new Date(info.event.start)
+        const end = new Date(info.event.end)
 
         setDialogProps({
           taskname: taskname,
           taskdescription: taskdescription,
-          info: info,
           remove: () => {
             const newCalendarsEvents = { ...calendarsEvents }
             for (const key in newCalendarsEvents) {
@@ -362,11 +364,10 @@ export const FullCalendar = () => {
             )
           },
           backlog: async () => {
-            console.log('info.event', info.event) // DEBUGGING
-
             const id = info.event.extendedProps?.taskId
 
             if (id) {
+              /* if id exists, then remove it from scheduledTasks array in Firestore */
               const eventsInfo = await getEventsInfo(currentUser.id)
               const scheduledTasks = eventsInfo.scheduledTasks
               const newScheduledTasks = scheduledTasks.filter(
@@ -375,6 +376,21 @@ export const FullCalendar = () => {
               updateEventsInfo(currentUser.id, {
                 scheduledTasks: newScheduledTasks,
               })
+            } else {
+              /* if id does not exists, then create a quick task, and add it to notScheduledTasks array in Firestore */
+              const taskId = generatePushId()
+              const taskTimeLength = moment(info.event.end).diff(
+                moment(info.event.start),
+                'minutes',
+              )
+
+              await quickAddTask(
+                currentUser.id,
+                taskname,
+                taskId,
+                taskdescription,
+                taskTimeLength,
+              )
             }
           },
           start: start,

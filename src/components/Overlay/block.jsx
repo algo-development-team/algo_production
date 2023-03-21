@@ -17,7 +17,6 @@ export const Block = ({
   closeOverlay,
   taskname,
   taskdescription,
-  info,
   remove,
   copy,
   backlog,
@@ -129,32 +128,6 @@ export const Block = ({
     remove()
     backlog()
     closeOverlay()
-  }
-
-  useEffect(() => {
-    info.jsEvent.preventDefault()
-    const star = startdate()
-    const ende = enddate()
-    info.event.setDates(startDate, endDate)
-  }, [startDate, endDate])
-
-  const task = {
-    blocks: [],
-    boardStatus: 'TODO',
-    completed: false,
-    date: '',
-    deadlineType: 'HARD',
-    description: 'Click + button to add new project.',
-    eventIds: [],
-    important: false,
-    index: 0,
-    isBlockedBy: [],
-    name: 'Start your own project! 🚀',
-    priority: 3,
-    projectId: 'welcome',
-    startDate: '',
-    taskId: 'icebreaker_1',
-    timeLength: 15,
   }
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
