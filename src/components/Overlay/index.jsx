@@ -39,11 +39,11 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
             taskname={dialogProps.taskname}
             taskdescription={dialogProps.taskdescription}
+            start={dialogProps.start}
+            end={dialogProps.end}
             remove={dialogProps.remove}
             copy={dialogProps.copy}
             backlog={dialogProps.backlog}
-            start={dialogProps.start}
-            end={dialogProps.end}
           />
         )
       case 'ADD_PROJECT':
