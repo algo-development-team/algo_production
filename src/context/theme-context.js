@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 export const ThemeContext = createContext()
 
 export const ThemeContextProvider = ({ children }) => {
-  const theme = localStorage.getItem('todoish_theme')
+  const theme = localStorage.getItem('algo_theme')
   const [isLight, setIsLight] = useState(theme === 'DARK' ? false : true)
 
   const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -19,7 +19,7 @@ export const ThemeContextProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
-    localStorage.setItem('todoish_theme', isLight ? 'LIGHT' : 'DARK')
+    localStorage.setItem('algo_theme', isLight ? 'LIGHT' : 'DARK')
   }, [isLight])
   return (
     <ThemeContext.Provider value={{ isLight, setIsLight }}>
