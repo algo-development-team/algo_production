@@ -38,9 +38,11 @@ export const Overlay = () => {
           <Block
             closeOverlay={closeOverlay}
             taskname={dialogProps.taskname}
+            taskdescription={dialogProps.taskdescription}
             info={dialogProps.info}
             remove={dialogProps.remove}
             copy={dialogProps.copy}
+            backlog={dialogProps.backlog}
             start={dialogProps.start}
             end={dialogProps.end}
           />

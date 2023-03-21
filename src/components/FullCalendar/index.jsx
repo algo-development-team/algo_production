@@ -27,7 +27,7 @@ import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 import { getHighlightBlue } from '../../handleColorPalette'
 import { useOverlayContextValue } from 'context'
-import { generatePushId } from 'utils'
+import { stripTags } from '../../handleHTML'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -118,6 +118,8 @@ export const FullCalendar = () => {
                 dtstart: event.start?.dateTime || event.start?.date,
               },
               url: event.htmlLink,
+              taskId: event?.extendedProperties?.shared?.taskId,
+              description: stripTags(event?.description || ''),
             }
 
             if (recurrenceObject.interval) {
@@ -144,6 +146,8 @@ export const FullCalendar = () => {
               start: event.start?.dateTime || event.start?.date,
               end: event.end?.dateTime || event.end?.date,
               url: event.htmlLink,
+              taskId: event?.extendedProperties?.shared?.taskId,
+              description: stripTags(event?.description || ''),
             }
 
             return nonRecurringEvent
@@ -227,6 +231,8 @@ export const FullCalendar = () => {
           end: moment(info.date)
             .add(draggedEvent.timeLength, 'minutes')
             .toDate(),
+          taskId: draggedEvent.taskId,
+          description: draggedEvent.description,
         }
         setCalendarsEvents({
           ...calendarsEvents,
@@ -246,6 +252,11 @@ export const FullCalendar = () => {
               .add(draggedEvent.timeLength, 'minutes')
               .toISOString(),
             timeZone: timeZone,
+          },
+          extendedProperties: {
+            shared: {
+              taskId: draggedEvent.taskId,
+            },
           },
         }
 
@@ -269,7 +280,8 @@ export const FullCalendar = () => {
         const clickedEvent = info.event
 
         const taskname = clickedEvent.title
-        const taskdescription = clickedEvent.description
+        const taskdescription = info.event.extendedProps?.description
+
         const start = new Date(clickedEvent.start)
         const end = new Date(clickedEvent.end)
 
@@ -349,6 +361,22 @@ export const FullCalendar = () => {
               newGoogleCalendarEvent,
             )
           },
+          backlog: async () => {
+            console.log('info.event', info.event) // DEBUGGING
+
+            const id = info.event.extendedProps?.taskId
+
+            if (id) {
+              const eventsInfo = await getEventsInfo(currentUser.id)
+              const scheduledTasks = eventsInfo.scheduledTasks
+              const newScheduledTasks = scheduledTasks.filter(
+                (taskId) => taskId !== info.event.extendedProps.taskId,
+              )
+              updateEventsInfo(currentUser.id, {
+                scheduledTasks: newScheduledTasks,
+              })
+            }
+          },
           start: start,
           end: end,
         })
@@ -363,6 +391,8 @@ export const FullCalendar = () => {
           title: 'New Event',
           start: info.startStr,
           end: info.endStr,
+          taskId: null,
+          description: '',
         }
 
         setCalendarsEvents({

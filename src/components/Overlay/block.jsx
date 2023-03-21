@@ -6,6 +6,7 @@ import { useCalendarsEventsValue } from 'context'
 import { ReactComponent as CopyIcon } from 'assets/svg/copy.svg'
 import { ReactComponent as DeleteIcon } from 'assets/svg/trash.svg'
 import { ReactComponent as CloseIcon } from 'assets/svg/x.svg'
+import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import './datepicker.scss'
@@ -19,6 +20,7 @@ export const Block = ({
   info,
   remove,
   copy,
+  backlog,
   start,
   end,
 }) => {
@@ -123,6 +125,12 @@ export const Block = ({
     closeOverlay()
   }
 
+  const handleBacklog = () => {
+    remove()
+    backlog()
+    closeOverlay()
+  }
+
   useEffect(() => {
     info.jsEvent.preventDefault()
     const star = startdate()
@@ -175,24 +183,20 @@ export const Block = ({
                     type='text'
                     placeholder={`${taskname}`}
                   />
+                  <BacklogIcon
+                    className='action-btn'
+                    onClick={() => handleBacklog()}
+                  />
                   <CopyIcon
+                    className='action-btn'
                     onClick={() => handleCopy()}
-                    style={{
-                      maxHeight: '25px',
-                      maxWidth: '25px',
-                      marginRight: '10px',
-                    }}
                   />
                   <DeleteIcon
-                    style={{
-                      maxHeight: '25px',
-                      maxWidth: '25px',
-                      marginRight: '10px',
-                    }}
+                    className='action-btn'
                     onClick={() => handleDelete()}
                   />
                   <CloseIcon
-                    style={{ maxHeight: '25px', maxWidth: '25px' }}
+                    className='action-btn'
                     onClick={() => closeOverlay()}
                   />
                 </div>
@@ -229,7 +233,11 @@ export const Block = ({
                     marginBottom: '10px',
                   }}
                 >
-                  <div className='add-task__attributes'></div>
+                  <div className='add-task__attributes'>
+                    <button className=' action add-task__actions--add-task'>
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
             </form>
