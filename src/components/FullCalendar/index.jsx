@@ -399,6 +399,10 @@ export const FullCalendar = () => {
             }
           },
           save: (taskName, taskDescription, startDate, endDate) => {
+            if (endDate <= startDate) {
+              endDate = moment(startDate).add(15, 'minutes').toDate()
+            }
+
             // update the event in FullCalendar
             info.event.setProp('title', taskName)
             info.event.setStart(startDate)

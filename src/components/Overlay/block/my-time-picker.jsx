@@ -27,7 +27,7 @@ export const MyTimePicker = ({ time, setTime }) => {
       }}
       value={time}
       disableClock={true}
-      format='hh:mm A'
+      format='hh:mm a'
       step={900}
       use12Hours={true}
     />
