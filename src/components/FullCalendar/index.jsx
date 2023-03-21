@@ -67,6 +67,25 @@ export const FullCalendar = () => {
     }
   }, [])
 
+  const getEventCalendarId = (eventId) => {
+    let calendarId = null
+    for (const key in calendarsEvents) {
+      if (
+        calendarsEvents[key].find(
+          (calendarEvent) => calendarEvent.id === eventId,
+        )
+      ) {
+        if (key === 'custom') {
+          calendarId = USER_SELECTED_CALENDAR
+        } else {
+          calendarId = key
+        }
+        break
+      }
+    }
+    return calendarId
+  }
+
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
     for (const key in mixedCalendarsEvents) {
@@ -304,21 +323,7 @@ export const FullCalendar = () => {
             info.event.remove()
 
             /* find the id of calendar that the event belongs to */
-            let calendarId = null
-            for (const key in calendarsEvents) {
-              if (
-                calendarsEvents[key].find(
-                  (calendarEvent) => calendarEvent.id === info.event.id,
-                )
-              ) {
-                if (key === 'custom') {
-                  calendarId = USER_SELECTED_CALENDAR
-                } else {
-                  calendarId = key
-                }
-                break
-              }
-            }
+            const calendarId = getEventCalendarId(info.event.id)
 
             // delete from Google Calendar
             deleteEventFromUserGoogleCalendar(
@@ -394,11 +399,34 @@ export const FullCalendar = () => {
             }
           },
           save: (taskName, taskDescription, startDate, endDate) => {
-            // update an event in fullcalendar
+            // update the event in FullCalendar
             info.event.setProp('title', taskName)
             info.event.setStart(startDate)
             info.event.setEnd(endDate)
             info.event.setExtendedProp('description', taskDescription)
+
+            // update the event in Google Calendar
+            const updatedGoogleCalendarEvent = {
+              summary: taskName,
+              description: taskDescription,
+              start: {
+                dateTime: startDate.toISOString(),
+                timeZone: timeZone,
+              },
+              end: {
+                dateTime: endDate.toISOString(),
+                timeZone: timeZone,
+              },
+            }
+
+            const calendarId = getEventCalendarId(info.event.id)
+
+            updateEventFromUserGoogleCalendar(
+              currentUser.id,
+              calendarId,
+              info.event.id,
+              updatedGoogleCalendarEvent,
+            )
           },
           start: start,
           end: end,
@@ -458,22 +486,7 @@ export const FullCalendar = () => {
           },
         }
 
-        /* find the id of calendar that the event belongs to */
-        let calendarId = null
-        for (const key in calendarsEvents) {
-          if (
-            calendarsEvents[key].find(
-              (calendarEvent) => calendarEvent.id === event.id,
-            )
-          ) {
-            if (key === 'custom') {
-              calendarId = USER_SELECTED_CALENDAR
-            } else {
-              calendarId = key
-            }
-            break
-          }
-        }
+        const calendarId = getEventCalendarId(event.id)
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
@@ -496,22 +509,7 @@ export const FullCalendar = () => {
           },
         }
 
-        /* find the id of calendar that the event belongs to */
-        let calendarId = null
-        for (const key in calendarsEvents) {
-          if (
-            calendarsEvents[key].find(
-              (calendarEvent) => calendarEvent.id === event.id,
-            )
-          ) {
-            if (key === 'custom') {
-              calendarId = USER_SELECTED_CALENDAR
-            } else {
-              calendarId = key
-            }
-            break
-          }
-        }
+        const calendarId = getEventCalendarId(event.id)
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
