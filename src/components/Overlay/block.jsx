@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import 'components/TaskEditor/styles/main.scss'
 import 'components/TaskEditor/styles/light.scss'
 import { useAutosizeTextArea } from 'hooks'
@@ -89,17 +89,14 @@ export const Block = ({
                   />
                 </div>
                 <div>
-                  <div
-                    className='add-task__attributes--left'
-                    style={{ marginLeft: '13px' }}
-                  >
+                  <div className='add-task__attributes--left'>
                     <MyDatePicker date={startDate} setDate={setStartDate} />
                     <MyTimePicker time={startDate} setTime={setStartDate} />
-                    <h3 style={{ marginRight: '10px', marginLeft: '4px' }}>
+                    <h3 style={{ marginRight: '7px', marginLeft: '7px' }}>
                       to
                     </h3>
-                    <MyTimePicker time={endDate} setTime={setEndDate} />
                     <MyDatePicker date={endDate} setDate={setEndDate} />
+                    <MyTimePicker time={endDate} setTime={setEndDate} />
                   </div>
                 </div>
                 <div style={{ marginTop: '20px' }}>
