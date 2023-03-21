@@ -44,6 +44,7 @@ export const Overlay = () => {
             remove={dialogProps.remove}
             copy={dialogProps.copy}
             backlog={dialogProps.backlog}
+            save={dialogProps.save}
           />
         )
       case 'ADD_PROJECT':

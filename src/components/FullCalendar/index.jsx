@@ -393,6 +393,13 @@ export const FullCalendar = () => {
               )
             }
           },
+          save: (taskName, taskDescription, startDate, endDate) => {
+            // update an event in fullcalendar
+            info.event.setProp('title', taskName)
+            info.event.setStart(startDate)
+            info.event.setEnd(endDate)
+            info.event.setExtendedProp('description', taskDescription)
+          },
           start: start,
           end: end,
         })

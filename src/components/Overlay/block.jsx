@@ -18,6 +18,7 @@ export const Block = ({
   remove,
   copy,
   backlog,
+  save,
 }) => {
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
@@ -42,6 +43,7 @@ export const Block = ({
   }
 
   const handleSave = () => {
+    save(taskName, taskDescription, startDate, endDate)
     closeOverlay()
   }
 
