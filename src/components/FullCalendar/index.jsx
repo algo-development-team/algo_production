@@ -29,7 +29,11 @@ import {
   updateEventsInfo,
 } from '../../backend/handleUserEventsInfo'
 import { quickAddTask } from '../../backend/handleUserTasks'
-import { getHighlightBlue } from '../../handleColorPalette'
+import {
+  getHighlightBlue,
+  GoogleEventColours,
+  isValidGoogleEventColorId,
+} from '../../handleColorPalette'
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
@@ -144,7 +148,9 @@ export const FullCalendar = () => {
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
-              backgroundColor: '#0747A6',
+              backgroundColor: isValidGoogleEventColorId(event.colorId)
+                ? GoogleEventColours[event.colorId - 1].hex
+                : GoogleEventColours[6].hex,
             }
 
             if (recurrenceObject.interval) {
@@ -173,7 +179,9 @@ export const FullCalendar = () => {
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
-              backgroundColor: '#0747A6',
+              backgroundColor: isValidGoogleEventColorId(event.colorId)
+                ? GoogleEventColours[event.colorId - 1].hex
+                : GoogleEventColours[6].hex,
             }
 
             return nonRecurringEvent
@@ -259,7 +267,7 @@ export const FullCalendar = () => {
             .toDate(),
           taskId: draggedEvent.taskId,
           description: draggedEvent.description,
-          backgroundColor: '#0747A6',
+          backgroundColor: GoogleEventColours[6].hex,
         }
         setCalendarsEvents({
           ...calendarsEvents,
@@ -480,7 +488,7 @@ export const FullCalendar = () => {
           end: info.endStr,
           taskId: null,
           description: '',
-          backgroundColor: '#0747A6',
+          backgroundColor: GoogleEventColours[6].hex,
         }
 
         setCalendarsEvents({
@@ -559,7 +567,6 @@ export const FullCalendar = () => {
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,
-      eventBackgroundColor: getHighlightBlue(isLight),
       eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
 

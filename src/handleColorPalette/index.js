@@ -20,3 +20,7 @@ export const GoogleEventColours = [
   { name: 'Basil', hex: '#0b8043' },
   { name: 'Tomato', hex: '#d60000' },
 ]
+
+export const isValidGoogleEventColorId = (colorId) => {
+  return colorId >= 1 && colorId <= 11
+}
