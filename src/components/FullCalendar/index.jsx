@@ -213,6 +213,178 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
+  const showEventPopup = (info, calendar) => {
+    info.jsEvent.preventDefault()
+
+    const taskname = info.event.title
+    const taskdescription = info.event.extendedProps?.description
+    const start = new Date(info.event.start)
+    const end = new Date(info.event.end)
+
+    setDialogProps({
+      taskname: taskname,
+      taskdescription: taskdescription,
+      taskbackgroundcolor: info.event.backgroundColor,
+      remove: () => {
+        const newCalendarsEvents = { ...calendarsEvents }
+        for (const key in newCalendarsEvents) {
+          newCalendarsEvents[key] = newCalendarsEvents[key].filter(
+            (event) => event.id !== info.event.id,
+          )
+        }
+
+        setCalendarsEvents(newCalendarsEvents)
+        // remove from calendar
+        info.event.remove()
+
+        /* find the id of calendar that the event belongs to */
+        const calendarId = getEventCalendarId(info.event.id)
+
+        // delete from Google Calendar
+        deleteEventFromUserGoogleCalendar(
+          currentUser.id,
+          calendarId,
+          info.event.id,
+        )
+      },
+      copy: () => {
+        const id = generateEventId()
+        const newEvent = {
+          end: info.event.endStr,
+          id: id,
+          start: info.event.startStr,
+          title: info.event.title,
+        }
+
+        setCalendarsEvents({
+          ...calendarsEvents,
+          custom: [...calendarsEvents.custom, newEvent],
+        })
+        calendar.addEvent(newEvent)
+
+        // add to Google Calendar
+        const newGoogleCalendarEvent = {
+          id: id,
+          summary: info.event.title,
+          start: {
+            dateTime: info.event.startStr,
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: info.event.endStr,
+            timeZone: timeZone,
+          },
+        }
+
+        // add to Google Calendar
+        addEventToUserGoogleCalendar(
+          currentUser.id,
+          USER_SELECTED_CALENDAR,
+          newGoogleCalendarEvent,
+        )
+      },
+      backlog: async () => {
+        const id = info.event.extendedProps?.taskId
+
+        if (id) {
+          /* if id exists, then remove it from scheduledTasks array in Firestore */
+          const eventsInfo = await getEventsInfo(currentUser.id)
+          const scheduledTasks = eventsInfo.scheduledTasks
+          const newScheduledTasks = scheduledTasks.filter(
+            (taskId) => taskId !== info.event.extendedProps.taskId,
+          )
+          updateEventsInfo(currentUser.id, {
+            scheduledTasks: newScheduledTasks,
+          })
+        } else {
+          /* if id does not exists, then create a quick task, and add it to notScheduledTasks array in Firestore */
+          const taskId = generatePushId()
+          const taskTimeLength = moment(info.event.end).diff(
+            moment(info.event.start),
+            'minutes',
+          )
+
+          await quickAddTask(
+            currentUser.id,
+            taskname,
+            taskId,
+            taskdescription,
+            taskTimeLength,
+          )
+        }
+      },
+      save: (
+        taskName,
+        taskDescription,
+        startDate,
+        endDate,
+        backgroundColor,
+      ) => {
+        if (endDate <= startDate) {
+          endDate = moment(startDate).add(15, 'minutes').toDate()
+        }
+
+        // update the event in FullCalendar
+        info.event.setProp('title', taskName)
+        info.event.setStart(startDate)
+        info.event.setEnd(endDate)
+        info.event.setProp('backgroundColor', backgroundColor)
+        info.event.setExtendedProp('description', taskDescription)
+
+        const calendarId = getEventCalendarId(info.event.id)
+        const calendarsEventsKey =
+          calendarId === 'primary' ? 'custom' : calendarId
+
+        // update the event in calendarsEvents
+        const newCalendarsEvents = { ...calendarsEvents }
+        newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
+          calendarsEventsKey
+        ].map((event) => {
+          if (event.id === info.event.id) {
+            return {
+              ...event,
+              title: taskName,
+              start: startDate,
+              end: endDate,
+              backgroundColor: backgroundColor,
+              description: taskDescription,
+            }
+          } else {
+            return event
+          }
+        })
+
+        // update the event in Google Calendar
+        const updatedGoogleCalendarEvent = {
+          summary: taskName,
+          description: taskDescription,
+          start: {
+            dateTime: startDate.toISOString(),
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: endDate.toISOString(),
+            timeZone: timeZone,
+          },
+          colorId:
+            GoogleEventColours.findIndex(
+              (colour) => colour.hex === backgroundColor,
+            ) + 1,
+        }
+
+        updateEventFromUserGoogleCalendar(
+          currentUser.id,
+          calendarId,
+          info.event.id,
+          updatedGoogleCalendarEvent,
+        )
+      },
+      start: start,
+      end: end,
+    })
+    setShowDialog('BLOCK')
+  }
+
   useEffect(() => {
     const externalEvents = new Draggable(externalEventsRef.current, {
       itemSelector: '.fc-event',
@@ -311,175 +483,7 @@ export const FullCalendar = () => {
         })
       },
       eventClick: function (info) {
-        info.jsEvent.preventDefault()
-
-        const taskname = info.event.title
-        const taskdescription = info.event.extendedProps?.description
-        const start = new Date(info.event.start)
-        const end = new Date(info.event.end)
-
-        setDialogProps({
-          taskname: taskname,
-          taskdescription: taskdescription,
-          taskbackgroundcolor: info.event.backgroundColor,
-          remove: () => {
-            const newCalendarsEvents = { ...calendarsEvents }
-            for (const key in newCalendarsEvents) {
-              newCalendarsEvents[key] = newCalendarsEvents[key].filter(
-                (event) => event.id !== info.event.id,
-              )
-            }
-
-            setCalendarsEvents(newCalendarsEvents)
-            // remove from calendar
-            info.event.remove()
-
-            /* find the id of calendar that the event belongs to */
-            const calendarId = getEventCalendarId(info.event.id)
-
-            // delete from Google Calendar
-            deleteEventFromUserGoogleCalendar(
-              currentUser.id,
-              calendarId,
-              info.event.id,
-            )
-          },
-          copy: () => {
-            const id = generateEventId()
-            const newEvent = {
-              end: info.event.endStr,
-              id: id,
-              start: info.event.startStr,
-              title: info.event.title,
-            }
-
-            setCalendarsEvents({
-              ...calendarsEvents,
-              custom: [...calendarsEvents.custom, newEvent],
-            })
-            calendar.addEvent(newEvent)
-
-            // add to Google Calendar
-            const newGoogleCalendarEvent = {
-              id: id,
-              summary: info.event.title,
-              start: {
-                dateTime: info.event.startStr,
-                timeZone: timeZone,
-              },
-              end: {
-                dateTime: info.event.endStr,
-                timeZone: timeZone,
-              },
-            }
-
-            // add to Google Calendar
-            addEventToUserGoogleCalendar(
-              currentUser.id,
-              USER_SELECTED_CALENDAR,
-              newGoogleCalendarEvent,
-            )
-          },
-          backlog: async () => {
-            const id = info.event.extendedProps?.taskId
-
-            if (id) {
-              /* if id exists, then remove it from scheduledTasks array in Firestore */
-              const eventsInfo = await getEventsInfo(currentUser.id)
-              const scheduledTasks = eventsInfo.scheduledTasks
-              const newScheduledTasks = scheduledTasks.filter(
-                (taskId) => taskId !== info.event.extendedProps.taskId,
-              )
-              updateEventsInfo(currentUser.id, {
-                scheduledTasks: newScheduledTasks,
-              })
-            } else {
-              /* if id does not exists, then create a quick task, and add it to notScheduledTasks array in Firestore */
-              const taskId = generatePushId()
-              const taskTimeLength = moment(info.event.end).diff(
-                moment(info.event.start),
-                'minutes',
-              )
-
-              await quickAddTask(
-                currentUser.id,
-                taskname,
-                taskId,
-                taskdescription,
-                taskTimeLength,
-              )
-            }
-          },
-          save: (
-            taskName,
-            taskDescription,
-            startDate,
-            endDate,
-            backgroundColor,
-          ) => {
-            if (endDate <= startDate) {
-              endDate = moment(startDate).add(15, 'minutes').toDate()
-            }
-
-            // update the event in FullCalendar
-            info.event.setProp('title', taskName)
-            info.event.setStart(startDate)
-            info.event.setEnd(endDate)
-            info.event.setProp('backgroundColor', backgroundColor)
-            info.event.setExtendedProp('description', taskDescription)
-
-            const calendarId = getEventCalendarId(info.event.id)
-            const calendarsEventsKey =
-              calendarId === 'primary' ? 'custom' : calendarId
-
-            // update the event in calendarsEvents
-            const newCalendarsEvents = { ...calendarsEvents }
-            newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
-              calendarsEventsKey
-            ].map((event) => {
-              if (event.id === info.event.id) {
-                return {
-                  ...event,
-                  title: taskName,
-                  start: startDate,
-                  end: endDate,
-                  backgroundColor: backgroundColor,
-                  description: taskDescription,
-                }
-              } else {
-                return event
-              }
-            })
-
-            // update the event in Google Calendar
-            const updatedGoogleCalendarEvent = {
-              summary: taskName,
-              description: taskDescription,
-              start: {
-                dateTime: startDate.toISOString(),
-                timeZone: timeZone,
-              },
-              end: {
-                dateTime: endDate.toISOString(),
-                timeZone: timeZone,
-              },
-              colorId:
-                GoogleEventColours.findIndex(
-                  (colour) => colour.hex === backgroundColor,
-                ) + 1,
-            }
-
-            updateEventFromUserGoogleCalendar(
-              currentUser.id,
-              calendarId,
-              info.event.id,
-              updatedGoogleCalendarEvent,
-            )
-          },
-          start: start,
-          end: end,
-        })
-        setShowDialog('BLOCK')
+        showEventPopup(info, calendar)
       },
       select: function (info) {
         const id = generateEventId()
