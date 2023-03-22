@@ -435,6 +435,12 @@ export const FullCalendar = () => {
       },
       editable: true,
       droppable: true,
+      dayMaxEventRows: true,
+      views: {
+        timeGrid: {
+          dayMaxEventRows: 3, // adjust to 6 only for timeGridWeek/timeGridDay
+        },
+      },
       // scrollTimeReset: false,
       // scrollTime: null,
       selectable: true,
