@@ -39,6 +39,7 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
             taskname={dialogProps.taskname}
             taskdescription={dialogProps.taskdescription}
+            taskbackgroundcolor={dialogProps.taskbackgroundcolor}
             start={dialogProps.start}
             end={dialogProps.end}
             remove={dialogProps.remove}

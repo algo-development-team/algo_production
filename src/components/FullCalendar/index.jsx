@@ -144,6 +144,7 @@ export const FullCalendar = () => {
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
+              backgroundColor: '#0747A6',
             }
 
             if (recurrenceObject.interval) {
@@ -172,6 +173,7 @@ export const FullCalendar = () => {
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
+              backgroundColor: '#0747A6',
             }
 
             return nonRecurringEvent
@@ -257,6 +259,7 @@ export const FullCalendar = () => {
             .toDate(),
           taskId: draggedEvent.taskId,
           description: draggedEvent.description,
+          backgroundColor: '#0747A6',
         }
         setCalendarsEvents({
           ...calendarsEvents,
@@ -310,6 +313,7 @@ export const FullCalendar = () => {
         setDialogProps({
           taskname: taskname,
           taskdescription: taskdescription,
+          taskbackgroundcolor: info.event.backgroundColor,
           remove: () => {
             const newCalendarsEvents = { ...calendarsEvents }
             for (const key in newCalendarsEvents) {
@@ -398,7 +402,13 @@ export const FullCalendar = () => {
               )
             }
           },
-          save: (taskName, taskDescription, startDate, endDate) => {
+          save: (
+            taskName,
+            taskDescription,
+            startDate,
+            endDate,
+            backgroundColor,
+          ) => {
             if (endDate <= startDate) {
               endDate = moment(startDate).add(15, 'minutes').toDate()
             }
@@ -407,7 +417,31 @@ export const FullCalendar = () => {
             info.event.setProp('title', taskName)
             info.event.setStart(startDate)
             info.event.setEnd(endDate)
+            info.event.setProp('backgroundColor', backgroundColor)
             info.event.setExtendedProp('description', taskDescription)
+
+            const calendarId = getEventCalendarId(info.event.id)
+            const calendarsEventsKey =
+              calendarId === 'primary' ? 'custom' : calendarId
+
+            // update the event in calendarsEvents
+            const newCalendarsEvents = { ...calendarsEvents }
+            newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
+              calendarsEventsKey
+            ].map((event) => {
+              if (event.id === info.event.id) {
+                return {
+                  ...event,
+                  title: taskName,
+                  start: startDate,
+                  end: endDate,
+                  backgroundColor: backgroundColor,
+                  description: taskDescription,
+                }
+              } else {
+                return event
+              }
+            })
 
             // update the event in Google Calendar
             const updatedGoogleCalendarEvent = {
@@ -422,8 +456,6 @@ export const FullCalendar = () => {
                 timeZone: timeZone,
               },
             }
-
-            const calendarId = getEventCalendarId(info.event.id)
 
             updateEventFromUserGoogleCalendar(
               currentUser.id,
@@ -448,6 +480,7 @@ export const FullCalendar = () => {
           end: info.endStr,
           taskId: null,
           description: '',
+          backgroundColor: '#0747A6',
         }
 
         setCalendarsEvents({

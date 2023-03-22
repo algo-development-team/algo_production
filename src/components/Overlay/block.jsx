@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import 'components/TaskEditor/styles/main.scss'
 import 'components/TaskEditor/styles/light.scss'
 import { useAutosizeTextArea } from 'hooks'
@@ -9,11 +9,14 @@ import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
 import { MyDatePicker } from './block/my-date-picker'
 import { MyTimePicker } from './block/my-time-picker'
 import { useResponsiveSizes } from 'hooks'
+import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
+import { GoogleEventColours } from 'handleColorPalette'
 
 export const Block = ({
   closeOverlay,
   taskname,
   taskdescription,
+  taskbackgroundcolor,
   start,
   end,
   remove,
@@ -27,6 +30,24 @@ export const Block = ({
   const [endDate, setEndDate] = useState(end)
   const textAreaRef = useRef(null)
   const { sizes } = useResponsiveSizes()
+  const [eventColour, setEventColour] = useState({
+    name:
+      GoogleEventColours.find(
+        (GoogleEventColour) => GoogleEventColour.hex === taskbackgroundcolor,
+      )?.name || 'Undefined',
+    hex: taskbackgroundcolor,
+  })
+  const [showSelectColourDropdown, setShowSelectColourDropdown] =
+    useState(false)
+  const [selectedColour, setSelectedColour] = useState(eventColour)
+
+  useEffect(() => {
+    setSelectedColour(eventColour)
+
+    return () => {
+      setSelectedColour(null)
+    }
+  }, [eventColour])
 
   const handleDelete = () => {
     remove()
@@ -45,7 +66,7 @@ export const Block = ({
   }
 
   const handleSave = () => {
-    save(taskName, taskDescription, startDate, endDate)
+    save(taskName, taskDescription, startDate, endDate, eventColour.hex)
     closeOverlay()
   }
 
@@ -101,7 +122,8 @@ export const Block = ({
                     </div>
                   </div>
                   {sizes.phone ? (
-                    <div>
+                    <div className='add-project__form-group' role='button'>
+                      <label>Time</label>
                       <div className='add-task__attributes--left'>
                         <MyDatePicker date={startDate} setDate={setStartDate} />
                         <MyTimePicker time={startDate} setTime={setStartDate} />
@@ -112,7 +134,8 @@ export const Block = ({
                       </div>
                     </div>
                   ) : (
-                    <div>
+                    <div className='add-project__form-group' role='button'>
+                      <label>Time</label>
                       <div className='add-task__attributes--left'>
                         <MyDatePicker date={startDate} setDate={setStartDate} />
                         <MyTimePicker time={startDate} setTime={setStartDate} />
@@ -124,6 +147,35 @@ export const Block = ({
                       </div>
                     </div>
                   )}
+                  <div>
+                    <div className='add-project__form-group' role='button'>
+                      <label>Color</label>
+                      <div
+                        className='add-project__select-color'
+                        onClick={() =>
+                          setShowSelectColourDropdown(!showSelectColourDropdown)
+                        }
+                      >
+                        <span
+                          className='add-project__selected-color'
+                          style={{ backgroundColor: `${selectedColour.hex}` }}
+                        />
+                        <span className='add-project__selected-color-name'>
+                          {selectedColour.name}
+                        </span>
+                        {showSelectColourDropdown && (
+                          <SetProjectColourDropdown
+                            setProjectColour={setEventColour}
+                            projectColour={eventColour}
+                            showSelectColourDropdown={showSelectColourDropdown}
+                            setShowSelectColourDropdown={
+                              setShowSelectColourDropdown
+                            }
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   <div style={{ marginTop: '20px' }}>
                     <textarea
                       className='add-task__input textarea'

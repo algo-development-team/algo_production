@@ -15,8 +15,8 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
     isEdit
       ? projectToEdit.projectColour
       : {
-          name: 'Charcoal',
-          hex: '#808080',
+          name: 'Peacock',
+          hex: '#039be5',
         },
   )
   const [projectIsList, setProjectIsList] = useState(
@@ -35,7 +35,14 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
 
   const updateProjectHandler = async (e) => {
     e.preventDefault()
-    await updatedProject(currentUser && currentUser.id, projectToEdit.projectId, projectName, projectColour, projectIsList, projectIsWork)
+    await updatedProject(
+      currentUser && currentUser.id,
+      projectToEdit.projectId,
+      projectName,
+      projectColour,
+      projectIsList,
+      projectIsWork,
+    )
   }
   useEffect(() => {
     setSelectedColour(projectColour)
