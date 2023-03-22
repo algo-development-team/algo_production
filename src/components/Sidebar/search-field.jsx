@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useExternalEventsContextValue } from 'context'
-import { useTasks, useScheduledTasks } from 'hooks'
+import { useTasks, useScheduledTasks, useProjects } from 'hooks'
 import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
 import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
-import { useThemeContextValue } from 'context'
 
 export const SearchField = ({
   addValue,
@@ -16,9 +15,13 @@ export const SearchField = ({
   const [searchText, setSearchText] = useState('')
   const { externalEventsRef } = useExternalEventsContextValue()
   const { tasks } = useTasks()
+  const { projects } = useProjects()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
-  const { isLight } = useThemeContextValue()
+
+  useEffect(() => {
+    console.log('projects', projects) // DEBUGGING
+  }, [projects])
 
   useEffect(() => {
     const updateUnscheduledTasks = () => {
@@ -37,6 +40,11 @@ export const SearchField = ({
       updateUnscheduledTasks()
     }
   }, [loading, scheduledTasks, tasks])
+
+  const getProjectColourHex = (projectId) => {
+    const project = projects.find((project) => project.projectId === projectId)
+    return project?.projectColour?.hex || GoogleEventColours[6].hex
+  }
 
   const searchTasks = (searchText, tasks) => {
     if (!searchText) {
@@ -138,12 +146,15 @@ export const SearchField = ({
           return (
             <div
               className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              data-event={JSON.stringify(task)}
+              data-event={JSON.stringify({
+                ...task,
+                backgroundColor: getProjectColourHex(task.projectId),
+              })}
               style={{
                 width: '100%',
                 height: `${task.timeLength}px`,
                 marginBottom: '10px',
-                backgroundColor: GoogleEventColours[6].hex,
+                backgroundColor: getProjectColourHex(task.projectId),
               }}
             >
               {task.timeLength < 60 ? (

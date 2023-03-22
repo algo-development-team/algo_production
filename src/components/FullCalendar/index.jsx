@@ -385,6 +385,24 @@ export const FullCalendar = () => {
     setShowDialog('BLOCK')
   }
 
+  function formatEventTimeLength(timeLength) {
+    console.log('timeLength', timeLength)
+
+    const minutes = timeLength
+
+    // Calculate hours and minutes
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+
+    // Format as HH:MM
+    const formattedHours = ('0' + hours).slice(-2)
+    const formattedMinutes = ('0' + remainingMinutes).slice(-2)
+
+    console.log('formattedTimeLength', formattedHours + ':' + formattedMinutes)
+
+    return formattedHours + ':' + formattedMinutes
+  }
+
   useEffect(() => {
     const externalEvents = new Draggable(externalEventsRef.current, {
       itemSelector: '.fc-event',
@@ -393,7 +411,8 @@ export const FullCalendar = () => {
         return {
           id: generateEventId(),
           title: eventEl.innerText,
-          duration: `00:${draggedEvent.timeLength}`,
+          duration: formatEventTimeLength(draggedEvent.timeLength),
+          backgroundColor: draggedEvent.backgroundColor,
         }
       },
     })
@@ -439,7 +458,7 @@ export const FullCalendar = () => {
             .toDate(),
           taskId: draggedEvent.taskId,
           description: draggedEvent.description,
-          backgroundColor: GoogleEventColours[6].hex,
+          backgroundColor: draggedEvent.backgroundColor,
         }
         setCalendarsEvents({
           ...calendarsEvents,
