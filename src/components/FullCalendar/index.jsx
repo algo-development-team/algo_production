@@ -463,6 +463,10 @@ export const FullCalendar = () => {
                 dateTime: endDate.toISOString(),
                 timeZone: timeZone,
               },
+              colorId:
+                GoogleEventColours.findIndex(
+                  (colour) => colour.hex === backgroundColor,
+                ) + 1,
             }
 
             updateEventFromUserGoogleCalendar(
