@@ -131,34 +131,6 @@ export const FullCalendar = () => {
       const newCalendarsEvents = { ...calendarsEvents }
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
-          /* MEETING INFO START */
-          // // Assuming 'event' is a valid Google Calendar API event object
-          // const meetingInfo = {}
-          // // Get the list of attendees
-          // if (event.attendees) {
-          // }
-
-          // meetingInfo.attendees = event.attendees.map(function (attendee) {
-          //   return attendee.email
-          // })
-
-          // // Get the summary, location, and description of the event
-          // meetingInfo.location = event.location
-
-          // // Get the start and end times of the event
-          // meetingInfo.startTime = event.start.dateTime
-          // meetingInfo.endTime = event.end.dateTime
-
-          // // Check if the event has a Google Meet link
-          // if (event.conferenceData && event.conferenceData.entryPoints) {
-          //   // Get the Google Meet link from the event object
-          //   meetingInfo.meetLink = event.conferenceData.entryPoints[0].uri
-          // }
-
-          // // Log the meeting information
-          // console.log(meetingInfo)
-          /* MEETING INFO END */
-
           if (event.recurrence) {
             const rule = new RRule.fromString(
               event.recurrence[event.recurrence.length - 1],
@@ -178,6 +150,17 @@ export const FullCalendar = () => {
               backgroundColor: isValidGoogleEventColorId(event.colorId)
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
+            }
+            if (event?.location) {
+              recurringEvent.location = event?.location
+            }
+            if (event.conferenceData && event.conferenceData.entryPoints) {
+              recurringEvent.meetLink = event.conferenceData.entryPoints[0].uri
+            }
+            if (event?.attendees) {
+              recurringEvent.attendees = event?.attendees?.map((attendee) => {
+                return attendee.email
+              })
             }
 
             if (recurrenceObject.interval) {
@@ -209,6 +192,24 @@ export const FullCalendar = () => {
               backgroundColor: isValidGoogleEventColorId(event.colorId)
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
+              location: event?.location,
+              attendees: event?.attendees?.map(function (attendee) {
+                return attendee.email
+              }),
+            }
+            if (event?.location) {
+              nonRecurringEvent.location = event?.location
+            }
+            if (event.conferenceData && event.conferenceData.entryPoints) {
+              nonRecurringEvent.meetLink =
+                event.conferenceData.entryPoints[0].uri
+            }
+            if (event?.attendees) {
+              nonRecurringEvent.attendees = event?.attendees?.map(
+                (attendee) => {
+                  return attendee.email
+                },
+              )
             }
 
             return nonRecurringEvent
@@ -248,11 +249,18 @@ export const FullCalendar = () => {
     const start = new Date(info.event.start)
     const end = new Date(info.event.end)
 
+    const location = info.event.extendedProps?.location
+    const meetLink = info.event.extendedProps?.meetLink
+    const attendees = info.event.extendedProps?.attendees
+
     setDialogProps({
       allDay: info.event.allDay,
       taskname: taskname,
       taskdescription: taskdescription,
       taskbackgroundcolor: info.event.backgroundColor,
+      location: location,
+      meetLink: meetLink,
+      attendees: attendees,
       remove: () => {
         const newCalendarsEvents = { ...calendarsEvents }
         for (const key in newCalendarsEvents) {
@@ -347,6 +355,7 @@ export const FullCalendar = () => {
             taskId,
             taskdescription,
             taskTimeLength,
+            'DUPLICATE', 
           )
         }
       },

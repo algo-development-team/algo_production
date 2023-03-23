@@ -335,10 +335,11 @@ export const quickAddTask = async (
   taskId,
   taskDescription,
   taskTimeLength,
+  projectId, // 'REMINDER'
 ) => {
   try {
     await addDoc(collection(db, 'user', `${userId}/tasks`), {
-      projectId: '',
+      projectId: projectId,
       startDate: '',
       date: '',
       name: taskName,

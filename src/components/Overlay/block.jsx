@@ -18,6 +18,9 @@ export const Block = ({
   taskname,
   taskdescription,
   taskbackgroundcolor,
+  location,
+  meetLink,
+  attendees,
   start,
   end,
   remove,
@@ -154,6 +157,14 @@ export const Block = ({
                     </div>
                   </div>
                   {!allDay && dateAndTimePickers()}
+                  <div className='add-project__form-group' role='button'>
+                    <label>Google Meet</label>
+                    {/* WRITE SOME CODE HERE */}
+                  </div>
+                  <div className='add-project__form-group' role='button'>
+                    <label>Location</label>
+                    {/* WRITE SOME CODE HERE */}
+                  </div>
                   <div>
                     <div className='add-project__form-group' role='button'>
                       <label>Color</label>

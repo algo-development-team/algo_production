@@ -41,6 +41,9 @@ export const Overlay = () => {
             taskname={dialogProps.taskname}
             taskdescription={dialogProps.taskdescription}
             taskbackgroundcolor={dialogProps.taskbackgroundcolor}
+            location={dialogProps.location}
+            meetLink={dialogProps.meetLink}
+            attendees={dialogProps.attendees}
             start={dialogProps.start}
             end={dialogProps.end}
             remove={dialogProps.remove}
