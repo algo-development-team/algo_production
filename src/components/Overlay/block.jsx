@@ -11,6 +11,8 @@ import { MyTimePicker } from './block/my-time-picker'
 import { useResponsiveSizes } from 'hooks'
 import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
+import { cropLabel } from 'handleLabel'
+import { ReactComponent as GoogleCalendarIcon } from 'assets/svg/google-calendar.svg'
 
 export const Block = ({
   closeOverlay,
@@ -44,6 +46,21 @@ export const Block = ({
   const [showSelectColourDropdown, setShowSelectColourDropdown] =
     useState(false)
   const [selectedColour, setSelectedColour] = useState(eventColour)
+  const [eventLocation, setEventLocation] = useState(location)
+  const [eventMeetLink, setEventMeetLink] = useState(meetLink)
+  const [eventAttendees, setEventAttendees] = useState(attendees)
+
+  useEffect(() => {
+    console.log('eventLocation', eventLocation) // DEBUGGING
+  }, [eventLocation])
+
+  useEffect(() => {
+    console.log('eventMeetLink', eventMeetLink) // DEBUGGING
+  }, [eventMeetLink])
+
+  useEffect(() => {
+    console.log('eventAttendees', eventAttendees) // DEBUGGING
+  }, [eventAttendees])
 
   useEffect(() => {
     setSelectedColour(eventColour)
@@ -81,7 +98,7 @@ export const Block = ({
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div style={{ display: 'inline-block' }}>
           <input
-            className={`add-task__input title`}
+            className='add-task__input title'
             value={taskName}
             onChange={(event) => {
               setTaskName(event.target.value)
@@ -135,8 +152,52 @@ export const Block = ({
   const googleMeetEditor = () => {
     return (
       <div className='add-project__form-group' role='button'>
-        <label>Google Meet</label>
-        {/* WRITE SOME CODE HERE */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            columnGap: '10px',
+          }}
+        >
+          <div style={{ display: 'inline-block' }}>
+            <label>Google Meet</label>
+            {eventMeetLink !== '' ? (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <GoogleCalendarIcon strokeWidth='.1' height={12} width={12} />
+                <a href={eventMeetLink} target='_blank' rel='noreferrer'>
+                  Join Google Meet
+                </a>
+                <button>Remove</button>
+              </div>
+            ) : (
+              <div>
+                <button>Add Google Meet</button>
+              </div>
+            )}
+          </div>
+          <div style={{ display: 'inline-block' }}>
+            <label>Attendees</label>
+            {eventAttendees.map((eventAttendee) => {
+              return (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    backgroundColor: GoogleEventColours[6].hex,
+                    marginBottom: '5px',
+                    borderRadius: '10px',
+                    paddingLeft: '5px',
+                    paddingRight: '5px',
+                  }}
+                >
+                  <span>{cropLabel(eventAttendee, 30)}</span>
+                  <CloseIcon height={12} width={12} />
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     )
   }
@@ -145,7 +206,15 @@ export const Block = ({
     return (
       <div className='add-project__form-group' role='button'>
         <label>Location</label>
-        {/* WRITE SOME CODE HERE */}
+        <input
+          className='add-task__input'
+          value={eventLocation}
+          onChange={(event) => {
+            setEventLocation(event.target.value)
+          }}
+          type='text'
+          placeholder='Add location'
+        />
       </div>
     )
   }

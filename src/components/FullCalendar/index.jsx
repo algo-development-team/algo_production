@@ -249,9 +249,9 @@ export const FullCalendar = () => {
     const start = new Date(info.event.start)
     const end = new Date(info.event.end)
 
-    const location = info.event.extendedProps?.location
-    const meetLink = info.event.extendedProps?.meetLink
-    const attendees = info.event.extendedProps?.attendees
+    const location = info.event.extendedProps?.location || ''
+    const meetLink = info.event.extendedProps?.meetLink || ''
+    const attendees = info.event.extendedProps?.attendees || []
 
     setDialogProps({
       allDay: info.event.allDay,
@@ -355,7 +355,7 @@ export const FullCalendar = () => {
             taskId,
             taskdescription,
             taskTimeLength,
-            'DUPLICATE', 
+            'DUPLICATE',
           )
         }
       },
