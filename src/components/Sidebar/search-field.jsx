@@ -20,10 +20,6 @@ export const SearchField = ({
   const { scheduledTasks, loading } = useScheduledTasks()
 
   useEffect(() => {
-    console.log('projects', projects) // DEBUGGING
-  }, [projects])
-
-  useEffect(() => {
     const updateUnscheduledTasks = () => {
       const updatedUnscheduledTasks = []
       for (const task of tasks) {

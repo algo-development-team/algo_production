@@ -37,6 +37,7 @@ export const Overlay = () => {
         return (
           <Block
             closeOverlay={closeOverlay}
+            allDay={dialogProps.allDay}
             taskname={dialogProps.taskname}
             taskdescription={dialogProps.taskdescription}
             taskbackgroundcolor={dialogProps.taskbackgroundcolor}

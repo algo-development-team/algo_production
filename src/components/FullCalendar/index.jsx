@@ -222,6 +222,7 @@ export const FullCalendar = () => {
     const end = new Date(info.event.end)
 
     setDialogProps({
+      allDay: info.event.allDay,
       taskname: taskname,
       taskdescription: taskdescription,
       taskbackgroundcolor: info.event.backgroundColor,
@@ -254,6 +255,7 @@ export const FullCalendar = () => {
           id: id,
           start: info.event.startStr,
           title: info.event.title,
+          backgroundColor: info.event.backgroundColor,
         }
 
         setCalendarsEvents({
@@ -266,14 +268,22 @@ export const FullCalendar = () => {
         const newGoogleCalendarEvent = {
           id: id,
           summary: info.event.title,
-          start: {
-            dateTime: info.event.startStr,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: info.event.endStr,
-            timeZone: timeZone,
-          },
+          start: !info.event.allDay
+            ? {
+                dateTime: info.event.startStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: info.event.startStr,
+              },
+          end: !info.event.allDay
+            ? {
+                dateTime: info.event.endStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: info.event.endStr,
+              },
         }
 
         // add to Google Calendar
@@ -358,14 +368,22 @@ export const FullCalendar = () => {
         const updatedGoogleCalendarEvent = {
           summary: taskName,
           description: taskDescription,
-          start: {
-            dateTime: startDate.toISOString(),
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: endDate.toISOString(),
-            timeZone: timeZone,
-          },
+          start: !info.event.allDay
+            ? {
+                dateTime: startDate.toISOString(),
+                timeZone: timeZone,
+              }
+            : {
+                date: startDate.toISOString().slice(0, 10),
+              },
+          end: !info.event.allDay
+            ? {
+                dateTime: endDate.toISOString(),
+                timeZone: timeZone,
+              }
+            : {
+                date: endDate.toISOString().slice(0, 10),
+              },
           colorId:
             GoogleEventColours.findIndex(
               (colour) => colour.hex === backgroundColor,
@@ -475,21 +493,35 @@ export const FullCalendar = () => {
           id: id,
           summary: draggedEvent.name,
           description: draggedEvent.description,
-          start: {
-            dateTime: info.dateStr,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: moment(info.date)
-              .add(draggedEvent.timeLength, 'minutes')
-              .toISOString(),
-            timeZone: timeZone,
-          },
+          start: !info.allDay
+            ? {
+                dateTime: info.dateStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: info.dateStr,
+              },
+          end: !info.allDay
+            ? {
+                dateTime: moment(info.date)
+                  .add(draggedEvent.timeLength, 'minutes')
+                  .toISOString(),
+                timeZone: timeZone,
+              }
+            : {
+                date: moment(info.dateStr, 'YYYY-MM-DD')
+                  .add(1, 'days')
+                  .format('YYYY-MM-DD'),
+              },
           extendedProperties: {
             shared: {
               taskId: draggedEvent.taskId,
             },
           },
+          colorId:
+            GoogleEventColours.findIndex(
+              (colour) => colour.hex === draggedEvent.backgroundColor,
+            ) + 1,
         }
 
         // add to Google Calendar
@@ -533,14 +565,22 @@ export const FullCalendar = () => {
         const newGoogleCalendarEvent = {
           id: id,
           summary: 'New Event',
-          start: {
-            dateTime: info.startStr,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: info.endStr,
-            timeZone: timeZone,
-          },
+          start: !info.allDay
+            ? {
+                dateTime: info.startStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: info.startStr,
+              },
+          end: !info.allDay
+            ? {
+                dateTime: info.endStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: info.endStr,
+              },
         }
 
         // add to Google Calendar
@@ -554,14 +594,22 @@ export const FullCalendar = () => {
         const { event } = eventResizeInfo
 
         const updatedGoogleCalendarEvent = {
-          start: {
-            dateTime: event.startStr,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: event.endStr,
-            timeZone: timeZone,
-          },
+          start: !event.allDay
+            ? {
+                dateTime: event.startStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: event.startStr,
+              },
+          end: !event.allDay
+            ? {
+                dateTime: event.endStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: event.endStr,
+              },
         }
 
         const calendarId = getEventCalendarId(event.id)
@@ -577,14 +625,22 @@ export const FullCalendar = () => {
         const { event } = eventDropInfo
 
         const updatedGoogleCalendarEvent = {
-          start: {
-            dateTime: event.startStr,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: event.endStr,
-            timeZone: timeZone,
-          },
+          start: !event.allDay
+            ? {
+                dateTime: event.startStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: event.startStr,
+              },
+          end: !event.allDay
+            ? {
+                dateTime: event.endStr,
+                timeZone: timeZone,
+              }
+            : {
+                date: event.endStr,
+              },
         }
 
         const calendarId = getEventCalendarId(event.id)

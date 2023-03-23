@@ -14,6 +14,7 @@ import { GoogleEventColours } from 'handleColorPalette'
 
 export const Block = ({
   closeOverlay,
+  allDay,
   taskname,
   taskdescription,
   taskbackgroundcolor,
@@ -72,6 +73,37 @@ export const Block = ({
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
+  const dateAndTimePickers = () => {
+    if (sizes.phone) {
+      return (
+        <div className='add-project__form-group' role='button'>
+          <label>Time</label>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={startDate} setDate={setStartDate} />
+            <MyTimePicker time={startDate} setTime={setStartDate} />
+          </div>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={endDate} setDate={setEndDate} />
+            <MyTimePicker time={endDate} setTime={setEndDate} />
+          </div>
+        </div>
+      )
+    } else {
+      return (
+        <div className='add-project__form-group' role='button'>
+          <label>Time</label>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={startDate} setDate={setStartDate} />
+            <MyTimePicker time={startDate} setTime={setStartDate} />
+            <h3 style={{ marginRight: '7px', marginLeft: '7px' }}>to</h3>
+            <MyDatePicker date={endDate} setDate={setEndDate} />
+            <MyTimePicker time={endDate} setTime={setEndDate} />
+          </div>
+        </div>
+      )
+    }
+  }
+
   return (
     <>
       <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
@@ -121,32 +153,7 @@ export const Block = ({
                       />
                     </div>
                   </div>
-                  {sizes.phone ? (
-                    <div className='add-project__form-group' role='button'>
-                      <label>Time</label>
-                      <div className='add-task__attributes--left'>
-                        <MyDatePicker date={startDate} setDate={setStartDate} />
-                        <MyTimePicker time={startDate} setTime={setStartDate} />
-                      </div>
-                      <div className='add-task__attributes--left'>
-                        <MyDatePicker date={endDate} setDate={setEndDate} />
-                        <MyTimePicker time={endDate} setTime={setEndDate} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className='add-project__form-group' role='button'>
-                      <label>Time</label>
-                      <div className='add-task__attributes--left'>
-                        <MyDatePicker date={startDate} setDate={setStartDate} />
-                        <MyTimePicker time={startDate} setTime={setStartDate} />
-                        <h3 style={{ marginRight: '7px', marginLeft: '7px' }}>
-                          to
-                        </h3>
-                        <MyDatePicker date={endDate} setDate={setEndDate} />
-                        <MyTimePicker time={endDate} setTime={setEndDate} />
-                      </div>
-                    </div>
-                  )}
+                  {!allDay && dateAndTimePickers()}
                   <div>
                     <div className='add-project__form-group' role='button'>
                       <label>Color</label>
