@@ -18,7 +18,6 @@ import { SetNewTaskPriority } from './set-new-task-priority'
 import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import { SetNewTaskDeadlineType } from './set-new-task-deadline-type'
 import { SetNewTaskLinkedTasks } from './set-new-task-linked-tasks'
-import { MenuButton } from './menu-button'
 import {
   getTaskDocsInProjectColumnNotCompleted,
   check,

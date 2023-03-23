@@ -37,12 +37,19 @@ export const Overlay = () => {
         return (
           <Block
             closeOverlay={closeOverlay}
+            allDay={dialogProps.allDay}
             taskname={dialogProps.taskname}
-            info={dialogProps.info}
-            remove={dialogProps.remove}
-            copy={dialogProps.copy}
+            taskdescription={dialogProps.taskdescription}
+            taskbackgroundcolor={dialogProps.taskbackgroundcolor}
+            location={dialogProps.location}
+            meetLink={dialogProps.meetLink}
+            attendees={dialogProps.attendees}
             start={dialogProps.start}
             end={dialogProps.end}
+            remove={dialogProps.remove}
+            copy={dialogProps.copy}
+            backlog={dialogProps.backlog}
+            save={dialogProps.save}
           />
         )
       case 'ADD_PROJECT':

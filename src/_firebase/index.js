@@ -36,8 +36,8 @@ export const batchWriteIcebreakerTasks = async (userId) => {
       name: 'Welcome 👋',
       projectId: icebreakerProjectId,
       projectColour: {
-        name: 'Charcoal',
-        hex: '#808080',
+        name: 'Peacock',
+        hex: '#039be5',
       },
       projectIsList: false,
       projectIsWork: true,

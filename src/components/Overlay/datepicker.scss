@@ -1,6 +1,12 @@
 .my-datepicker {
   width: 67px;
+  height: 25px;
+  margin-right: 0;
+  padding-right: 0;
+  background-color: transparent;
+  border: 1px solid grey;
+  color: inherit;
 }
 .react-datepicker-wrapper {
-  max-width: 85px;
+  width: 70px;
 }

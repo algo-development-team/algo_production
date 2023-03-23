@@ -2,116 +2,56 @@ import React, { useState, useRef, useEffect } from 'react'
 import 'components/TaskEditor/styles/main.scss'
 import 'components/TaskEditor/styles/light.scss'
 import { useAutosizeTextArea } from 'hooks'
-import { useCalendarsEventsValue } from 'context'
 import { ReactComponent as CopyIcon } from 'assets/svg/copy.svg'
 import { ReactComponent as DeleteIcon } from 'assets/svg/trash.svg'
 import { ReactComponent as CloseIcon } from 'assets/svg/x.svg'
-import DatePicker from 'react-datepicker'
-import 'react-datepicker/dist/react-datepicker.css'
-import './datepicker.scss'
-import moment from 'moment'
-import TimePicker from 'react-time-picker'
+import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
+import { MyDatePicker } from './block/my-date-picker'
+import { MyTimePicker } from './block/my-time-picker'
+import { useResponsiveSizes } from 'hooks'
+import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
+import { GoogleEventColours } from 'handleColorPalette'
 
 export const Block = ({
   closeOverlay,
+  allDay,
   taskname,
   taskdescription,
-  info,
-  remove,
-  copy,
+  taskbackgroundcolor,
+  location,
+  meetLink,
+  attendees,
   start,
   end,
+  remove,
+  copy,
+  backlog,
+  save,
 }) => {
-  const [startSchedule, setStartSchedule] = useState({
-    time: `${moment(start).format('HH:mm')}`,
-  })
-  const [endSchedule, setEndSchedule] = useState({
-    time: `${moment(end).format('HH:mm')}`,
-  })
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
-  const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
-  const textAreaRef = useRef(null)
   const [startDate, setStartDate] = useState(start)
   const [endDate, setEndDate] = useState(end)
+  const textAreaRef = useRef(null)
+  const { sizes } = useResponsiveSizes()
+  const [eventColour, setEventColour] = useState({
+    name:
+      GoogleEventColours.find(
+        (GoogleEventColour) => GoogleEventColour.hex === taskbackgroundcolor,
+      )?.name || 'Undefined',
+    hex: taskbackgroundcolor,
+  })
+  const [showSelectColourDropdown, setShowSelectColourDropdown] =
+    useState(false)
+  const [selectedColour, setSelectedColour] = useState(eventColour)
 
-  function MyTimePicker() {
-    const [time, setTime] = useState(`${moment(start).format('hh:mm A')}`)
+  useEffect(() => {
+    setSelectedColour(eventColour)
 
-    const onChange = (newTime) => {
-      setTime(newTime)
+    return () => {
+      setSelectedColour(null)
     }
-    return (
-      <TimePicker
-        onChange={onChange}
-        value={time}
-        disableClock={true}
-        format='hh:mm A'
-        step={900}
-        use12Hours={true}
-      />
-    )
-  }
-
-  const StartDatePickerComponent = () => {
-    return (
-      <DatePicker
-        className='my-datepicker'
-        showIcon
-        selected={startDate}
-        dateFormat='dd/MM/yyyy'
-        onChange={(date) => setStartDate(date)}
-      />
-    )
-  }
-
-  const EndDatePickerComponent = () => {
-    return (
-      <DatePicker
-        className='my-datepicker'
-        showIcon
-        dateFormat='dd/MM/yyyy'
-        selected={endDate}
-        onChange={(date) => setEndDate(date)}
-      />
-    )
-  }
-
-  const startdate = () => {
-    const startyear = moment(startDate).format('YYYY')
-    const startmonth = moment(startDate).format('MM')
-    const startday = moment(startDate).format('DD')
-    const time12hr = `${startSchedule.time}`
-    const starthour = moment(time12hr, 'h:mm A').format('HH')
-    const startminute = moment(time12hr, 'h:mm A').format('mm')
-    const starttimezone = moment(startDate).format('Z')
-    const formattedDateTimeString = moment(startDate).format(
-      '[GMT]ZZ [(Eastern Standard Time)]',
-    )
-    const startdate1 = `${startyear}-${startmonth}-${startday}`
-    const startdate = moment(startdate1, 'YYYY-MM-DD').format('ddd MMM yyyy')
-    const starttime = `${startdate} ${starthour}:${startminute}:00 ${starttimezone} ${formattedDateTimeString}`
-    const datetimeString = `${starttime}`
-    return datetimeString
-  }
-
-  const enddate = () => {
-    const startyear = moment(endDate).format('YYYY')
-    const startmonth = moment(endDate).format('MM')
-    const startday = moment(endDate).format('DD')
-    const time12hr = `${endSchedule.time}`
-    const starthour = moment(time12hr, 'h:mm A').format('HH')
-    const startminute = moment(time12hr, 'h:mm A').format('mm')
-    const starttimezone = moment(endDate).format('Z')
-    const formattedDateTimeString = moment(endDate).format(
-      '[GMT]ZZ [(Eastern Standard Time)]',
-    )
-    const startdate1 = `${startyear}-${startmonth}-${startday}`
-    const startdate = moment(startdate1, 'YYYY-MM-DD').format('ddd MMM yyyy')
-    const starttime = `${startdate} ${starthour}:${startminute}:00 ${starttimezone} ${formattedDateTimeString}`
-    const datetimeString = `${starttime}`
-    return datetimeString
-  }
+  }, [eventColour])
 
   const handleDelete = () => {
     remove()
@@ -123,117 +63,167 @@ export const Block = ({
     closeOverlay()
   }
 
-  useEffect(() => {
-    info.jsEvent.preventDefault()
-    const star = startdate()
-    const ende = enddate()
-    info.event.setDates(startDate, endDate)
-  }, [startDate, endDate])
+  const handleBacklog = () => {
+    remove()
+    backlog()
+    closeOverlay()
+  }
 
-  const task = {
-    blocks: [],
-    boardStatus: 'TODO',
-    completed: false,
-    date: '',
-    deadlineType: 'HARD',
-    description: 'Click + button to add new project.',
-    eventIds: [],
-    important: false,
-    index: 0,
-    isBlockedBy: [],
-    name: 'Start your own project! 🚀',
-    priority: 3,
-    projectId: 'welcome',
-    startDate: '',
-    taskId: 'icebreaker_1',
-    timeLength: 15,
+  const handleSave = () => {
+    save(taskName, taskDescription, startDate, endDate, eventColour.hex)
+    closeOverlay()
   }
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
+
+  const dateAndTimePickers = () => {
+    if (sizes.phone) {
+      return (
+        <div className='add-project__form-group' role='button'>
+          <label>Time</label>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={startDate} setDate={setStartDate} />
+            <MyTimePicker time={startDate} setTime={setStartDate} />
+          </div>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={endDate} setDate={setEndDate} />
+            <MyTimePicker time={endDate} setTime={setEndDate} />
+          </div>
+        </div>
+      )
+    } else {
+      return (
+        <div className='add-project__form-group' role='button'>
+          <label>Time</label>
+          <div className='add-task__attributes--left'>
+            <MyDatePicker date={startDate} setDate={setStartDate} />
+            <MyTimePicker time={startDate} setTime={setStartDate} />
+            <h3 style={{ marginRight: '7px', marginLeft: '7px' }}>to</h3>
+            <MyDatePicker date={endDate} setDate={setEndDate} />
+            <MyTimePicker time={endDate} setTime={setEndDate} />
+          </div>
+        </div>
+      )
+    }
+  }
 
   return (
     <>
       <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
         <div
-          className={`add-task__wrapper`}
+          className='event__wrapper'
           onClick={(event) => {
             event.stopPropagation()
           }}
         >
-          {
-            <form className='add-task' style={{ maxWidth: '600px' }}>
-              <div className={`add-task__container`}>
-                <div>
-                  <input
-                    className={`add-task__input title`}
-                    value={taskName}
-                    onChange={(event) => {
-                      setTaskName(event.target.value)
-                    }}
-                    style={{ maxWidth: '300px', minWidth: '300px' }}
-                    required
-                    type='text'
-                    placeholder={`${taskname}`}
-                  />
-                  <CopyIcon
-                    onClick={() => handleCopy()}
-                    style={{
-                      maxHeight: '25px',
-                      maxWidth: '25px',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <DeleteIcon
-                    style={{
-                      maxHeight: '25px',
-                      maxWidth: '25px',
-                      marginRight: '10px',
-                    }}
-                    onClick={() => handleDelete()}
-                  />
-                  <CloseIcon
-                    style={{ maxHeight: '25px', maxWidth: '25px' }}
-                    onClick={() => closeOverlay()}
-                  />
-                </div>
-                <div>
+          <div className='add-task__wrapper'>
+            {
+              <form className='add-task'>
+                <div className={`add-task__container`}>
                   <div
-                    className='add-task__attributes--left'
-                    style={{ marginLeft: '13px' }}
+                    style={{ display: 'flex', justifyContent: 'space-between' }}
                   >
-                    <StartDatePickerComponent />
-                    <MyTimePicker />
-                    <h3 style={{ marginRight: '10px', marginLeft: '4px' }}>
-                      to
-                    </h3>
-                    <MyTimePicker />
-                    <EndDatePickerComponent />
+                    <div style={{ display: 'inline-block' }}>
+                      <input
+                        className={`add-task__input title`}
+                        value={taskName}
+                        onChange={(event) => {
+                          setTaskName(event.target.value)
+                        }}
+                        required
+                        type='text'
+                        placeholder={`${taskname}`}
+                      />
+                    </div>
+                    <div
+                      style={{ display: 'inline-block', textAlign: 'right' }}
+                    >
+                      <BacklogIcon
+                        className='action-btn'
+                        onClick={() => handleBacklog()}
+                      />
+                      <CopyIcon
+                        className='action-btn'
+                        onClick={() => handleCopy()}
+                      />
+                      <DeleteIcon
+                        className='action-btn'
+                        onClick={() => handleDelete()}
+                      />
+                      <CloseIcon
+                        className='action-btn'
+                        onClick={() => closeOverlay()}
+                      />
+                    </div>
+                  </div>
+                  {!allDay && dateAndTimePickers()}
+                  <div className='add-project__form-group' role='button'>
+                    <label>Google Meet</label>
+                    {/* WRITE SOME CODE HERE */}
+                  </div>
+                  <div className='add-project__form-group' role='button'>
+                    <label>Location</label>
+                    {/* WRITE SOME CODE HERE */}
+                  </div>
+                  <div>
+                    <div className='add-project__form-group' role='button'>
+                      <label>Color</label>
+                      <div
+                        className='add-project__select-color'
+                        onClick={() =>
+                          setShowSelectColourDropdown(!showSelectColourDropdown)
+                        }
+                      >
+                        <span
+                          className='add-project__selected-color'
+                          style={{ backgroundColor: `${selectedColour.hex}` }}
+                        />
+                        <span className='add-project__selected-color-name'>
+                          {selectedColour.name}
+                        </span>
+                        {showSelectColourDropdown && (
+                          <SetProjectColourDropdown
+                            setProjectColour={setEventColour}
+                            projectColour={eventColour}
+                            showSelectColourDropdown={showSelectColourDropdown}
+                            setShowSelectColourDropdown={
+                              setShowSelectColourDropdown
+                            }
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '20px' }}>
+                    <textarea
+                      className='add-task__input textarea'
+                      value={taskDescription}
+                      onChange={(e) => setTaskDescription(e.target.value)}
+                      ref={textAreaRef}
+                      rows={1}
+                      type='text'
+                      placeholder='Write something...'
+                    />
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      marginBottom: '10px',
+                    }}
+                  >
+                    <div className='add-task__attributes'>
+                      <button
+                        className=' action add-task__actions--add-task'
+                        onClick={() => handleSave()}
+                      >
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div style={{ marginTop: '20px' }}>
-                  <textarea
-                    className='add-task__input textarea'
-                    value={taskDescription}
-                    onChange={(e) => setTaskDescription(e.target.value)}
-                    ref={textAreaRef}
-                    rows={1}
-                    type='text'
-                    placeholder={`${taskdescription}`}
-                  />
-                </div>
-
-                {/* Start Date, End Date, Priority, and Time Length Editors Section */}
-                <div
-                  style={{
-                    display: 'flex',
-                    marginBottom: '10px',
-                  }}
-                >
-                  <div className='add-task__attributes'></div>
-                </div>
-              </div>
-            </form>
-          }
+              </form>
+            }
+          </div>
         </div>
       </div>
     </>
