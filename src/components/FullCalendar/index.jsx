@@ -30,7 +30,6 @@ import {
 } from '../../backend/handleUserEventsInfo'
 import { quickAddTask } from '../../backend/handleUserTasks'
 import {
-  getHighlightBlue,
   GoogleEventColours,
   isValidGoogleEventColorId,
 } from '../../handleColorPalette'
@@ -132,6 +131,34 @@ export const FullCalendar = () => {
       const newCalendarsEvents = { ...calendarsEvents }
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
+          /* MEETING INFO START */
+          // // Assuming 'event' is a valid Google Calendar API event object
+          // const meetingInfo = {}
+          // // Get the list of attendees
+          // if (event.attendees) {
+          // }
+
+          // meetingInfo.attendees = event.attendees.map(function (attendee) {
+          //   return attendee.email
+          // })
+
+          // // Get the summary, location, and description of the event
+          // meetingInfo.location = event.location
+
+          // // Get the start and end times of the event
+          // meetingInfo.startTime = event.start.dateTime
+          // meetingInfo.endTime = event.end.dateTime
+
+          // // Check if the event has a Google Meet link
+          // if (event.conferenceData && event.conferenceData.entryPoints) {
+          //   // Get the Google Meet link from the event object
+          //   meetingInfo.meetLink = event.conferenceData.entryPoints[0].uri
+          // }
+
+          // // Log the meeting information
+          // console.log(meetingInfo)
+          /* MEETING INFO END */
+
           if (event.recurrence) {
             const rule = new RRule.fromString(
               event.recurrence[event.recurrence.length - 1],
