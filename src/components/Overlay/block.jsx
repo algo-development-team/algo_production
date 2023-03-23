@@ -76,6 +76,31 @@ export const Block = ({
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
+  const titleAndOptions = () => {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ display: 'inline-block' }}>
+          <input
+            className={`add-task__input title`}
+            value={taskName}
+            onChange={(event) => {
+              setTaskName(event.target.value)
+            }}
+            required
+            type='text'
+            placeholder={`${taskname}`}
+          />
+        </div>
+        <div style={{ display: 'inline-block', textAlign: 'right' }}>
+          <BacklogIcon className='action-btn' onClick={() => handleBacklog()} />
+          <CopyIcon className='action-btn' onClick={() => handleCopy()} />
+          <DeleteIcon className='action-btn' onClick={() => handleDelete()} />
+          <CloseIcon className='action-btn' onClick={() => closeOverlay()} />
+        </div>
+      </div>
+    )
+  }
+
   const dateAndTimePickers = () => {
     if (sizes.phone) {
       return (
@@ -107,6 +132,72 @@ export const Block = ({
     }
   }
 
+  const googleMeetEditor = () => {
+    return (
+      <div className='add-project__form-group' role='button'>
+        <label>Google Meet</label>
+        {/* WRITE SOME CODE HERE */}
+      </div>
+    )
+  }
+
+  const locationEditor = () => {
+    return (
+      <div className='add-project__form-group' role='button'>
+        <label>Location</label>
+        {/* WRITE SOME CODE HERE */}
+      </div>
+    )
+  }
+
+  const eventColorSelector = () => {
+    return (
+      <div>
+        <div className='add-project__form-group' role='button'>
+          <label>Color</label>
+          <div
+            className='add-project__select-color'
+            onClick={() =>
+              setShowSelectColourDropdown(!showSelectColourDropdown)
+            }
+          >
+            <span
+              className='add-project__selected-color'
+              style={{ backgroundColor: `${selectedColour.hex}` }}
+            />
+            <span className='add-project__selected-color-name'>
+              {selectedColour.name}
+            </span>
+            {showSelectColourDropdown && (
+              <SetProjectColourDropdown
+                setProjectColour={setEventColour}
+                projectColour={eventColour}
+                showSelectColourDropdown={showSelectColourDropdown}
+                setShowSelectColourDropdown={setShowSelectColourDropdown}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const descriptionEditor = () => {
+    return (
+      <div style={{ marginTop: '20px' }}>
+        <textarea
+          className='add-task__input textarea'
+          value={taskDescription}
+          onChange={(e) => setTaskDescription(e.target.value)}
+          ref={textAreaRef}
+          rows={1}
+          type='text'
+          placeholder='Write something...'
+        />
+      </div>
+    )
+  }
+
   return (
     <>
       <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
@@ -120,91 +211,12 @@ export const Block = ({
             {
               <form className='add-task'>
                 <div className={`add-task__container`}>
-                  <div
-                    style={{ display: 'flex', justifyContent: 'space-between' }}
-                  >
-                    <div style={{ display: 'inline-block' }}>
-                      <input
-                        className={`add-task__input title`}
-                        value={taskName}
-                        onChange={(event) => {
-                          setTaskName(event.target.value)
-                        }}
-                        required
-                        type='text'
-                        placeholder={`${taskname}`}
-                      />
-                    </div>
-                    <div
-                      style={{ display: 'inline-block', textAlign: 'right' }}
-                    >
-                      <BacklogIcon
-                        className='action-btn'
-                        onClick={() => handleBacklog()}
-                      />
-                      <CopyIcon
-                        className='action-btn'
-                        onClick={() => handleCopy()}
-                      />
-                      <DeleteIcon
-                        className='action-btn'
-                        onClick={() => handleDelete()}
-                      />
-                      <CloseIcon
-                        className='action-btn'
-                        onClick={() => closeOverlay()}
-                      />
-                    </div>
-                  </div>
+                  {titleAndOptions()}
                   {!allDay && dateAndTimePickers()}
-                  <div className='add-project__form-group' role='button'>
-                    <label>Google Meet</label>
-                    {/* WRITE SOME CODE HERE */}
-                  </div>
-                  <div className='add-project__form-group' role='button'>
-                    <label>Location</label>
-                    {/* WRITE SOME CODE HERE */}
-                  </div>
-                  <div>
-                    <div className='add-project__form-group' role='button'>
-                      <label>Color</label>
-                      <div
-                        className='add-project__select-color'
-                        onClick={() =>
-                          setShowSelectColourDropdown(!showSelectColourDropdown)
-                        }
-                      >
-                        <span
-                          className='add-project__selected-color'
-                          style={{ backgroundColor: `${selectedColour.hex}` }}
-                        />
-                        <span className='add-project__selected-color-name'>
-                          {selectedColour.name}
-                        </span>
-                        {showSelectColourDropdown && (
-                          <SetProjectColourDropdown
-                            setProjectColour={setEventColour}
-                            projectColour={eventColour}
-                            showSelectColourDropdown={showSelectColourDropdown}
-                            setShowSelectColourDropdown={
-                              setShowSelectColourDropdown
-                            }
-                          />
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div style={{ marginTop: '20px' }}>
-                    <textarea
-                      className='add-task__input textarea'
-                      value={taskDescription}
-                      onChange={(e) => setTaskDescription(e.target.value)}
-                      ref={textAreaRef}
-                      rows={1}
-                      type='text'
-                      placeholder='Write something...'
-                    />
-                  </div>
+                  {googleMeetEditor()}
+                  {locationEditor()}
+                  {eventColorSelector()}
+                  {descriptionEditor()}
                   <div
                     style={{
                       display: 'flex',
