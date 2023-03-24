@@ -2,7 +2,7 @@ import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
 import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-time-length-popper'
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
-export const SetNewTaskTimeLength1 = ({
+export const SetNewTaskTimeLength2 = ({
   isQuickAdd,
   isPopup,
   setTaskTimeLength,

@@ -1,9 +1,9 @@
-import { SetNewTaskTimeLength } from './filter-task-dropdown'
-import { SetNewTaskTimeLength2 } from './filter-value-task-dropdown'
+import { SetNewTaskTimeLength1 } from './filter-value-task-dropdown'
+import { SetNewTaskTimeLength2 } from './filter-value-task-dropdown2'
 
 export const FilterTaskbar = ({setFilterValue}) => {
     return (
-        <>
+        <>ddTask
         <div style = {{display:'inline-flex'}}>
             <label
             //className="labels"
@@ -54,7 +54,7 @@ export const FilterTaskbar = ({setFilterValue}) => {
                 display: 'inline-flex',
             }}
             >Filter By</label>
-            <SetNewTaskTimeLength/>
+            <SetNewTaskTimeLength1/>
         </div>
         <div style = {{display:'inline-flex', width: '100%', }}>
             <label
