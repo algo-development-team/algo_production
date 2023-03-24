@@ -37,14 +37,14 @@ export const Sidebar = (props) => {
           <div>
             <button style={{ display: 'flex' }}>
               <Taskbar
+                  type='FILTER_TASKS'
+                  value={FilterTasks}
+                  setValue={setFilterTasks}
+                />
+              <Taskbar
                 type='ADD_TASKS'
                 value={AddTasks}
                 setValue={setAddTasks}
-              />
-              <Taskbar
-                type='FILTER_TASKS'
-                value={FilterTasks}
-                setValue={setFilterTasks}
               />
             </button>
 
