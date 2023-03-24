@@ -151,6 +151,7 @@ export const SearchField = ({
                 height: `${task.timeLength}px`,
                 marginBottom: '10px',
                 backgroundColor: getProjectColourHex(task.projectId),
+                border: 'none',
               }}
             >
               {task.timeLength < 60 ? (

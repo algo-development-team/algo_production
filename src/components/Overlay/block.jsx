@@ -13,6 +13,7 @@ import { useResponsiveSizes } from 'hooks'
 import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
 import { cropLabel } from 'handleLabel'
+import { isValidEmail } from 'handleEmail'
 import { ReactComponent as GoogleCalendarIcon } from 'assets/svg/google-calendar.svg'
 
 export const Block = ({
@@ -206,7 +207,10 @@ export const Block = ({
                 <PlusIcon
                   onClick={(e) => {
                     e.preventDefault()
-                    if (!eventAttendees.includes(newEventAttendee)) {
+                    if (
+                      !eventAttendees.includes(newEventAttendee) &&
+                      isValidEmail(newEventAttendee)
+                    ) {
                       const newAttendees = [...eventAttendees]
                       newAttendees.push(newEventAttendee)
                       setEventAttendees(newAttendees)
