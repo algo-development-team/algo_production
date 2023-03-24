@@ -5,6 +5,7 @@ import { useAutosizeTextArea } from 'hooks'
 import { ReactComponent as CopyIcon } from 'assets/svg/copy.svg'
 import { ReactComponent as DeleteIcon } from 'assets/svg/trash.svg'
 import { ReactComponent as CloseIcon } from 'assets/svg/x.svg'
+import { ReactComponent as PlusIcon } from 'assets/svg/plus.svg'
 import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
 import { MyDatePicker } from './block/my-date-picker'
 import { MyTimePicker } from './block/my-time-picker'
@@ -49,18 +50,7 @@ export const Block = ({
   const [eventLocation, setEventLocation] = useState(location)
   const [eventMeetLink, setEventMeetLink] = useState(meetLink)
   const [eventAttendees, setEventAttendees] = useState(attendees)
-
-  useEffect(() => {
-    console.log('eventLocation', eventLocation) // DEBUGGING
-  }, [eventLocation])
-
-  useEffect(() => {
-    console.log('eventMeetLink', eventMeetLink) // DEBUGGING
-  }, [eventMeetLink])
-
-  useEffect(() => {
-    console.log('eventAttendees', eventAttendees) // DEBUGGING
-  }, [eventAttendees])
+  const [newEventAttendee, setNewEventAttendee] = useState('')
 
   useEffect(() => {
     setSelectedColour(eventColour)
@@ -162,41 +152,72 @@ export const Block = ({
           <div style={{ display: 'inline-block' }}>
             <label>Google Meet</label>
             {eventMeetLink !== '' ? (
-              <div style={{ display: 'flex', alignItems: 'center' }}>
-                <GoogleCalendarIcon strokeWidth='.1' height={12} width={12} />
+              <div className='google-meet-join-button'>
+                <GoogleCalendarIcon strokeWidth='.1' height={24} width={24} />
                 <a href={eventMeetLink} target='_blank' rel='noreferrer'>
                   Join Google Meet
                 </a>
-                <button>Remove</button>
+                <CloseIcon
+                  height={12}
+                  width={12}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    setEventMeetLink('')
+                  }}
+                />
               </div>
             ) : (
-              <div>
-                <button>Add Google Meet</button>
+              <div className='google-meet-schedule-button'>
+                <GoogleCalendarIcon strokeWidth='.1' height={24} width={24} />
+                <p>Add Google Meet</p>
               </div>
             )}
           </div>
-          <div style={{ display: 'inline-block' }}>
-            <label>Attendees</label>
-            {eventAttendees.map((eventAttendee) => {
-              return (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    backgroundColor: GoogleEventColours[6].hex,
-                    marginBottom: '5px',
-                    borderRadius: '10px',
-                    paddingLeft: '5px',
-                    paddingRight: '5px',
+          {eventMeetLink !== '' && (
+            <div style={{ display: 'inline-block' }}>
+              <label>Attendees</label>
+              {eventAttendees.map((eventAttendee, i) => {
+                return (
+                  <div className='attendee-icon'>
+                    <span>{cropLabel(eventAttendee, 30)}</span>
+                    <CloseIcon
+                      height={12}
+                      width={12}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => {
+                        const newAttendees = [...eventAttendees]
+                        newAttendees.splice(i, 1)
+                        setEventAttendees(newAttendees)
+                      }}
+                    />
+                  </div>
+                )
+              })}
+              <div style={{ display: 'flex' }}>
+                <input
+                  className='add-task__input--no-bottom-margin'
+                  type='text'
+                  placeholder='Add attendee email'
+                  value={newEventAttendee}
+                  onChange={(e) => {
+                    setNewEventAttendee(e.target.value)
                   }}
-                >
-                  <span>{cropLabel(eventAttendee, 30)}</span>
-                  <CloseIcon height={12} width={12} />
-                </div>
-              )
-            })}
-          </div>
+                />
+                <PlusIcon
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (!eventAttendees.includes(newEventAttendee)) {
+                      const newAttendees = [...eventAttendees]
+                      newAttendees.push(newEventAttendee)
+                      setEventAttendees(newAttendees)
+                    }
+                    setNewEventAttendee('')
+                  }}
+                  style={{ cursor: 'pointer' }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
