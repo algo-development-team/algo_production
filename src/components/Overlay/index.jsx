@@ -27,13 +27,32 @@ export const Overlay = () => {
   const closeOverlay = () => {
     setShowDialog('')
   }
+
   useEffect(() => {
     setShowDialog(false)
   }, [])
+
   const renderSwitch = (params) => {
     switch (showDialog) {
       case 'BLOCK':
-        return <Block closeOverlay={closeOverlay} taskname={dialogProps.taskname} info={dialogProps.info} start={dialogProps.start} end={dialogProps.end}/>
+        return (
+          <Block
+            closeOverlay={closeOverlay}
+            allDay={dialogProps.allDay}
+            taskname={dialogProps.taskname}
+            taskdescription={dialogProps.taskdescription}
+            taskbackgroundcolor={dialogProps.taskbackgroundcolor}
+            location={dialogProps.location}
+            meetLink={dialogProps.meetLink}
+            attendees={dialogProps.attendees}
+            start={dialogProps.start}
+            end={dialogProps.end}
+            remove={dialogProps.remove}
+            copy={dialogProps.copy}
+            backlog={dialogProps.backlog}
+            save={dialogProps.save}
+          />
+        )
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
@@ -143,7 +162,6 @@ export const Overlay = () => {
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
           />
         )
-      /* LOOK AT HERE FOR POPUP */
       case 'SET_SELECTED_TASKS':
         return (
           <SetSelectedTasksPopper

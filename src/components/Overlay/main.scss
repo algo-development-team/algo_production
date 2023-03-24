@@ -11,19 +11,31 @@
   background-color: rgba(0, 0, 0, 0.64);
 }
 
-// &__set-selected-type {
-//
-//
 .quick-add-task__wrapper {
   width: 770px;
   background-color: #202020;
-  border-radius: 5px;
+  border-radius: 10px;
   box-shadow: 0 1px 4px 0 #00000014, 0 15px 50px 0 #00000099;
   & > .add-task__wrapper > form {
     margin-top: 0;
     margin-bottom: 0;
   }
   @include respond(tab-port) {
+    position: inherit;
+    width: 95%;
+  }
+}
+
+.event__wrapper {
+  width: 460px;
+  background-color: #202020;
+  border-radius: 10px;
+  // box-shadow: 0 1px 4px 0 #00000014, 0 15px 50px 0 #00000099;
+  & > .add-task__wrapper > form {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  @include respond(phone) {
     position: inherit;
     width: 95%;
   }
@@ -41,4 +53,11 @@
   border-bottom: 0;
   border-bottom-left-radius: unset;
   border-bottom-right-radius: unset;
+}
+
+.action-btn {
+  max-height: 25px;
+  max-width: 25px;
+  margin-right: 10px;
+  cursor: pointer;
 }

@@ -329,6 +329,38 @@ export const check = async (checklist, userId, taskId) => {
   }
 }
 
+export const quickAddTask = async (
+  userId,
+  taskName,
+  taskId,
+  taskDescription,
+  taskTimeLength,
+  projectId, // 'REMINDER'
+) => {
+  try {
+    await addDoc(collection(db, 'user', `${userId}/tasks`), {
+      projectId: projectId,
+      startDate: '',
+      date: '',
+      name: taskName,
+      taskId: taskId,
+      completed: false,
+      boardStatus: '',
+      important: false,
+      description: taskDescription ? taskDescription : '', // string
+      priority: 1, // number (int) (range: 1-3)
+      timeLength: taskTimeLength, // number (int) (range: 15-2400)
+      deadlineType: 'HARD', // string (range: 'HARD', 'SOFT', 'NONE')
+      blocks: [], // array of taskIds
+      isBlockedBy: [], // array of taskIds
+      index: -1,
+      eventIds: [],
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export const addTask = async (
   userId,
   selectedProjectId,
