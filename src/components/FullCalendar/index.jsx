@@ -22,23 +22,16 @@ import {
 import { useAuth, useUnselectedCalendarIds } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
-<<<<<<< HEAD
-import { useOverlayContextValue } from 'context'
-import { CalendarContainer } from 'react-datepicker'
-import { CopyValue } from 'context/CopyContext.js'
-=======
 import { timeZone } from 'handleCalendars'
 import { RRule } from 'rrule'
 import { getEventsInfo, updateEventsInfo } from '../../backend/handleEventsInfo'
 import { getHighlightBlue } from '../../handleColorPalette'
 
 const USER_SELECTED_CALENDAR = 'primary'
->>>>>>> 798f4b3b137e619012416871ad789f152d2b351a
 
 export const FullCalendar = () => {
   const [view, setView] = useState(`dayGridWeek`)
   const [infoEvent, setInfoEvent] = useState(null)
-  const { C, setC } = CopyValue()
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -46,12 +39,6 @@ export const FullCalendar = () => {
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
   const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
-<<<<<<< HEAD
-  const { setShowDialog, setDialogProps } = useOverlayContextValue()
-  const [count, setCount] = useState(0)
-
-  
-=======
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
@@ -73,7 +60,6 @@ export const FullCalendar = () => {
       ws.close()
     }
   }, [])
->>>>>>> 798f4b3b137e619012416871ad789f152d2b351a
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
@@ -228,12 +214,8 @@ export const FullCalendar = () => {
       scrollTimeReset: false,
       scrollTime: "12:00",
       selectable: true,
-<<<<<<< HEAD
       eventBorderColor: '#3788D8',
       initialView: `${view}`, // set the default view to timeGridWeek
-=======
-      initialView: 'timeGridWeek', // set the default view to timeGridWeek
->>>>>>> 798f4b3b137e619012416871ad789f152d2b351a
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
@@ -291,20 +273,20 @@ export const FullCalendar = () => {
         setView(info.view.type)
       },
       eventClick: function (info) {
-<<<<<<< HEAD
-        setInfoEvent(info.event)
+
+        // setInfoEvent(info.event)
         info.jsEvent.preventDefault();
-        const clickedEvent = info.event;
+        // const clickedEvent = info.event;
 
-        const taskname = clickedEvent.title;
-        const taskdescription = clickedEvent.description;
-        const start = new Date(clickedEvent.start);
-        const end = new Date(clickedEvent.end);
+        // const taskname = clickedEvent.title;
+        // const taskdescription = clickedEvent.description;
+        // const start = new Date(clickedEvent.start);
+        // const end = new Date(clickedEvent.end);
 
-        setDialogProps({ taskname: taskname, taskdescription: taskdescription, info: info, start: start, end: end });
-        setShowDialog('BLOCK')
-=======
-        info.jsEvent.preventDefault()
+        // setDialogProps({ taskname: taskname, taskdescription: taskdescription, info: info, start: start, end: end });
+        // setShowDialog('BLOCK')
+
+        
 
         // delete from FullCalendar
         if (window.confirm('Are you sure you want to delete this event?')) {
@@ -345,7 +327,6 @@ export const FullCalendar = () => {
             info.event.id,
           )
         }
->>>>>>> 798f4b3b137e619012416871ad789f152d2b351a
       },
       select: function (info) {
         const id = generateEventId()
@@ -473,13 +454,6 @@ export const FullCalendar = () => {
     const intervalId = setInterval(() => {
       setCurrentTime(new Date())
     }, 5 * 60 * 1000) // 5 minutes in milliseconds
-
-    if(C == true){
-      const copiedEvent = {...infoEvent};
-      calendar.addEvent(copiedEvent);
-      console.log(copiedEvent);
-      setC(false);
-    }
     
     return () => {
       calendar.destroy()
@@ -493,7 +467,6 @@ export const FullCalendar = () => {
     externalEventsRef,
     currentTime,
     googleCalendars,
-    C,
   ])
 
   return <div ref={calendarRef}></div>
