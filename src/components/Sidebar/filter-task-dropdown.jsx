@@ -3,11 +3,6 @@ import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-ti
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const SetNewTaskTimeLength = ({
-  isQuickAdd,
-  isPopup,
-  setTaskTimeLength,
-  taskTimeLength,
-  task,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -15,21 +10,6 @@ export const SetNewTaskTimeLength = ({
   const showQUickAddDropDown = (parentPosition) => {
     setParentPosition(parentPosition)
     setShowPopup(true)
-  }
-
-  const getTimeLengthText = (taskTimeLength) => {
-    const min = taskTimeLength % 60
-    const hour = (taskTimeLength - min) / 60
-    let text = ''
-    if (hour !== 0) {
-      text += `${hour}h`
-    }
-    if (hour !== 0 && min !== 0) {
-      text += ` ${min}min`
-    } else if (min !== 0) {
-      text += `${min}min`
-    }
-    return text
   }
 
   return (
@@ -68,7 +48,6 @@ export const SetNewTaskTimeLength = ({
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {taskTimeLength ? getTimeLengthText(taskTimeLength) : 'None'}
       </div>
       {showPopup && (
         <SetNewTaskTimeLengthPopper
