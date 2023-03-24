@@ -3,7 +3,7 @@ import { SetNewTaskTimeLength2 } from './filter-value-task-dropdown2'
 
 export const FilterTaskbar = ({setFilterValue}) => {
     return (
-        <>ddTask
+        <>
         <div style = {{display:'inline-flex'}}>
             <label
             //className="labels"
@@ -54,7 +54,7 @@ export const FilterTaskbar = ({setFilterValue}) => {
                 display: 'inline-flex',
             }}
             >Filter By</label>
-            <SetNewTaskTimeLength1/>
+            {/* <SetNewTaskTimeLength1/> */}
         </div>
         <div style = {{display:'inline-flex', width: '100%', }}>
             <label
@@ -72,7 +72,7 @@ export const FilterTaskbar = ({setFilterValue}) => {
                 display: 'inline-flex',
             }}
             >Value</label>
-            <SetNewTaskTimeLength2/>
+            {/* <SetNewTaskTimeLength2/> */}
         </div>
             <button
             className='taskbar__actions--cancel'

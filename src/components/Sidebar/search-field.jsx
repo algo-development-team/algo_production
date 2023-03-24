@@ -125,9 +125,9 @@ export const SearchField = ({
         {addValue && !filterValue && <AddTaskbar setAddValue={setAddValue} />}
       </div>
       <div>
-        {filterValue && !addValue && (
+        {filterValue && !addValue && 
           <FilterTaskbar setFilterValue={setFilterValue} />
-        )}
+        }
       </div>
 
       <div

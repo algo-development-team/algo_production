@@ -21,7 +21,7 @@ export const AddTaskbar = ({setAddValue}) => {
             }}
             placeholder="Add task..."
             />
-            <SetNewTaskTimeLength/>
+            {/* <SetNewTaskTimeLength/> */}
         </div>
             <button
             className='taskbar__actions--add-task'
