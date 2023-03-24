@@ -7,6 +7,9 @@ import { ReactComponent as DeleteIcon } from 'assets/svg/trash.svg'
 import { ReactComponent as CloseIcon } from 'assets/svg/x.svg'
 import { ReactComponent as PlusIcon } from 'assets/svg/plus.svg'
 import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
+import { ReactComponent as CheckCircleIcon } from 'assets/svg/check-circle.svg'
+import { ReactComponent as RemoveCircleIcon } from 'assets/svg/remove-circle.svg'
+import { ReactComponent as QuestionCircleIcon } from 'assets/svg/question-circle.svg'
 import { MyDatePicker } from './block/my-date-picker'
 import { MyTimePicker } from './block/my-time-picker'
 import { useResponsiveSizes } from 'hooks'
@@ -14,7 +17,10 @@ import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
 import { cropLabel } from 'handleLabel'
 import { isValidEmail } from 'handleEmail'
-import { ReactComponent as GoogleCalendarIcon } from 'assets/svg/google-calendar.svg'
+import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.svg'
+import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
+import { generateMeetLinkForExistingEvent } from '../../google'
+import { useAuth } from 'hooks'
 
 export const Block = ({
   closeOverlay,
@@ -25,6 +31,8 @@ export const Block = ({
   location,
   meetLink,
   attendees,
+  eventId,
+  calendarId,
   start,
   end,
   remove,
@@ -38,6 +46,7 @@ export const Block = ({
   const [endDate, setEndDate] = useState(end)
   const textAreaRef = useRef(null)
   const { sizes } = useResponsiveSizes()
+  const { currentUser } = useAuth()
   const [eventColour, setEventColour] = useState({
     name:
       GoogleEventColours.find(
@@ -52,6 +61,30 @@ export const Block = ({
   const [eventMeetLink, setEventMeetLink] = useState(meetLink)
   const [eventAttendees, setEventAttendees] = useState(attendees)
   const [newEventAttendee, setNewEventAttendee] = useState('')
+  const [currentUserResponseStatus, setCurrentUserResponseStatus] =
+    useState('needsAction')
+
+  useEffect(() => {
+    for (const eventAttendee of eventAttendees) {
+      if (eventAttendee.email === currentUser?.email) {
+        setCurrentUserResponseStatus(eventAttendee.responseStatus)
+        break
+      }
+    }
+  }, [eventAttendees, currentUser])
+
+  const getUpdatedEventAttendees = () => {
+    const updatedEventAttendees = [...eventAttendees]
+
+    for (const updatedEventAttendee of updatedEventAttendees) {
+      if (updatedEventAttendee.email === currentUser?.email) {
+        updatedEventAttendee.responseStatus = currentUserResponseStatus
+        break
+      }
+    }
+
+    return updatedEventAttendees
+  }
 
   useEffect(() => {
     setSelectedColour(eventColour)
@@ -78,8 +111,24 @@ export const Block = ({
   }
 
   const handleSave = () => {
-    save(taskName, taskDescription, startDate, endDate, eventColour.hex)
+    save(
+      taskName,
+      taskDescription,
+      startDate,
+      endDate,
+      eventColour.hex,
+      getUpdatedEventAttendees(),
+    )
     closeOverlay()
+  }
+
+  const handleAddMeetings = async () => {
+    const newEventMeetLink = await generateMeetLinkForExistingEvent(
+      currentUser && currentUser.id,
+      calendarId,
+      eventId,
+    )
+    console.log('newEventMeetLink', newEventMeetLink) // DEBUGGING
   }
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -140,7 +189,104 @@ export const Block = ({
     }
   }
 
-  const googleMeetEditor = () => {
+  const getAcceptButtonStyle = () => {
+    if (currentUserResponseStatus === 'accepted') {
+      return { backgroundColor: GoogleEventColours[6].hex }
+    } else {
+      return {}
+    }
+  }
+
+  const getDeclineButtonStyle = () => {
+    if (currentUserResponseStatus === 'declined') {
+      return { backgroundColor: GoogleEventColours[6].hex }
+    } else {
+      return {}
+    }
+  }
+
+  const meetingUserResponseStatusButtons = () => {
+    if (
+      !eventAttendees
+        .map((eventAttendee) => eventAttendee.email)
+        .includes(currentUser?.email)
+    )
+      return null
+    return (
+      <div style={{ display: 'flex', marginTop: '10px', gap: '10px' }}>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setCurrentUserResponseStatus('accepted')
+          }}
+          style={getAcceptButtonStyle()}
+          className='attendee-icon'
+        >
+          Yes
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+            setCurrentUserResponseStatus('declined')
+          }}
+          style={getDeclineButtonStyle()}
+          className='attendee-icon'
+        >
+          No
+        </button>
+      </div>
+    )
+  }
+
+  const getMeetingIcon = (url) => {
+    if (url.includes('meet.google.com')) {
+      return <GoogleMeetIcon strokeWidth='.1' height={24} width={24} />
+    } else if (url.includes('zoom.us')) {
+      return <ZoomIcon strokeWidth='.1' height={24} width={24} />
+    } else {
+      return null
+    }
+  }
+
+  const getJoinButtonText = (url) => {
+    if (url.includes('meet.google.com')) {
+      return 'Join Google Meet'
+    } else if (url.includes('zoom.us')) {
+      return 'Join Zoom Meeting'
+    } else {
+      return 'Join Meeting'
+    }
+  }
+
+  const getResponseStatusIcon = (responseStatus) => {
+    if (responseStatus === 'accepted') {
+      return (
+        <CheckCircleIcon
+          height={16}
+          width={16}
+          fill={GoogleEventColours[1].hex}
+        />
+      )
+    } else if (responseStatus === 'declined') {
+      return (
+        <RemoveCircleIcon
+          height={16}
+          width={16}
+          fill={GoogleEventColours[10].hex}
+        />
+      )
+    } else {
+      return (
+        <QuestionCircleIcon
+          height={16}
+          width={16}
+          fill={GoogleEventColours[4].hex}
+        />
+      )
+    }
+  }
+
+  const meetingEditor = () => {
     return (
       <div className='add-project__form-group' role='button'>
         <div
@@ -151,25 +297,41 @@ export const Block = ({
           }}
         >
           <div style={{ display: 'inline-block' }}>
-            <label>Google Meet</label>
+            <label>Meeting</label>
             {eventMeetLink !== '' ? (
-              <div className='google-meet-join-button'>
-                <GoogleCalendarIcon strokeWidth='.1' height={24} width={24} />
-                <a href={eventMeetLink} target='_blank' rel='noreferrer'>
-                  Join Google Meet
-                </a>
-                <CloseIcon
-                  height={12}
-                  width={12}
+              <div>
+                <div
+                  className='google-meet-join-button'
                   style={{ cursor: 'pointer' }}
-                  onClick={() => {
-                    setEventMeetLink('')
-                  }}
-                />
+                >
+                  {getMeetingIcon(eventMeetLink)}
+                  <a
+                    href={eventMeetLink}
+                    target='_blank'
+                    rel='noreferrer'
+                    style={{ marginLeft: '5px' }}
+                  >
+                    {getJoinButtonText(eventMeetLink)}
+                  </a>
+                  <CloseIcon
+                    height={12}
+                    width={12}
+                    style={{ marginLeft: '5px' }}
+                    onClick={() => {
+                      setEventMeetLink('')
+                      // DO MORE HERE
+                    }}
+                  />
+                </div>
+                {meetingUserResponseStatusButtons()}
               </div>
             ) : (
-              <div className='google-meet-schedule-button'>
-                <GoogleCalendarIcon strokeWidth='.1' height={24} width={24} />
+              <div
+                className='google-meet-schedule-button'
+                style={{ cursor: 'pointer' }}
+                onClick={() => handleAddMeetings()}
+              >
+                <GoogleMeetIcon strokeWidth='.1' height={24} width={24} />
                 <p>Add Google Meet</p>
               </div>
             )}
@@ -177,14 +339,17 @@ export const Block = ({
           {eventMeetLink !== '' && (
             <div style={{ display: 'inline-block' }}>
               <label>Attendees</label>
-              {eventAttendees.map((eventAttendee, i) => {
+              {eventAttendees.map(({ email, responseStatus }, i) => {
                 return (
                   <div className='attendee-icon'>
-                    <span>{cropLabel(eventAttendee, 30)}</span>
+                    {getResponseStatusIcon(responseStatus)}
+                    <span style={{ marginLeft: '5px' }}>
+                      {cropLabel(email, 30)}
+                    </span>
                     <CloseIcon
                       height={12}
                       width={12}
-                      style={{ cursor: 'pointer' }}
+                      style={{ cursor: 'pointer', marginLeft: '5px' }}
                       onClick={() => {
                         const newAttendees = [...eventAttendees]
                         newAttendees.splice(i, 1)
@@ -212,7 +377,11 @@ export const Block = ({
                       isValidEmail(newEventAttendee)
                     ) {
                       const newAttendees = [...eventAttendees]
-                      newAttendees.push(newEventAttendee)
+                      newAttendees.push({
+                        email: newEventAttendee,
+                        displayName: newEventAttendee,
+                        responseStatus: 'needsAction',
+                      })
                       setEventAttendees(newAttendees)
                     }
                     setNewEventAttendee('')
@@ -307,7 +476,7 @@ export const Block = ({
                 <div className={`add-task__container`}>
                   {titleAndOptions()}
                   {!allDay && dateAndTimePickers()}
-                  {googleMeetEditor()}
+                  {meetingEditor()}
                   {locationEditor()}
                   {eventColorSelector()}
                   {descriptionEditor()}

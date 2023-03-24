@@ -276,3 +276,52 @@ export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
     console.log(error)
   }
 }
+
+/* DOES NOT WORK, NEEDS TO BE FIXED */
+export const generateMeetLinkForExistingEvent = async (
+  userId,
+  calendarId,
+  eventId,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    // Update the event data with a new conferenceData
+    const conferenceData = {
+      createRequest: {
+        conferenceSolutionKey: {
+          type: 'hangoutsMeet',
+        },
+        requestId: '1234567890',
+      },
+    }
+
+    // Send a PATCH request to update the event with the new conferenceData
+    const updateResponse = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(conferenceData),
+      },
+    )
+
+    if (!updateResponse.ok) {
+      throw new Error('Failed to generate Google Meet link')
+    }
+
+    // Extract the Meet link from the updated event data
+    const updatedEventData = await updateResponse.json()
+    console.log('updatedEventData', updatedEventData) // DEBUGGING
+    const meetLink = updatedEventData.hangoutLink
+
+    return meetLink
+  } catch (error) {
+    console.error(error)
+  }
+}

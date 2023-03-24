@@ -45,6 +45,8 @@ export const Overlay = () => {
             location={dialogProps.location}
             meetLink={dialogProps.meetLink}
             attendees={dialogProps.attendees}
+            eventId={dialogProps.eventId}
+            calendarId={dialogProps.calendarId}
             start={dialogProps.start}
             end={dialogProps.end}
             remove={dialogProps.remove}

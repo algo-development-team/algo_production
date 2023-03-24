@@ -158,9 +158,7 @@ export const FullCalendar = () => {
               recurringEvent.meetLink = event.conferenceData.entryPoints[0].uri
             }
             if (event?.attendees) {
-              recurringEvent.attendees = event?.attendees?.map((attendee) => {
-                return attendee.email
-              })
+              recurringEvent.attendees = event?.attendees
             }
 
             if (recurrenceObject.interval) {
@@ -192,10 +190,6 @@ export const FullCalendar = () => {
               backgroundColor: isValidGoogleEventColorId(event.colorId)
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
-              location: event?.location,
-              attendees: event?.attendees?.map(function (attendee) {
-                return attendee.email
-              }),
             }
             if (event?.location) {
               nonRecurringEvent.location = event?.location
@@ -205,11 +199,7 @@ export const FullCalendar = () => {
                 event.conferenceData.entryPoints[0].uri
             }
             if (event?.attendees) {
-              nonRecurringEvent.attendees = event?.attendees?.map(
-                (attendee) => {
-                  return attendee.email
-                },
-              )
+              nonRecurringEvent.attendees = event?.attendees
             }
 
             return nonRecurringEvent
@@ -253,6 +243,11 @@ export const FullCalendar = () => {
     const meetLink = info.event.extendedProps?.meetLink || ''
     const attendees = info.event.extendedProps?.attendees || []
 
+    const calendarId = getEventCalendarId(info.event.id)
+    const eventId = info.event.id
+
+    console.log('eventId', eventId) // DEBUGGING
+
     setDialogProps({
       allDay: info.event.allDay,
       taskname: taskname,
@@ -261,6 +256,8 @@ export const FullCalendar = () => {
       location: location,
       meetLink: meetLink,
       attendees: attendees,
+      eventId: eventId,
+      calendarId: calendarId,
       remove: () => {
         const newCalendarsEvents = { ...calendarsEvents }
         for (const key in newCalendarsEvents) {
@@ -365,6 +362,7 @@ export const FullCalendar = () => {
         startDate,
         endDate,
         backgroundColor,
+        attendees,
       ) => {
         if (endDate <= startDate) {
           endDate = moment(startDate).add(15, 'minutes').toDate()
@@ -376,6 +374,9 @@ export const FullCalendar = () => {
         info.event.setEnd(endDate)
         info.event.setProp('backgroundColor', backgroundColor)
         info.event.setExtendedProp('description', taskDescription)
+        if (attendees.length > 0) {
+          info.event.setExtendedProp('attendees', attendees)
+        }
 
         const calendarId = getEventCalendarId(info.event.id)
         const calendarsEventsKey =
@@ -387,7 +388,7 @@ export const FullCalendar = () => {
           calendarsEventsKey
         ].map((event) => {
           if (event.id === info.event.id) {
-            return {
+            const updatedEvent = {
               ...event,
               title: taskName,
               start: startDate,
@@ -395,6 +396,10 @@ export const FullCalendar = () => {
               backgroundColor: backgroundColor,
               description: taskDescription,
             }
+            if (attendees.length > 0) {
+              updatedEvent.attendees = attendees
+            }
+            return updatedEvent
           } else {
             return event
           }
@@ -424,6 +429,7 @@ export const FullCalendar = () => {
             GoogleEventColours.findIndex(
               (colour) => colour.hex === backgroundColor,
             ) + 1,
+          attendees: attendees,
         }
 
         updateEventFromUserGoogleCalendar(
