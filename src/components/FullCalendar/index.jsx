@@ -693,6 +693,11 @@ export const FullCalendar = () => {
         )
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
+      // eventContent: (arg) => (
+      //   <div>
+      //     <p>hello world</p>
+      //   </div>
+      // ),
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,
