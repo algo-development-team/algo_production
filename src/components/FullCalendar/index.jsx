@@ -246,8 +246,6 @@ export const FullCalendar = () => {
     const calendarId = getEventCalendarId(info.event.id)
     const eventId = info.event.id
 
-    console.log('eventId', eventId) // DEBUGGING
-
     setDialogProps({
       allDay: info.event.allDay,
       taskname: taskname,

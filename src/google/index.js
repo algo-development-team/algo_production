@@ -291,9 +291,6 @@ export const generateMeetLinkForExistingEvent = async (
     // Update the event data with a new conferenceData
     const conferenceData = {
       createRequest: {
-        conferenceSolutionKey: {
-          type: 'hangoutsMeet',
-        },
         requestId: '1234567890',
       },
     }
