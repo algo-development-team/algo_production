@@ -358,76 +358,72 @@ export const Block = ({
               </div>
             )}
           </div>
-          {eventMeetLink !== '' && (
-            <div style={{ display: 'inline-block' }}>
-              <label>Attendees</label>
-              {eventAttendees.map(
-                ({ displayName, email, responseStatus }, i) => {
-                  return (
-                    <div className='attendee-icon'>
-                      {getResponseStatusIcon(responseStatus)}
-                      <span style={{ marginLeft: '5px' }}>
-                        {cropLabel(displayName || email, 30)}
-                      </span>
-                      {isUserMeetingOrganizer() && (
-                        <CloseIcon
-                          height={12}
-                          width={12}
-                          style={{ cursor: 'pointer', marginLeft: '5px' }}
-                          onClick={() => {
-                            const newAttendees = [...eventAttendees]
-                            newAttendees.splice(i, 1)
-                            setEventAttendees(newAttendees)
-                          }}
-                        />
-                      )}
-                    </div>
-                  )
-                },
-              )}
-              <div style={{ display: 'flex' }}>
-                <input
-                  className='add-task__input--no-bottom-margin'
-                  type='text'
-                  placeholder='Add attendee email'
-                  value={newEventAttendee}
-                  onChange={(e) => {
-                    setNewEventAttendee(e.target.value)
-                  }}
-                />
-                <PlusIcon
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (
-                      !eventAttendees.some(
-                        (eventAttendee) =>
-                          eventAttendee.email === newEventAttendee,
-                      ) &&
-                      isValidEmail(newEventAttendee)
-                    ) {
-                      const newAttendees = [...eventAttendees]
-                      if (newEventAttendee === currentUser?.email) {
-                        newAttendees.push({
-                          email: newEventAttendee,
-                          responseStatus: 'accepted',
-                          self: true,
-                          organizer: true,
-                        })
-                      } else {
-                        newAttendees.push({
-                          email: newEventAttendee,
-                          responseStatus: 'needsAction',
-                        })
-                      }
-                      setEventAttendees(newAttendees)
+          <div style={{ display: 'inline-block' }}>
+            <label>Attendees</label>
+            {eventAttendees.map(({ displayName, email, responseStatus }, i) => {
+              return (
+                <div className='attendee-icon'>
+                  {getResponseStatusIcon(responseStatus)}
+                  <span style={{ marginLeft: '5px' }}>
+                    {cropLabel(displayName || email, 30)}
+                  </span>
+                  {isUserMeetingOrganizer() && (
+                    <CloseIcon
+                      height={12}
+                      width={12}
+                      style={{ cursor: 'pointer', marginLeft: '5px' }}
+                      onClick={() => {
+                        const newAttendees = [...eventAttendees]
+                        newAttendees.splice(i, 1)
+                        setEventAttendees(newAttendees)
+                      }}
+                    />
+                  )}
+                </div>
+              )
+            })}
+            <div style={{ display: 'flex' }}>
+              <input
+                className='add-task__input--no-bottom-margin'
+                type='text'
+                placeholder='Add attendee email'
+                value={newEventAttendee}
+                onChange={(e) => {
+                  setNewEventAttendee(e.target.value)
+                }}
+              />
+              <PlusIcon
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (
+                    !eventAttendees.some(
+                      (eventAttendee) =>
+                        eventAttendee.email === newEventAttendee,
+                    ) &&
+                    isValidEmail(newEventAttendee)
+                  ) {
+                    const newAttendees = [...eventAttendees]
+                    if (newEventAttendee === currentUser?.email) {
+                      newAttendees.push({
+                        email: newEventAttendee,
+                        responseStatus: 'accepted',
+                        self: true,
+                        organizer: true,
+                      })
+                    } else {
+                      newAttendees.push({
+                        email: newEventAttendee,
+                        responseStatus: 'needsAction',
+                      })
                     }
-                    setNewEventAttendee('')
-                  }}
-                  style={{ cursor: 'pointer' }}
-                />
-              </div>
+                    setEventAttendees(newAttendees)
+                  }
+                  setNewEventAttendee('')
+                }}
+                style={{ cursor: 'pointer' }}
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
     )
