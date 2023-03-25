@@ -19,9 +19,8 @@ import { cropLabel } from 'handleLabel'
 import { isValidEmail } from 'handleEmail'
 import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.svg'
 import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
-import { generateMeetLinkForExistingEvent } from '../../google'
+import { createGoogleMeet, deleteGoogleMeet } from '../../google'
 import { useAuth } from 'hooks'
-import { deleteGoogleMeet, deleteAttendees } from '../../google'
 
 export const Block = ({
   closeOverlay,
@@ -137,7 +136,7 @@ export const Block = ({
   }
 
   const handleAddMeetings = async () => {
-    const newEventMeetLink = await generateMeetLinkForExistingEvent(
+    const newEventMeetLink = await createGoogleMeet(
       currentUser && currentUser.id,
       calendarId,
       eventId,
@@ -331,11 +330,6 @@ export const Block = ({
                       style={{ marginLeft: '5px' }}
                       onClick={() => {
                         deleteGoogleMeet(
-                          currentUser && currentUser.id,
-                          calendarId,
-                          eventId,
-                        )
-                        deleteAttendees(
                           currentUser && currentUser.id,
                           calendarId,
                           eventId,

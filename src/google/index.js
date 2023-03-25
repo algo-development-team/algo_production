@@ -278,11 +278,7 @@ export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
 }
 
 /* DOES NOT WORK, NEEDS TO BE FIXED */
-export const generateMeetLinkForExistingEvent = async (
-  userId,
-  calendarId,
-  eventId,
-) => {
+export const createGoogleMeet = async (userId, calendarId, eventId) => {
   try {
     const accessToken = await getValidToken(userId)
 
@@ -343,21 +339,5 @@ export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
         },
       },
     }),
-  })
-}
-
-/* NEEDS TO BE TESTED */
-export const deleteAttendees = async (userId, calendarId, eventId) => {
-  const accessToken = await getValidToken(userId)
-
-  if (!accessToken) return null
-
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`
-  return fetch(url, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
   })
 }

@@ -375,9 +375,7 @@ export const FullCalendar = () => {
         info.event.setEnd(endDate)
         info.event.setProp('backgroundColor', backgroundColor)
         info.event.setExtendedProp('description', taskDescription)
-        if (attendees.length > 0) {
-          info.event.setExtendedProp('attendees', attendees)
-        }
+        info.event.setExtendedProp('attendees', attendees)
 
         const calendarId = getEventCalendarId(info.event.id)
         const calendarsEventsKey =
