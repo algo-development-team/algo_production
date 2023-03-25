@@ -324,7 +324,7 @@ export const generateMeetLinkForExistingEvent = async (
 }
 
 /* NEEDS TO BE TESTED */
-const deleteGoogleMeet = async (userId, calendarId, eventId) => {
+export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
   const accessToken = await getValidToken(userId)
 
   if (!accessToken) return null
@@ -347,7 +347,7 @@ const deleteGoogleMeet = async (userId, calendarId, eventId) => {
 }
 
 /* NEEDS TO BE TESTED */
-const deleteAttendees = async (userId, calendarId, eventId) => {
+export const deleteAttendees = async (userId, calendarId, eventId) => {
   const accessToken = await getValidToken(userId)
 
   if (!accessToken) return null

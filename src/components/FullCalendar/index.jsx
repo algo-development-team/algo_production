@@ -235,6 +235,8 @@ export const FullCalendar = () => {
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
+    console.log('info.event', info.event) // DEBUGGING
+
     const taskname = info.event.title
     const taskdescription = info.event.extendedProps?.description
     const start = new Date(info.event.start)

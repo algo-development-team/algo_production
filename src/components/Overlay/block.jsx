@@ -21,6 +21,7 @@ import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.sv
 import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
 import { generateMeetLinkForExistingEvent } from '../../google'
 import { useAuth } from 'hooks'
+import { deleteGoogleMeet, deleteAttendees } from '../../google'
 
 export const Block = ({
   closeOverlay,
@@ -88,6 +89,15 @@ export const Block = ({
     }
 
     return updatedEventAttendees
+  }
+
+  const isUserMeetingOrganizer = () => {
+    if (!eventAttendees.some((eventAttendee) => eventAttendee?.self)) {
+      return true
+    } else {
+      return eventAttendees.find((eventAttendee) => eventAttendee?.self)
+        ?.organizer
+    }
   }
 
   useEffect(() => {
@@ -314,15 +324,23 @@ export const Block = ({
                   >
                     {getJoinButtonText(eventMeetLink)}
                   </a>
-                  {eventAttendees.find((eventAttendee) => eventAttendee?.self)
-                    ?.organizer && (
+                  {isUserMeetingOrganizer() && (
                     <CloseIcon
                       height={12}
                       width={12}
                       style={{ marginLeft: '5px' }}
                       onClick={() => {
+                        deleteGoogleMeet(
+                          currentUser && currentUser.id,
+                          calendarId,
+                          eventId,
+                        )
+                        deleteAttendees(
+                          currentUser && currentUser.id,
+                          calendarId,
+                          eventId,
+                        )
                         setEventMeetLink('')
-                        // DELETE THE MEETING FROM THE CALENDAR EVENT
                       }}
                     />
                   )}
@@ -350,16 +368,18 @@ export const Block = ({
                     <span style={{ marginLeft: '5px' }}>
                       {cropLabel(email, 30)}
                     </span>
-                    <CloseIcon
-                      height={12}
-                      width={12}
-                      style={{ cursor: 'pointer', marginLeft: '5px' }}
-                      onClick={() => {
-                        const newAttendees = [...eventAttendees]
-                        newAttendees.splice(i, 1)
-                        setEventAttendees(newAttendees)
-                      }}
-                    />
+                    {isUserMeetingOrganizer() && (
+                      <CloseIcon
+                        height={12}
+                        width={12}
+                        style={{ cursor: 'pointer', marginLeft: '5px' }}
+                        onClick={() => {
+                          const newAttendees = [...eventAttendees]
+                          newAttendees.splice(i, 1)
+                          setEventAttendees(newAttendees)
+                        }}
+                      />
+                    )}
                   </div>
                 )
               })}
