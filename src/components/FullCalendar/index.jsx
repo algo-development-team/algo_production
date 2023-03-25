@@ -19,7 +19,7 @@ import {
   useCalendarsEventsValue,
   useThemeContextValue,
 } from 'context'
-import { useAuth, useUnselectedCalendarIds } from 'hooks'
+import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
@@ -28,7 +28,7 @@ import {
   getEventsInfo,
   updateEventsInfo,
 } from '../../backend/handleUserEventsInfo'
-import { quickAddTask } from '../../backend/handleUserTasks'
+import { quickAddTask, handleCheckTask } from '../../backend/handleUserTasks'
 import {
   GoogleEventColours,
   isValidGoogleEventColorId,
@@ -51,6 +51,11 @@ export const FullCalendar = () => {
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
+  const { tasks } = useTasks()
+
+  useEffect(() => {
+    console.log('tasks', tasks) // DEBUGGING
+  }, [tasks])
 
   useEffect(() => {
     const ws = new WebSocket(
@@ -693,11 +698,44 @@ export const FullCalendar = () => {
         )
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
-      // eventContent: (arg) => (
-      //   <div>
-      //     <p>hello world</p>
-      //   </div>
-      // ),
+      eventContent: function (info) {
+        // create a div to hold the event content
+        const eventEl = document.createElement('div')
+        eventEl.classList.add('fc-event')
+
+        // create a span to hold the event time range
+        const timeRangeEl = document.createElement('p')
+        timeRangeEl.classList.add('fc-event-time-range')
+        timeRangeEl.innerText = info.timeText
+        eventEl.appendChild(timeRangeEl)
+
+        const taskId = info.event.extendedProps?.taskId
+
+        if (taskId) {
+          // create a checkbox for the checkmark
+          const checkmarkInput = document.createElement('input')
+          checkmarkInput.type = 'checkbox'
+          checkmarkInput.classList.add('checkmark-input')
+          const task = tasks.find((task) => task.taskId === taskId)
+          if (task?.boardStatus === 'COMPLETE') {
+            checkmarkInput.checked = true
+          }
+          eventEl.appendChild(checkmarkInput)
+
+          // attach an onClick event listener to the checkbox
+          checkmarkInput.addEventListener('click', function () {
+            handleCheckTask(currentUser.id, taskId)
+          })
+        }
+
+        // create a span to hold the event title
+        const titleEl = document.createElement('span')
+        titleEl.classList.add('fc-event-title')
+        titleEl.innerText = info.event.title
+        eventEl.appendChild(titleEl)
+
+        return { domNodes: [eventEl] }
+      },
       now: new Date(), // set the current time
       nowIndicator: true, // display a red line through the current time
       handleWindowResize: true,

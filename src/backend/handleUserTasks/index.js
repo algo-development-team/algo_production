@@ -174,6 +174,24 @@ export const completeTask = async (
   }
 }
 
+export const handleCheckTask = async (userId, taskId) => {
+  try {
+    const taskQuery = await query(
+      collection(db, 'user', `${userId}/tasks`),
+      where('taskId', '==', taskId),
+    )
+    const taskDocs = await getDocs(taskQuery)
+    taskDocs.forEach(async (taskDoc) => {
+      await updateDoc(taskDoc.ref, {
+        boardStatus: 'COMPLETE',
+        index: 0, // UPDATE THIS LATER, ALSO STORE THE CURRENT BOARD STATUS LATER
+      })
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 export const updateBoardStatus = async (
   userId,
   draggableId,
