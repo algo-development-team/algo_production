@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
+import { generatePushId } from 'utils'
 
 export const getValidToken = async (userId) => {
   try {
@@ -284,23 +285,22 @@ export const createGoogleMeet = async (userId, calendarId, eventId) => {
 
     if (!accessToken) return null
 
-    // Update the event data with a new conferenceData
-    const conferenceData = {
-      createRequest: {
-        requestId: '1234567890',
-      },
-    }
-
     // Send a PATCH request to update the event with the new conferenceData
     const updateResponse = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}?conferenceDataVersion=1`,
       {
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(conferenceData),
+        body: JSON.stringify({
+          conferenceData: {
+            createRequest: {
+              requestId: generatePushId(),
+            },
+          },
+        }),
       },
     )
 

@@ -363,6 +363,8 @@ export const FullCalendar = () => {
         startDate,
         endDate,
         backgroundColor,
+        location,
+        meetLink,
         attendees,
       ) => {
         if (endDate <= startDate) {
@@ -375,6 +377,8 @@ export const FullCalendar = () => {
         info.event.setEnd(endDate)
         info.event.setProp('backgroundColor', backgroundColor)
         info.event.setExtendedProp('description', taskDescription)
+        info.event.setExtendedProp('location', location)
+        info.event.setExtendedProp('meetLink', meetLink)
         info.event.setExtendedProp('attendees', attendees)
 
         const calendarId = getEventCalendarId(info.event.id)

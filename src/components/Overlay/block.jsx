@@ -130,6 +130,8 @@ export const Block = ({
       startDate,
       endDate,
       eventColour.hex,
+      eventLocation,
+      eventMeetLink,
       getUpdatedEventAttendees(),
     )
     closeOverlay()
@@ -141,8 +143,7 @@ export const Block = ({
       calendarId,
       eventId,
     )
-    console.log('newEventMeetLink', newEventMeetLink) // DEBUGGING
-    // CREATE A NEW MEETING IN THE CALENDAR EVENT
+    setEventMeetLink(newEventMeetLink)
   }
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
