@@ -361,28 +361,30 @@ export const Block = ({
           {eventMeetLink !== '' && (
             <div style={{ display: 'inline-block' }}>
               <label>Attendees</label>
-              {eventAttendees.map(({ email, responseStatus }, i) => {
-                return (
-                  <div className='attendee-icon'>
-                    {getResponseStatusIcon(responseStatus)}
-                    <span style={{ marginLeft: '5px' }}>
-                      {cropLabel(email, 30)}
-                    </span>
-                    {isUserMeetingOrganizer() && (
-                      <CloseIcon
-                        height={12}
-                        width={12}
-                        style={{ cursor: 'pointer', marginLeft: '5px' }}
-                        onClick={() => {
-                          const newAttendees = [...eventAttendees]
-                          newAttendees.splice(i, 1)
-                          setEventAttendees(newAttendees)
-                        }}
-                      />
-                    )}
-                  </div>
-                )
-              })}
+              {eventAttendees.map(
+                ({ displayName, email, responseStatus }, i) => {
+                  return (
+                    <div className='attendee-icon'>
+                      {getResponseStatusIcon(responseStatus)}
+                      <span style={{ marginLeft: '5px' }}>
+                        {cropLabel(displayName || email, 30)}
+                      </span>
+                      {isUserMeetingOrganizer() && (
+                        <CloseIcon
+                          height={12}
+                          width={12}
+                          style={{ cursor: 'pointer', marginLeft: '5px' }}
+                          onClick={() => {
+                            const newAttendees = [...eventAttendees]
+                            newAttendees.splice(i, 1)
+                            setEventAttendees(newAttendees)
+                          }}
+                        />
+                      )}
+                    </div>
+                  )
+                },
+              )}
               <div style={{ display: 'flex' }}>
                 <input
                   className='add-task__input--no-bottom-margin'
@@ -404,11 +406,19 @@ export const Block = ({
                       isValidEmail(newEventAttendee)
                     ) {
                       const newAttendees = [...eventAttendees]
-                      newAttendees.push({
-                        email: newEventAttendee,
-                        displayName: newEventAttendee,
-                        responseStatus: 'needsAction',
-                      })
+                      if (newEventAttendee === currentUser?.email) {
+                        newAttendees.push({
+                          email: newEventAttendee,
+                          responseStatus: 'accepted',
+                          self: true,
+                          organizer: true,
+                        })
+                      } else {
+                        newAttendees.push({
+                          email: newEventAttendee,
+                          responseStatus: 'needsAction',
+                        })
+                      }
                       setEventAttendees(newAttendees)
                     }
                     setNewEventAttendee('')
