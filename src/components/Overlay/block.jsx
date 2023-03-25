@@ -65,19 +65,23 @@ export const Block = ({
     useState('needsAction')
 
   useEffect(() => {
+    console.log('eventAttendees', eventAttendees) // DEBUGGING
+  }, [eventAttendees])
+
+  useEffect(() => {
     for (const eventAttendee of eventAttendees) {
-      if (eventAttendee.email === currentUser?.email) {
+      if (eventAttendee?.self) {
         setCurrentUserResponseStatus(eventAttendee.responseStatus)
         break
       }
     }
-  }, [eventAttendees, currentUser])
+  }, [eventAttendees])
 
   const getUpdatedEventAttendees = () => {
     const updatedEventAttendees = [...eventAttendees]
 
     for (const updatedEventAttendee of updatedEventAttendees) {
-      if (updatedEventAttendee.email === currentUser?.email) {
+      if (updatedEventAttendee?.self) {
         updatedEventAttendee.responseStatus = currentUserResponseStatus
         break
       }
@@ -129,6 +133,7 @@ export const Block = ({
       eventId,
     )
     console.log('newEventMeetLink', newEventMeetLink) // DEBUGGING
+    // CREATE A NEW MEETING IN THE CALENDAR EVENT
   }
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
@@ -206,11 +211,7 @@ export const Block = ({
   }
 
   const meetingUserResponseStatusButtons = () => {
-    if (
-      !eventAttendees
-        .map((eventAttendee) => eventAttendee.email)
-        .includes(currentUser?.email)
-    )
+    if (!eventAttendees.some((eventAttendee) => eventAttendee?.self))
       return null
     return (
       <div style={{ display: 'flex', marginTop: '10px', gap: '10px' }}>
@@ -313,15 +314,18 @@ export const Block = ({
                   >
                     {getJoinButtonText(eventMeetLink)}
                   </a>
-                  <CloseIcon
-                    height={12}
-                    width={12}
-                    style={{ marginLeft: '5px' }}
-                    onClick={() => {
-                      setEventMeetLink('')
-                      // DO MORE HERE
-                    }}
-                  />
+                  {eventAttendees.find((eventAttendee) => eventAttendee?.self)
+                    ?.organizer && (
+                    <CloseIcon
+                      height={12}
+                      width={12}
+                      style={{ marginLeft: '5px' }}
+                      onClick={() => {
+                        setEventMeetLink('')
+                        // DELETE THE MEETING FROM THE CALENDAR EVENT
+                      }}
+                    />
+                  )}
                 </div>
                 {meetingUserResponseStatusButtons()}
               </div>
@@ -373,7 +377,10 @@ export const Block = ({
                   onClick={(e) => {
                     e.preventDefault()
                     if (
-                      !eventAttendees.includes(newEventAttendee) &&
+                      !eventAttendees.some(
+                        (eventAttendee) =>
+                          eventAttendee.email === newEventAttendee,
+                      ) &&
                       isValidEmail(newEventAttendee)
                     ) {
                       const newAttendees = [...eventAttendees]

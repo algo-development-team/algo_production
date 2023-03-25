@@ -322,3 +322,42 @@ export const generateMeetLinkForExistingEvent = async (
     console.error(error)
   }
 }
+
+/* NEEDS TO BE TESTED */
+const deleteGoogleMeet = async (userId, calendarId, eventId) => {
+  const accessToken = await getValidToken(userId)
+
+  if (!accessToken) return null
+
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`
+  return fetch(url, {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      conferenceData: {
+        createRequest: {
+          requestId: 'DELETE_GOOGLE_MEET',
+        },
+      },
+    }),
+  })
+}
+
+/* NEEDS TO BE TESTED */
+const deleteAttendees = async (userId, calendarId, eventId) => {
+  const accessToken = await getValidToken(userId)
+
+  if (!accessToken) return null
+
+  const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`
+  return fetch(url, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+  })
+}
