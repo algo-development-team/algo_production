@@ -5,6 +5,8 @@ import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
 import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
+import { handleCheckTask } from '../../backend/handleUserTasks'
+import { useAuth } from 'hooks'
 
 export const SearchField = ({
   addValue,
@@ -18,6 +20,7 @@ export const SearchField = ({
   const { projects } = useProjects()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
+  const { currentUser } = useAuth()
 
   useEffect(() => {
     const updateUnscheduledTasks = () => {
@@ -138,40 +141,60 @@ export const SearchField = ({
           overflowX: 'hidden',
         }}
       >
-        {searchTasks(searchText, unscheduledTasks).map((task) => {
-          return (
-            <div
-              className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
-              data-event={JSON.stringify({
-                ...task,
-                backgroundColor: getProjectColourHex(task.projectId),
-              })}
-              style={{
-                width: '100%',
-                height: `${task.timeLength}px`,
-                marginBottom: '10px',
-                backgroundColor: getProjectColourHex(task.projectId),
-                border: 'none',
-              }}
-            >
-              {task.timeLength < 60 ? (
-                <div className='fc-event-main' style={{ marginLeft: '5px' }}>
-                  <span style={{ marginRight: '10px' }}>{task.name}</span>
-                  <span id='time-length'>
-                    {displayHourMin(task.timeLength)}
-                  </span>
-                </div>
-              ) : (
-                <div style={{ marginLeft: '5px' }}>
-                  <div className='fc-event-main'>{task.name}</div>
-                  <div className='fc-event-main' id='time-length'>
-                    {displayHourMin(task.timeLength)}
+        {searchTasks(searchText, unscheduledTasks)
+          .filter((task) => task.boardStatus !== 'COMPLETE')
+          .map((task) => {
+            return (
+              <div
+                className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'
+                data-event={JSON.stringify({
+                  ...task,
+                  backgroundColor: getProjectColourHex(task.projectId),
+                })}
+                style={{
+                  width: '100%',
+                  height: `${Math.max(task.timeLength, 20)}px`,
+                  marginBottom: '10px',
+                  backgroundColor: getProjectColourHex(task.projectId),
+                  border: 'none',
+                }}
+              >
+                {task.timeLength < 60 ? (
+                  <div className='fc-event-main' style={{ marginLeft: '5px' }}>
+                    <input
+                      type='checkbox'
+                      onClick={() =>
+                        handleCheckTask(
+                          currentUser && currentUser.id,
+                          task.taskId,
+                        )
+                      }
+                    />
+                    <span style={{ marginRight: '10px' }}>{task.name}</span>
+                    <span id='time-length'>
+                      {displayHourMin(task.timeLength)}
+                    </span>
                   </div>
-                </div>
-              )}
-            </div>
-          )
-        })}
+                ) : (
+                  <div style={{ marginLeft: '5px' }}>
+                    <input
+                      type='checkbox'
+                      onClick={() =>
+                        handleCheckTask(
+                          currentUser && currentUser.id,
+                          task.taskId,
+                        )
+                      }
+                    />
+                    <span className='fc-event-main'>{task.name}</span>
+                    <div className='fc-event-main' id='time-length'>
+                      {displayHourMin(task.timeLength)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          })}
       </div>
     </div>
   )

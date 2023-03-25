@@ -54,10 +54,6 @@ export const FullCalendar = () => {
   const { tasks } = useTasks()
 
   useEffect(() => {
-    console.log('tasks', tasks) // DEBUGGING
-  }, [tasks])
-
-  useEffect(() => {
     const ws = new WebSocket(
       `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
     )
