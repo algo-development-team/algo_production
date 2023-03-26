@@ -321,23 +321,31 @@ export const createGoogleMeet = async (userId, calendarId, eventId) => {
 
 /* NEEDS TO BE TESTED */
 export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
-  const accessToken = await getValidToken(userId)
+  try {
+    const accessToken = await getValidToken(userId)
 
-  if (!accessToken) return null
+    if (!accessToken) return null
 
-  const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`
-  return fetch(url, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      conferenceData: {
-        createRequest: {
-          requestId: 'DELETE_GOOGLE_MEET',
-        },
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}?conferenceDataVersion=1`
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
       },
-    }),
-  })
+      body: JSON.stringify({
+        conferenceData: null,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to delete Google Meet: ${response.status} - ${response.statusText}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error(error)
+  }
 }
