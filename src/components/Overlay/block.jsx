@@ -65,10 +65,6 @@ export const Block = ({
     useState('needsAction')
 
   useEffect(() => {
-    console.log('eventAttendees', eventAttendees) // DEBUGGING
-  }, [eventAttendees])
-
-  useEffect(() => {
     for (const eventAttendee of eventAttendees) {
       if (eventAttendee?.self) {
         setCurrentUserResponseStatus(eventAttendee.responseStatus)
