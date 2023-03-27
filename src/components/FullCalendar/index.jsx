@@ -13,6 +13,7 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
+  fetchDeletedEventInstances,
 } from '../../google'
 import {
   useGoogleValue,
@@ -70,6 +71,20 @@ export const FullCalendar = () => {
       ws.close()
     }
   }, [])
+
+  const formatEventTimeLength = (timeLength) => {
+    const minutes = timeLength
+
+    // Calculate hours and minutes
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+
+    // Format as HH:MM
+    const formattedHours = ('0' + hours).slice(-2)
+    const formattedMinutes = ('0' + remainingMinutes).slice(-2)
+
+    return formattedHours + ':' + formattedMinutes
+  }
 
   const getEventCalendarId = (eventId) => {
     let calendarId = null
@@ -130,6 +145,33 @@ export const FullCalendar = () => {
         )
       setNextSyncTokens(nextSyncTokens)
       const newCalendarsEvents = { ...calendarsEvents }
+
+      /* getting all deleted recurring events (single instances) */
+      const deletedEventInstances = {}
+
+      for (const key in fetchedCalendarsEvents) {
+        fetchedCalendarsEvents[key].map((event) => {
+          if (event.status === 'cancelled') {
+            if (
+              !Object.keys(deletedEventInstances).includes(
+                event.id.split('_')[0],
+              )
+            ) {
+              deletedEventInstances[event.id.split('_')[0]] = [
+                event.originalStartTime.dateTime,
+              ]
+            } else {
+              deletedEventInstances[event.id.split('_')[0]].push(
+                event.originalStartTime.dateTime,
+              )
+            }
+          }
+        })
+      }
+
+      console.log('deletedEventInstances', deletedEventInstances) // DEBUGGING
+      /* include deletedEventInstances as rrule string below */
+
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           if (event.recurrence) {
@@ -138,12 +180,21 @@ export const FullCalendar = () => {
             )
             const recurrenceObject = rule.origOptions
 
+            const eventStart = event.start?.dateTime || event.start?.date
+            const eventEnd = event.end?.dateTime || event.end?.date
+            const duration = Math.floor(
+              moment
+                .duration(moment(eventEnd).diff(moment(eventStart)))
+                .asMinutes(),
+            )
+            const formattedDuration = formatEventTimeLength(duration)
+
             const recurringEvent = {
               id: event.id,
               title: event.summary,
               rrule: {
                 freq: mapFreq(recurrenceObject.freq),
-                dtstart: event.start?.dateTime || event.start?.date,
+                dtstart: eventStart,
               },
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
@@ -151,7 +202,9 @@ export const FullCalendar = () => {
               backgroundColor: isValidGoogleEventColorId(event.colorId)
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
+              duration: formattedDuration,
             }
+
             if (event?.location) {
               recurringEvent.location = event?.location
             }
@@ -180,11 +233,14 @@ export const FullCalendar = () => {
 
             return recurringEvent
           } else {
+            const eventStart = event.start?.dateTime || event.start?.date
+            const eventEnd = event.end?.dateTime || event.end?.date
+
             const nonRecurringEvent = {
               id: event.id,
               title: event.summary,
-              start: event.start?.dateTime || event.start?.date,
-              end: event.end?.dateTime || event.end?.date,
+              start: eventStart,
+              end: eventEnd,
               url: event.htmlLink,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
@@ -209,6 +265,7 @@ export const FullCalendar = () => {
 
         newCalendarsEvents[key] = eventsData
       }
+
       setCalendarsEvents(newCalendarsEvents)
 
       // cache the events
@@ -234,8 +291,6 @@ export const FullCalendar = () => {
 
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
-
-    console.log('info.event', info.event) // DEBUGGING
 
     const taskname = info.event.title
     const taskdescription = info.event.extendedProps?.description
@@ -446,24 +501,6 @@ export const FullCalendar = () => {
       end: end,
     })
     setShowDialog('BLOCK')
-  }
-
-  function formatEventTimeLength(timeLength) {
-    console.log('timeLength', timeLength)
-
-    const minutes = timeLength
-
-    // Calculate hours and minutes
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-
-    // Format as HH:MM
-    const formattedHours = ('0' + hours).slice(-2)
-    const formattedMinutes = ('0' + remainingMinutes).slice(-2)
-
-    console.log('formattedTimeLength', formattedHours + ':' + formattedMinutes)
-
-    return formattedHours + ':' + formattedMinutes
   }
 
   useEffect(() => {

@@ -349,3 +349,39 @@ export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
     console.error(error)
   }
 }
+
+export const fetchDeletedEventInstances = async (
+  userId,
+  calendarId,
+  eventId,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+    const apiUrl = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}/instances?showDeleted=true`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch event instances: ${response.status} ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+
+    // Filter the instances to only include deleted occurrences
+    const deletedInstances = data.items.filter(
+      (instance) => instance.status === 'cancelled',
+    )
+
+    return deletedInstances
+  } catch (error) {
+    console.error(error)
+  }
+}
