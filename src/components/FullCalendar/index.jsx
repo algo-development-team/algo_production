@@ -24,7 +24,7 @@ import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
-import { RRule } from 'rrule'
+import { RRule, rrulestr } from 'rrule'
 import {
   getEventsInfo,
   updateEventsInfo,
@@ -116,14 +116,25 @@ export const FullCalendar = () => {
     return events
   }
 
-  const mapWeekday = (weekday) => {
-    const mapping = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']
-    return mapping[weekday]
+  const getFormattedEventTime = (dateTime, date) => {
+    if (dateTime) {
+      return moment.utc(dateTime).format('YYYYMMDDTHHmmss[Z]')
+    } else {
+      return moment(date).format('YYYYMMDD')
+    }
   }
 
-  const mapFreq = (freq) => {
-    const mapping = ['yearly', 'monthly', 'weekly', 'daily']
-    return mapping[freq]
+  const getRecurringEventDuration = (eventStart, eventEnd) => {
+    return Math.floor(
+      moment.duration(moment(eventEnd).diff(moment(eventStart))).asMinutes(),
+    )
+  }
+
+  const getFormattedRRule = (dtStart, rruleString, exdates) => {
+    for (const exdate of exdates) {
+      rruleString = rruleString.concat(`\nEXDATE:${exdate}`)
+    }
+    return `DTSTART:${dtStart}\n${rruleString}`
   }
 
   useEffect(() => {
@@ -146,57 +157,57 @@ export const FullCalendar = () => {
       setNextSyncTokens(nextSyncTokens)
       const newCalendarsEvents = { ...calendarsEvents }
 
-      /* getting all deleted recurring events (single instances) */
       const deletedEventInstances = {}
 
       for (const key in fetchedCalendarsEvents) {
         fetchedCalendarsEvents[key].map((event) => {
           if (event.status === 'cancelled') {
+            const formattedEventTime = getFormattedEventTime(
+              event.originalStartTime?.dateTime,
+              event.originalStartTime?.date,
+            )
             if (
               !Object.keys(deletedEventInstances).includes(
                 event.id.split('_')[0],
               )
             ) {
               deletedEventInstances[event.id.split('_')[0]] = [
-                event.originalStartTime.dateTime,
+                formattedEventTime,
               ]
             } else {
               deletedEventInstances[event.id.split('_')[0]].push(
-                event.originalStartTime.dateTime,
+                formattedEventTime,
               )
             }
           }
         })
       }
 
-      console.log('deletedEventInstances', deletedEventInstances) // DEBUGGING
-      /* include deletedEventInstances as rrule string below */
-
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           if (event.recurrence) {
-            const rule = new RRule.fromString(
-              event.recurrence[event.recurrence.length - 1],
+            const rruleString = event.recurrence[event.recurrence.length - 1]
+
+            const dtStart = getFormattedEventTime(
+              event.start?.dateTime,
+              event.start?.date,
             )
-            const recurrenceObject = rule.origOptions
+            const formattedRRule = getFormattedRRule(
+              dtStart,
+              rruleString,
+              deletedEventInstances[event.id] || [],
+            )
 
             const eventStart = event.start?.dateTime || event.start?.date
             const eventEnd = event.end?.dateTime || event.end?.date
-            const duration = Math.floor(
-              moment
-                .duration(moment(eventEnd).diff(moment(eventStart)))
-                .asMinutes(),
-            )
+            const duration = getRecurringEventDuration(eventStart, eventEnd)
             const formattedDuration = formatEventTimeLength(duration)
 
             const recurringEvent = {
               id: event.id,
               title: event.summary,
-              rrule: {
-                freq: mapFreq(recurrenceObject.freq),
-                dtstart: eventStart,
-              },
               url: event.htmlLink,
+              rrule: formattedRRule,
               taskId: event?.extendedProperties?.shared?.taskId,
               description: stripTags(event?.description || ''),
               backgroundColor: isValidGoogleEventColorId(event.colorId)
@@ -213,22 +224,6 @@ export const FullCalendar = () => {
             }
             if (event?.attendees) {
               recurringEvent.attendees = event?.attendees
-            }
-
-            if (recurrenceObject.interval) {
-              recurringEvent.rrule.interval = recurrenceObject.interval
-            }
-
-            if (recurrenceObject.byweekday) {
-              recurringEvent.rrule.byweekday = recurrenceObject.byweekday.map(
-                ({ weekday }) => mapWeekday(weekday),
-              )
-            }
-
-            if (recurrenceObject.until) {
-              recurringEvent.rrule.until = moment(
-                recurrenceObject.until,
-              ).format('YYYY-MM-DD')
             }
 
             return recurringEvent
