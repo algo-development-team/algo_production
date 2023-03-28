@@ -13,6 +13,7 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
+  updateRecurringEventFromUserGoogleCalendar,
 } from '../../google'
 import {
   useGoogleValue,
@@ -35,6 +36,7 @@ import {
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
+import { getFormattedEventTime } from '../../handleMoment'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -120,14 +122,6 @@ export const FullCalendar = () => {
     )
   }
 
-  const getFormattedEventTime = (dateTime, date) => {
-    if (dateTime) {
-      return moment.utc(dateTime).format('YYYYMMDDTHHmmss[Z]')
-    } else {
-      return moment(date).format('YYYYMMDD')
-    }
-  }
-
   const getFormattedRRule = (dtStart, rruleString, exdates) => {
     for (const exdate of exdates) {
       rruleString = rruleString.concat(`\nEXDATE:${exdate}`)
@@ -177,22 +171,21 @@ export const FullCalendar = () => {
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           if (event.recurrence) {
+            console.log('event.recurrence', event.recurrence) // DEBUGGING
+
             const rruleString = event.recurrence[event.recurrence.length - 1]
 
-            const dtStart = getFormattedEventTime(
-              event.start?.dateTime,
-              event.start?.date,
-            )
+            const eventStart = event.start?.dateTime || event.start?.date
+            const allDay = event.start?.dateTime ? false : true
+            const dtStart = getFormattedEventTime(eventStart, allDay)
+            const eventEnd = event.end?.dateTime || event.end?.date
+            const duration = getRecurringEventDuration(eventStart, eventEnd)
+            const formattedDuration = formatEventTimeLength(duration)
             const formattedRRule = getFormattedRRule(
               dtStart,
               rruleString,
               deletedEventInstances[event.id] || [],
             )
-
-            const eventStart = event.start?.dateTime || event.start?.date
-            const eventEnd = event.end?.dateTime || event.end?.date
-            const duration = getRecurringEventDuration(eventStart, eventEnd)
-            const formattedDuration = formatEventTimeLength(duration)
 
             const recurringEvent = {
               id: event.id,
@@ -273,8 +266,12 @@ export const FullCalendar = () => {
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
+    console.log('info.event', info.event) // DEBUGGING
+
+    const allDay = info.event.allDay
     const taskname = info.event.title
     const taskdescription = info.event.extendedProps?.description
+    const taskbackgroundcolor = info.event.backgroundColor
     const start = new Date(info.event.start)
     const end = new Date(info.event.end)
 
@@ -283,41 +280,83 @@ export const FullCalendar = () => {
     const attendees = info.event.extendedProps?.attendees || []
     const rruleStr = info.event.extendedProps?.rruleStr || ''
 
+    const recurrenceId = getFormattedEventTime(start, allDay)
+
     const calendarId = getEventCalendarId(info.event.id)
     const eventId = info.event.id
 
     setDialogProps({
-      allDay: info.event.allDay,
+      allDay: allDay,
       taskname: taskname,
       taskdescription: taskdescription,
-      taskbackgroundcolor: info.event.backgroundColor,
+      taskbackgroundcolor: taskbackgroundcolor,
       location: location,
       meetLink: meetLink,
       attendees: attendees,
       rruleStr: rruleStr,
       eventId: eventId,
       calendarId: calendarId,
-      remove: () => {
-        const newCalendarsEvents = { ...calendarsEvents }
-        for (const key in newCalendarsEvents) {
-          newCalendarsEvents[key] = newCalendarsEvents[key].filter(
-            (event) => event.id !== info.event.id,
-          )
-        }
-
-        setCalendarsEvents(newCalendarsEvents)
-        // remove from calendar
-        info.event.remove()
-
+      remove: (recurringEventEditOption) => {
         /* find the id of calendar that the event belongs to */
         const calendarId = getEventCalendarId(info.event.id)
+        const calendarsEventsKey =
+          calendarId === 'primary' ? 'custom' : calendarId
 
-        // delete from Google Calendar
-        deleteEventFromUserGoogleCalendar(
-          currentUser.id,
-          calendarId,
-          info.event.id,
-        )
+        if (rruleStr !== '' && recurringEventEditOption === 'THIS_EVENT') {
+          const newRRule = rruleStr + '\nEXDATE:' + recurrenceId
+
+          // update at calendarsEvents
+          let updatedEvent = null
+
+          const newCalendarsEvents = { ...calendarsEvents }
+          newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
+            calendarsEventsKey
+          ].map((event) => {
+            if (event.id === info.event.id) {
+              updatedEvent = {
+                ...event,
+                rrule: newRRule,
+                rruleStr: newRRule,
+              }
+              return updatedEvent
+            } else {
+              return event
+            }
+          })
+
+          info.event.remove()
+          if (updatedEvent) {
+            calendar.addEvent(updatedEvent)
+          }
+
+          // update at Google Calendar
+          // updateRecurringEventFromUserGoogleCalendar(
+          //   currentUser.id,
+          //   calendarId,
+          //   info.event.id,
+          //   newRRule,
+          // )
+        } else {
+          // remove from calendarsEvents
+          const newCalendarsEvents = { ...calendarsEvents }
+          for (const key in newCalendarsEvents) {
+            newCalendarsEvents[key] = newCalendarsEvents[key].filter(
+              (event) => event.id !== info.event.id,
+            )
+          }
+
+          setCalendarsEvents(newCalendarsEvents)
+
+          // remove from FullCalendar
+          info.event.remove()
+
+          // remove from Google Calendar
+          deleteEventFromUserGoogleCalendar(
+            currentUser.id,
+            calendarId,
+            info.event.id,
+          )
+        }
       },
       copy: () => {
         const id = generateEventId()
@@ -404,6 +443,7 @@ export const FullCalendar = () => {
         location,
         meetLink,
         attendees,
+        recurringEventEditOption,
       ) => {
         if (endDate <= startDate) {
           endDate = moment(startDate).add(15, 'minutes').toDate()

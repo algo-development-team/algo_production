@@ -17,6 +17,7 @@ import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
 import { cropLabel } from 'handleLabel'
 import { isValidEmail } from 'handleEmail'
+import { getFormattedEventTime } from 'handleMoment'
 import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.svg'
 import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
@@ -108,7 +109,7 @@ export const Block = ({
   }, [eventColour])
 
   const handleDelete = () => {
-    remove()
+    remove(recurringEventEditOption)
     closeOverlay()
   }
 
@@ -118,7 +119,7 @@ export const Block = ({
   }
 
   const handleBacklog = () => {
-    remove()
+    remove(recurringEventEditOption)
     backlog()
     closeOverlay()
   }
@@ -133,6 +134,7 @@ export const Block = ({
       eventLocation,
       eventMeetLink,
       getUpdatedEventAttendees(),
+      recurringEventEditOption,
     )
     closeOverlay()
   }
@@ -164,7 +166,16 @@ export const Block = ({
           />
         </div>
         <div style={{ display: 'inline-block', textAlign: 'right' }}>
-          <BacklogIcon className='action-btn' onClick={() => handleBacklog()} />
+          <BacklogIcon
+            className='action-btn'
+            onClick={() => {
+              if (rruleStr === '') {
+                handleBacklog()
+              } else {
+                setRecurringEventEditType('BACKLOG')
+              }
+            }}
+          />
           <CopyIcon className='action-btn' onClick={() => handleCopy()} />
           <DeleteIcon
             className='action-btn'
@@ -515,6 +526,8 @@ export const Block = ({
                     ? 'Update '
                     : recurringEventEditType === 'DELETE'
                     ? 'Delete '
+                    : recurringEventEditType === 'BACKLOG'
+                    ? 'Backlog '
                     : ''}
                   recurring event
                 </h3>
@@ -558,6 +571,8 @@ export const Block = ({
                         handleSave()
                       } else if (recurringEventEditType === 'DELETE') {
                         handleDelete()
+                      } else if (recurringEventEditType === 'BACKLOG') {
+                        handleBacklog()
                       }
                     }}
                   >

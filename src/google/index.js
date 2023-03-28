@@ -123,7 +123,6 @@ export const getUserGoogleCalendarEventsIncSync = async (
   }
 }
 
-// write a function that adds a new calendar to a user's Google Calendar list
 export const addCalendarToUserGoogleCalendarList = async (
   userId,
   calendarName,
@@ -156,7 +155,6 @@ export const addCalendarToUserGoogleCalendarList = async (
   }
 }
 
-// write a function that adds a new event to a calendar
 export const addEventToUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -188,7 +186,6 @@ export const addEventToUserGoogleCalendar = async (
   }
 }
 
-// write a function that deletes an event from a calendar
 export const deleteEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -216,7 +213,47 @@ export const deleteEventFromUserGoogleCalendar = async (
   }
 }
 
-// write a function that partially updates an event from a calendar
+export const updateRecurringEventFromUserGoogleCalendar = async (
+  userId,
+  calendarId,
+  eventId,
+  newRRule,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const requestBody = {
+      recurrence: [newRRule],
+    }
+
+    console.log('requestBody: ', requestBody) // DEBUGGING
+
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(requestBody),
+      },
+    )
+
+    console.log('request', request) // DEBUGGING
+
+    const data = await request.json()
+
+    console.log('data', data) // DEBUGGING
+
+    return data
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
 export const updateEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -278,7 +315,6 @@ export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
   }
 }
 
-/* DOES NOT WORK, NEEDS TO BE FIXED */
 export const createGoogleMeet = async (userId, calendarId, eventId) => {
   try {
     const accessToken = await getValidToken(userId)
@@ -319,7 +355,6 @@ export const createGoogleMeet = async (userId, calendarId, eventId) => {
   }
 }
 
-/* NEEDS TO BE TESTED */
 export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
   try {
     const accessToken = await getValidToken(userId)
