@@ -114,18 +114,18 @@ export const FullCalendar = () => {
     return events
   }
 
+  const getRecurringEventDuration = (eventStart, eventEnd) => {
+    return Math.floor(
+      moment.duration(moment(eventEnd).diff(moment(eventStart))).asMinutes(),
+    )
+  }
+
   const getFormattedEventTime = (dateTime, date) => {
     if (dateTime) {
       return moment.utc(dateTime).format('YYYYMMDDTHHmmss[Z]')
     } else {
       return moment(date).format('YYYYMMDD')
     }
-  }
-
-  const getRecurringEventDuration = (eventStart, eventEnd) => {
-    return Math.floor(
-      moment.duration(moment(eventEnd).diff(moment(eventStart))).asMinutes(),
-    )
   }
 
   const getFormattedRRule = (dtStart, rruleString, exdates) => {
@@ -205,6 +205,7 @@ export const FullCalendar = () => {
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
               duration: formattedDuration,
+              rruleStr: formattedRRule, // used to indentify rrule in block component
             }
 
             if (event?.location) {
@@ -280,6 +281,7 @@ export const FullCalendar = () => {
     const location = info.event.extendedProps?.location || ''
     const meetLink = info.event.extendedProps?.meetLink || ''
     const attendees = info.event.extendedProps?.attendees || []
+    const rruleStr = info.event.extendedProps?.rruleStr || ''
 
     const calendarId = getEventCalendarId(info.event.id)
     const eventId = info.event.id
@@ -292,6 +294,7 @@ export const FullCalendar = () => {
       location: location,
       meetLink: meetLink,
       attendees: attendees,
+      rruleStr: rruleStr,
       eventId: eventId,
       calendarId: calendarId,
       remove: () => {

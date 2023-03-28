@@ -32,7 +32,7 @@ export const Overlay = () => {
     setShowDialog(false)
   }, [])
 
-  const renderSwitch = (params) => {
+  const renderSwitch = () => {
     switch (showDialog) {
       case 'BLOCK':
         return (
@@ -45,6 +45,7 @@ export const Overlay = () => {
             location={dialogProps.location}
             meetLink={dialogProps.meetLink}
             attendees={dialogProps.attendees}
+            rruleStr={dialogProps.rruleStr}
             eventId={dialogProps.eventId}
             calendarId={dialogProps.calendarId}
             start={dialogProps.start}
@@ -193,5 +194,5 @@ export const Overlay = () => {
         )
     }
   }
-  return <>{renderSwitch(showDialog)}</>
+  return <>{renderSwitch()}</>
 }

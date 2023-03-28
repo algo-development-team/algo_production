@@ -31,6 +31,7 @@ export const Block = ({
   location,
   meetLink,
   attendees,
+  rruleStr,
   eventId,
   calendarId,
   start,
@@ -63,8 +64,9 @@ export const Block = ({
   const [newEventAttendee, setNewEventAttendee] = useState('')
   const [currentUserResponseStatus, setCurrentUserResponseStatus] =
     useState('needsAction')
-  const [showRecurringEventDeleteOptions, setShowRecurringEventDeleteOptions] =
-    useState(false)
+  const [recurringEventEditType, setRecurringEventEditType] = useState('')
+  const [recurringEventEditOption, setRecurringEventEditOption] =
+    useState('THIS_EVENT')
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {
@@ -148,35 +150,33 @@ export const Block = ({
 
   const titleAndOptions = () => {
     return (
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div style={{ display: 'inline-block' }}>
-            <input
-              className='add-task__input title'
-              value={taskName}
-              onChange={(event) => {
-                setTaskName(event.target.value)
-              }}
-              required
-              type='text'
-              placeholder={`${taskname}`}
-            />
-          </div>
-          <div style={{ display: 'inline-block', textAlign: 'right' }}>
-            <BacklogIcon
-              className='action-btn'
-              onClick={() => handleBacklog()}
-            />
-            <CopyIcon className='action-btn' onClick={() => handleCopy()} />
-            <DeleteIcon className='action-btn' onClick={() => handleDelete()} />
-            <CloseIcon className='action-btn' onClick={() => closeOverlay()} />
-          </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ display: 'inline-block' }}>
+          <input
+            className='add-task__input title'
+            value={taskName}
+            onChange={(event) => {
+              setTaskName(event.target.value)
+            }}
+            required
+            type='text'
+            placeholder={`${taskname}`}
+          />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'right' }}>
-          <button>This event</button>
-          <button>This and following events</button>
-          <button>All events</button>
-          <button>Cancel</button>
+        <div style={{ display: 'inline-block', textAlign: 'right' }}>
+          <BacklogIcon className='action-btn' onClick={() => handleBacklog()} />
+          <CopyIcon className='action-btn' onClick={() => handleCopy()} />
+          <DeleteIcon
+            className='action-btn'
+            onClick={() => {
+              if (rruleStr === '') {
+                handleDelete()
+              } else {
+                setRecurringEventEditType('DELETE')
+              }
+            }}
+          />
+          <CloseIcon className='action-btn' onClick={() => closeOverlay()} />
         </div>
       </div>
     )
@@ -498,8 +498,8 @@ export const Block = ({
     )
   }
 
-  return (
-    <>
+  if (recurringEventEditType !== '') {
+    return (
       <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
         <div
           className='event__wrapper'
@@ -508,36 +508,110 @@ export const Block = ({
           }}
         >
           <div className='add-task__wrapper'>
-            {
-              <form className='add-task'>
-                <div className={`add-task__container`}>
-                  {titleAndOptions()}
-                  {!allDay && dateAndTimePickers()}
-                  {meetingEditor()}
-                  {locationEditor()}
-                  {eventColorSelector()}
-                  {descriptionEditor()}
-                  <div
-                    style={{
-                      display: 'flex',
-                      marginBottom: '10px',
+            <form className='add-task'>
+              <div className={`add-task__container`}>
+                <h3>
+                  {recurringEventEditType === 'UPDATE'
+                    ? 'Update '
+                    : recurringEventEditType === 'DELETE'
+                    ? 'Delete '
+                    : ''}
+                  recurring event
+                </h3>
+                <div>
+                  <input
+                    type='checkbox'
+                    checked={recurringEventEditOption === 'THIS_EVENT'}
+                    onClick={() => setRecurringEventEditOption('THIS_EVENT')}
+                  />
+                  <label>This event</label>
+                </div>
+                <div>
+                  <input
+                    type='checkbox'
+                    checked={recurringEventEditOption === 'ALL_EVENTS'}
+                    onClick={() => setRecurringEventEditOption('ALL_EVENTS')}
+                  />
+                  <label>All events</label>
+                </div>
+                <div
+                  style={{
+                    marginTop: '20px',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <button
+                    className=' action add-task__actions--cancel'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      setRecurringEventEditType('')
+                      setRecurringEventEditOption('THIS_EVENT')
                     }}
                   >
-                    <div className='add-task__attributes'>
-                      <button
-                        className=' action add-task__actions--add-task'
-                        onClick={() => handleSave()}
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
+                    Cancel
+                  </button>
+                  <button
+                    className=' action add-task__actions--add-task'
+                    onClick={(e) => {
+                      e.preventDefault()
+                      if (recurringEventEditType === 'UPDATE') {
+                        handleSave()
+                      } else if (recurringEventEditType === 'DELETE') {
+                        handleDelete()
+                      }
+                    }}
+                  >
+                    Ok
+                  </button>
                 </div>
-              </form>
-            }
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </>
+    )
+  }
+
+  return (
+    <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
+      <div
+        className='event__wrapper'
+        onClick={(event) => {
+          event.stopPropagation()
+        }}
+      >
+        <div className='add-task__wrapper'>
+          <form className='add-task'>
+            <div className={`add-task__container`}>
+              {titleAndOptions()}
+              {!allDay && dateAndTimePickers()}
+              {meetingEditor()}
+              {locationEditor()}
+              {eventColorSelector()}
+              {descriptionEditor()}
+              <div
+                style={{
+                  display: 'flex',
+                  marginBottom: '10px',
+                }}
+              >
+                <button
+                  className=' action add-task__actions--add-task'
+                  onClick={() => {
+                    if (rruleStr === '') {
+                      handleSave()
+                    } else {
+                      setRecurringEventEditType('UPDATE')
+                    }
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   )
 }
