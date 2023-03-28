@@ -13,7 +13,6 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
-  fetchDeletedEventInstances,
 } from '../../google'
 import {
   useGoogleValue,
@@ -24,7 +23,6 @@ import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
 import { timeZone } from 'handleCalendars'
-import { RRule, rrulestr } from 'rrule'
 import {
   getEventsInfo,
   updateEventsInfo,
@@ -139,13 +137,6 @@ export const FullCalendar = () => {
 
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
-      const cachedCalendarsEvents = localStorage.getItem(
-        'algo_calendars_events',
-      )
-      if (cachedCalendarsEvents) {
-        setCalendarsEvents(JSON.parse(cachedCalendarsEvents))
-      }
-
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
       )
@@ -262,12 +253,6 @@ export const FullCalendar = () => {
       }
 
       setCalendarsEvents(newCalendarsEvents)
-
-      // cache the events
-      localStorage.setItem(
-        'algo_calendars_events',
-        JSON.stringify(newCalendarsEvents),
-      )
     }
 
     if (currentUser && googleCalendars.length > 0) {

@@ -63,6 +63,8 @@ export const Block = ({
   const [newEventAttendee, setNewEventAttendee] = useState('')
   const [currentUserResponseStatus, setCurrentUserResponseStatus] =
     useState('needsAction')
+  const [showRecurringEventDeleteOptions, setShowRecurringEventDeleteOptions] =
+    useState(false)
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {
@@ -146,24 +148,35 @@ export const Block = ({
 
   const titleAndOptions = () => {
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div style={{ display: 'inline-block' }}>
-          <input
-            className='add-task__input title'
-            value={taskName}
-            onChange={(event) => {
-              setTaskName(event.target.value)
-            }}
-            required
-            type='text'
-            placeholder={`${taskname}`}
-          />
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'inline-block' }}>
+            <input
+              className='add-task__input title'
+              value={taskName}
+              onChange={(event) => {
+                setTaskName(event.target.value)
+              }}
+              required
+              type='text'
+              placeholder={`${taskname}`}
+            />
+          </div>
+          <div style={{ display: 'inline-block', textAlign: 'right' }}>
+            <BacklogIcon
+              className='action-btn'
+              onClick={() => handleBacklog()}
+            />
+            <CopyIcon className='action-btn' onClick={() => handleCopy()} />
+            <DeleteIcon className='action-btn' onClick={() => handleDelete()} />
+            <CloseIcon className='action-btn' onClick={() => closeOverlay()} />
+          </div>
         </div>
-        <div style={{ display: 'inline-block', textAlign: 'right' }}>
-          <BacklogIcon className='action-btn' onClick={() => handleBacklog()} />
-          <CopyIcon className='action-btn' onClick={() => handleCopy()} />
-          <DeleteIcon className='action-btn' onClick={() => handleDelete()} />
-          <CloseIcon className='action-btn' onClick={() => closeOverlay()} />
+        <div style={{ display: 'flex', justifyContent: 'right' }}>
+          <button>This event</button>
+          <button>This and following events</button>
+          <button>All events</button>
+          <button>Cancel</button>
         </div>
       </div>
     )
