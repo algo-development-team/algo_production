@@ -242,8 +242,9 @@ export const FullCalendar = () => {
                 ? GoogleEventColours[event.colorId - 1].hex
                 : GoogleEventColours[6].hex,
               duration: formattedDuration,
-              rruleStr: formattedRRule, // stores current rrule for FullCalendar event
-              recurrence: event.recurrence,
+              rruleStr: formattedRRule, // stores current rrule for FullCalendar event, if rruleStr is non-empty string, then event is recurring
+              recurrence: event.recurrence, // stores recurrence data from Google Calendar
+              dtStart: dtStart, // stores start time of recurring event
             }
 
             if (event?.location) {
@@ -323,6 +324,7 @@ export const FullCalendar = () => {
     const attendees = info.event.extendedProps?.attendees || []
     const rruleStr = info.event.extendedProps?.rruleStr || ''
     const recurrence = info.event.extendedProps?.recurrence || []
+    const dtStart = info.event.extendedProps?.dtStart || ''
 
     const recurrenceId = getFormattedEventTime(start, allDay)
 
@@ -483,91 +485,71 @@ export const FullCalendar = () => {
       save: (
         taskName,
         taskDescription,
-        startDate,
-        endDate,
         backgroundColor,
         location,
         meetLink,
         attendees,
         recurringEventEditOption,
       ) => {
-        if (endDate <= startDate) {
-          endDate = moment(startDate).add(15, 'minutes').toDate()
-        }
+        if (rruleStr !== '' && recurringEventEditOption === 'THIS_EVENT') {
+          // only update that instance from FullCalendar
+          // only update that instance from Google Calendar
+        } else {
+          // update the event in FullCalendar
+          info.event.setProp('title', taskName)
+          info.event.setProp('backgroundColor', backgroundColor)
+          info.event.setExtendedProp('description', taskDescription)
+          info.event.setExtendedProp('location', location)
+          info.event.setExtendedProp('meetLink', meetLink)
+          info.event.setExtendedProp('attendees', attendees)
 
-        // update the event in FullCalendar
-        info.event.setProp('title', taskName)
-        info.event.setStart(startDate)
-        info.event.setEnd(endDate)
-        info.event.setProp('backgroundColor', backgroundColor)
-        info.event.setExtendedProp('description', taskDescription)
-        info.event.setExtendedProp('location', location)
-        info.event.setExtendedProp('meetLink', meetLink)
-        info.event.setExtendedProp('attendees', attendees)
+          const calendarId = getEventCalendarId(info.event.id)
+          const calendarsEventsKey =
+            calendarId === 'primary' ? 'custom' : calendarId
 
-        const calendarId = getEventCalendarId(info.event.id)
-        const calendarsEventsKey =
-          calendarId === 'primary' ? 'custom' : calendarId
-
-        // update the event in calendarsEvents
-        const newCalendarsEvents = { ...calendarsEvents }
-        newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
-          calendarsEventsKey
-        ].map((event) => {
-          if (event.id === info.event.id) {
-            const updatedEvent = {
-              ...event,
-              title: taskName,
-              start: startDate,
-              end: endDate,
-              backgroundColor: backgroundColor,
-              description: taskDescription,
+          // update the event in calendarsEvents
+          const newCalendarsEvents = { ...calendarsEvents }
+          newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
+            calendarsEventsKey
+          ].map((event) => {
+            if (event.id === info.event.id) {
+              const updatedEvent = {
+                ...event,
+                title: taskName,
+                backgroundColor: backgroundColor,
+                description: taskDescription,
+              }
+              if (attendees.length > 0) {
+                updatedEvent.attendees = attendees
+              }
+              return updatedEvent
+            } else {
+              return event
             }
-            if (attendees.length > 0) {
-              updatedEvent.attendees = attendees
-            }
-            return updatedEvent
-          } else {
-            return event
+          })
+
+          // adjust the start and end date such that it is in the same day as the original event
+
+          // update the event in Google Calendar
+          const updatedGoogleCalendarEvent = {
+            summary: taskName,
+            description: taskDescription,
+            start: !info.event.allDay,
+            colorId:
+              GoogleEventColours.findIndex(
+                (colour) => colour.hex === backgroundColor,
+              ) + 1,
+            attendees: attendees,
           }
-        })
 
-        // update the event in Google Calendar
-        const updatedGoogleCalendarEvent = {
-          summary: taskName,
-          description: taskDescription,
-          start: !info.event.allDay
-            ? {
-                dateTime: startDate.toISOString(),
-                timeZone: timeZone,
-              }
-            : {
-                date: startDate.toISOString().slice(0, 10),
-              },
-          end: !info.event.allDay
-            ? {
-                dateTime: endDate.toISOString(),
-                timeZone: timeZone,
-              }
-            : {
-                date: endDate.toISOString().slice(0, 10),
-              },
-          colorId:
-            GoogleEventColours.findIndex(
-              (colour) => colour.hex === backgroundColor,
-            ) + 1,
-          attendees: attendees,
+          updateEventFromUserGoogleCalendar(
+            currentUser.id,
+            calendarId,
+            info.event.id,
+            updatedGoogleCalendarEvent,
+          )
         }
-
-        updateEventFromUserGoogleCalendar(
-          currentUser.id,
-          calendarId,
-          info.event.id,
-          updatedGoogleCalendarEvent,
-        )
       },
-      start: start,
-      end: end,
     })
     setShowDialog('BLOCK')
   }

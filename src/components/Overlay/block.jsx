@@ -10,14 +10,11 @@ import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
 import { ReactComponent as CheckCircleIcon } from 'assets/svg/check-circle.svg'
 import { ReactComponent as RemoveCircleIcon } from 'assets/svg/remove-circle.svg'
 import { ReactComponent as QuestionCircleIcon } from 'assets/svg/question-circle.svg'
-import { MyDatePicker } from './block/my-date-picker'
-import { MyTimePicker } from './block/my-time-picker'
 import { useResponsiveSizes } from 'hooks'
 import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
 import { cropLabel } from 'handleLabel'
 import { isValidEmail } from 'handleEmail'
-import { getFormattedEventTime } from 'handleMoment'
 import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.svg'
 import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
@@ -35,8 +32,6 @@ export const Block = ({
   rruleStr,
   eventId,
   calendarId,
-  start,
-  end,
   remove,
   copy,
   backlog,
@@ -44,8 +39,6 @@ export const Block = ({
 }) => {
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
-  const [startDate, setStartDate] = useState(start)
-  const [endDate, setEndDate] = useState(end)
   const textAreaRef = useRef(null)
   const { sizes } = useResponsiveSizes()
   const { currentUser } = useAuth()
@@ -128,8 +121,6 @@ export const Block = ({
     save(
       taskName,
       taskDescription,
-      startDate,
-      endDate,
       eventColour.hex,
       eventLocation,
       eventMeetLink,
@@ -191,37 +182,6 @@ export const Block = ({
         </div>
       </div>
     )
-  }
-
-  const dateAndTimePickers = () => {
-    if (sizes.phone) {
-      return (
-        <div className='add-project__form-group' role='button'>
-          <label>Time</label>
-          <div className='add-task__attributes--left'>
-            <MyDatePicker date={startDate} setDate={setStartDate} />
-            <MyTimePicker time={startDate} setTime={setStartDate} />
-          </div>
-          <div className='add-task__attributes--left'>
-            <MyDatePicker date={endDate} setDate={setEndDate} />
-            <MyTimePicker time={endDate} setTime={setEndDate} />
-          </div>
-        </div>
-      )
-    } else {
-      return (
-        <div className='add-project__form-group' role='button'>
-          <label>Time</label>
-          <div className='add-task__attributes--left'>
-            <MyDatePicker date={startDate} setDate={setStartDate} />
-            <MyTimePicker time={startDate} setTime={setStartDate} />
-            <h3 style={{ marginRight: '7px', marginLeft: '7px' }}>to</h3>
-            <MyDatePicker date={endDate} setDate={setEndDate} />
-            <MyTimePicker time={endDate} setTime={setEndDate} />
-          </div>
-        </div>
-      )
-    }
   }
 
   const getAcceptButtonStyle = () => {
@@ -599,7 +559,6 @@ export const Block = ({
           <form className='add-task'>
             <div className={`add-task__container`}>
               {titleAndOptions()}
-              {!allDay && dateAndTimePickers()}
               {meetingEditor()}
               {locationEditor()}
               {eventColorSelector()}
