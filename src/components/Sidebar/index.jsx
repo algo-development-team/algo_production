@@ -13,6 +13,7 @@ export const Sidebar = (props) => {
   const { defaultGroup } = useParams()
   const [AddTasks, setAddTasks] = useState(false)
   const [FilterTasks, setFilterTasks] = useState(false)
+  const [autoSchedule, setAutoSchedule] = useState(false)
 
   useEffect(() => {
     if (FilterTasks) {
@@ -35,17 +36,24 @@ export const Sidebar = (props) => {
           style={{ paddingLeft: '18px', paddingRight: '18px' }}
         >
           <div>
+          <button style={{ display: 'flex' }}>
+          <Taskbar
+                  type='AUTO_SCHEDULE'
+                  value={autoSchedule}
+                  setValue={setAutoSchedule}
+                />
+          </button>
             <button style={{ display: 'flex' }}>
+              <Taskbar
+                  type='ADD_TASKS'
+                  value={AddTasks}
+                  setValue={setAddTasks}
+                />
               <Taskbar
                   type='FILTER_TASKS'
                   value={FilterTasks}
                   setValue={setFilterTasks}
                 />
-              <Taskbar
-                type='ADD_TASKS'
-                value={AddTasks}
-                setValue={setAddTasks}
-              />
             </button>
 
             <SearchField
