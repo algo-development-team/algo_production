@@ -316,8 +316,9 @@ export const FullCalendar = () => {
     const taskname = info.event.title
     const taskdescription = info.event.extendedProps?.description
     const taskbackgroundcolor = info.event.backgroundColor
-    const start = new Date(info.event.start)
-    const end = new Date(info.event.end)
+    const start = info.event.start
+    const end = info.event.end
+    const duration = moment(end).diff(moment(start), 'minutes')
 
     const location = info.event.extendedProps?.location || ''
     const meetLink = info.event.extendedProps?.meetLink || ''
@@ -325,6 +326,8 @@ export const FullCalendar = () => {
     const rruleStr = info.event.extendedProps?.rruleStr || ''
     const recurrence = info.event.extendedProps?.recurrence || []
     const dtStart = info.event.extendedProps?.dtStart || ''
+    const dtStartTime = moment(dtStart)
+    const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
 
     const recurrenceId = getFormattedEventTime(start, allDay)
 
@@ -407,42 +410,85 @@ export const FullCalendar = () => {
         }
       },
       copy: () => {
+        console.log('info.event', info.event) // DEBUGGING
+
         const id = generateEventId()
-        const newEvent = {
-          end: info.event.endStr,
-          id: id,
-          start: info.event.startStr,
-          title: info.event.title,
-          backgroundColor: info.event.backgroundColor,
+
+        let newEvent = null
+        let newGoogleCalendarEvent = null
+
+        if (rruleStr !== '') {
+          newEvent = {
+            id: id,
+            duration: formatEventTimeLength(duration),
+            title: info.event.title,
+            backgroundColor: info.event.backgroundColor,
+            rrule: rruleStr,
+            rruleStr: rruleStr,
+            recurrence: recurrence,
+            dtStart: dtStart,
+          }
+
+          newGoogleCalendarEvent = {
+            id: id,
+            summary: info.event.title,
+            start: !info.event.allDay
+              ? {
+                  dateTime: dtStartTime.toISOString(),
+                  timeZone: timeZone,
+                }
+              : {
+                  date: dtStartTime.toISOString(),
+                },
+            end: !info.event.allDay
+              ? {
+                  dateTime: dtEndTime.toISOString(),
+                  timeZone: timeZone,
+                }
+              : {
+                  date: dtEndTime.toISOString(),
+                },
+            recurrence: recurrence,
+          }
+        } else {
+          newEvent = {
+            id: id,
+            start: info.event.startStr,
+            end: info.event.endStr,
+            title: info.event.title,
+            backgroundColor: info.event.backgroundColor,
+          }
+
+          newGoogleCalendarEvent = {
+            id: id,
+            summary: info.event.title,
+            start: !info.event.allDay
+              ? {
+                  dateTime: info.event.startStr,
+                  timeZone: timeZone,
+                }
+              : {
+                  date: info.event.startStr,
+                },
+            end: !info.event.allDay
+              ? {
+                  dateTime: info.event.endStr,
+                  timeZone: timeZone,
+                }
+              : {
+                  date: info.event.endStr,
+                },
+          }
         }
+
+        console.log('newEvent', newEvent) // DEBUGGING
+        console.log('newGoogleCalendarEvent', newGoogleCalendarEvent) // DEBUGGING
 
         setCalendarsEvents({
           ...calendarsEvents,
           custom: [...calendarsEvents.custom, newEvent],
         })
         calendar.addEvent(newEvent)
-
-        // add to Google Calendar
-        const newGoogleCalendarEvent = {
-          id: id,
-          summary: info.event.title,
-          start: !info.event.allDay
-            ? {
-                dateTime: info.event.startStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: info.event.startStr,
-              },
-          end: !info.event.allDay
-            ? {
-                dateTime: info.event.endStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: info.event.endStr,
-              },
-        }
 
         // add to Google Calendar
         addEventToUserGoogleCalendar(
@@ -489,65 +535,59 @@ export const FullCalendar = () => {
         location,
         meetLink,
         attendees,
-        recurringEventEditOption,
       ) => {
-        if (rruleStr !== '' && recurringEventEditOption === 'THIS_EVENT') {
-          // only update that instance from FullCalendar
-          // only update that instance from Google Calendar
-        } else {
-          // update the event in FullCalendar
-          info.event.setProp('title', taskName)
-          info.event.setProp('backgroundColor', backgroundColor)
-          info.event.setExtendedProp('description', taskDescription)
-          info.event.setExtendedProp('location', location)
-          info.event.setExtendedProp('meetLink', meetLink)
-          info.event.setExtendedProp('attendees', attendees)
+        // update the event in FullCalendar
+        info.event.setProp('title', taskName)
+        info.event.setProp('backgroundColor', backgroundColor)
+        info.event.setExtendedProp('description', taskDescription)
+        info.event.setExtendedProp('location', location)
+        info.event.setExtendedProp('meetLink', meetLink)
+        info.event.setExtendedProp('attendees', attendees)
 
-          const calendarId = getEventCalendarId(info.event.id)
-          const calendarsEventsKey =
-            calendarId === 'primary' ? 'custom' : calendarId
+        const calendarId = getEventCalendarId(info.event.id)
+        const calendarsEventsKey =
+          calendarId === 'primary' ? 'custom' : calendarId
 
-          // update the event in calendarsEvents
-          const newCalendarsEvents = { ...calendarsEvents }
-          newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
-            calendarsEventsKey
-          ].map((event) => {
-            if (event.id === info.event.id) {
-              const updatedEvent = {
-                ...event,
-                title: taskName,
-                backgroundColor: backgroundColor,
-                description: taskDescription,
-              }
-              if (attendees.length > 0) {
-                updatedEvent.attendees = attendees
-              }
-              return updatedEvent
-            } else {
-              return event
+        // update the event in calendarsEvents
+        const newCalendarsEvents = { ...calendarsEvents }
+        newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
+          calendarsEventsKey
+        ].map((event) => {
+          if (event.id === info.event.id) {
+            const updatedEvent = {
+              ...event,
+              title: taskName,
+              backgroundColor: backgroundColor,
+              description: taskDescription,
             }
-          })
-
-          // adjust the start and end date such that it is in the same day as the original event
-
-          // update the event in Google Calendar
-          const updatedGoogleCalendarEvent = {
-            summary: taskName,
-            description: taskDescription,
-            colorId:
-              GoogleEventColours.findIndex(
-                (colour) => colour.hex === backgroundColor,
-              ) + 1,
-            attendees: attendees,
+            if (attendees.length > 0) {
+              updatedEvent.attendees = attendees
+            }
+            return updatedEvent
+          } else {
+            return event
           }
+        })
 
-          updateEventFromUserGoogleCalendar(
-            currentUser.id,
-            calendarId,
-            info.event.id,
-            updatedGoogleCalendarEvent,
-          )
+        // adjust the start and end date such that it is in the same day as the original event
+
+        // update the event in Google Calendar
+        const updatedGoogleCalendarEvent = {
+          summary: taskName,
+          description: taskDescription,
+          colorId:
+            GoogleEventColours.findIndex(
+              (colour) => colour.hex === backgroundColor,
+            ) + 1,
+          attendees: attendees,
         }
+
+        updateEventFromUserGoogleCalendar(
+          currentUser.id,
+          calendarId,
+          info.event.id,
+          updatedGoogleCalendarEvent,
+        )
       },
     })
     setShowDialog('BLOCK')

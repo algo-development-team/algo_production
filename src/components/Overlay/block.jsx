@@ -10,7 +10,6 @@ import { ReactComponent as BacklogIcon } from 'assets/svg/backlog.svg'
 import { ReactComponent as CheckCircleIcon } from 'assets/svg/check-circle.svg'
 import { ReactComponent as RemoveCircleIcon } from 'assets/svg/remove-circle.svg'
 import { ReactComponent as QuestionCircleIcon } from 'assets/svg/question-circle.svg'
-import { useResponsiveSizes } from 'hooks'
 import { SetProjectColourDropdown } from './ProjectEditor/set-project-colour'
 import { GoogleEventColours } from 'handleColorPalette'
 import { cropLabel } from 'handleLabel'
@@ -40,7 +39,6 @@ export const Block = ({
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
   const textAreaRef = useRef(null)
-  const { sizes } = useResponsiveSizes()
   const { currentUser } = useAuth()
   const [eventColour, setEventColour] = useState({
     name:
@@ -125,7 +123,6 @@ export const Block = ({
       eventLocation,
       eventMeetLink,
       getUpdatedEventAttendees(),
-      recurringEventEditOption,
     )
     closeOverlay()
   }
@@ -482,9 +479,7 @@ export const Block = ({
             <form className='add-task'>
               <div className={`add-task__container`}>
                 <h3>
-                  {recurringEventEditType === 'UPDATE'
-                    ? 'Update '
-                    : recurringEventEditType === 'DELETE'
+                  {recurringEventEditType === 'DELETE'
                     ? 'Delete '
                     : recurringEventEditType === 'BACKLOG'
                     ? 'Backlog '
@@ -527,9 +522,7 @@ export const Block = ({
                     className=' action add-task__actions--add-task'
                     onClick={(e) => {
                       e.preventDefault()
-                      if (recurringEventEditType === 'UPDATE') {
-                        handleSave()
-                      } else if (recurringEventEditType === 'DELETE') {
+                      if (recurringEventEditType === 'DELETE') {
                         handleDelete()
                       } else if (recurringEventEditType === 'BACKLOG') {
                         handleBacklog()
@@ -572,11 +565,7 @@ export const Block = ({
                 <button
                   className=' action add-task__actions--add-task'
                   onClick={() => {
-                    if (rruleStr === '') {
-                      handleSave()
-                    } else {
-                      setRecurringEventEditType('UPDATE')
-                    }
+                    handleSave()
                   }}
                 >
                   Save
