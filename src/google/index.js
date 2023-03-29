@@ -218,43 +218,16 @@ export const updateRecurringEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
   eventId,
-  start,
-  end,
-  originalStart,
-  allDay,
+  updatedRecurrence,
 ) => {
   try {
     const accessToken = await getValidToken(userId)
 
     if (!accessToken) return null
 
-    const body = allDay
-      ? {
-          start: {
-            date: start,
-          },
-          end: {
-            date: end,
-          },
-          originalStartTime: {
-            date: originalStart,
-          },
-        }
-      : {
-          start: {
-            dateTime: start,
-            timeZone: timeZone,
-          },
-          end: {
-            dateTime: end,
-            timeZone: timeZone,
-          },
-          originalStartTime: {
-            dateTime: originalStart,
-            timeZone: timeZone,
-          },
-          recurrence: [],
-        }
+    const body = {
+      recurrence: updatedRecurrence,
+    }
 
     const request = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
