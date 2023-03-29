@@ -351,6 +351,9 @@ export const FullCalendar = () => {
         const calendarsEventsKey =
           calendarId === 'primary' ? 'custom' : calendarId
 
+        const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
+        const newRecurrence = [...recurrence, exdate]
+
         if (rruleStr !== '' && recurringEventEditOption === 'THIS_EVENT') {
           const newRRule = rruleStr + '\nEXDATE:' + recurrenceId
 
@@ -366,6 +369,7 @@ export const FullCalendar = () => {
                 ...event,
                 rrule: newRRule,
                 rruleStr: newRRule,
+                recurrence: newRecurrence,
               }
               return updatedEvent
             } else {
@@ -378,14 +382,14 @@ export const FullCalendar = () => {
             calendar.addEvent(updatedEvent)
           }
 
-          const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
+          console.log('exdate', exdate) // DEBUGGING
 
           // update at Google Calendar
           updateRecurringEventFromUserGoogleCalendar(
             currentUser.id,
             calendarId,
             info.event.id,
-            [...recurrence, exdate],
+            newRecurrence,
           )
         } else {
           // remove from calendarsEvents
