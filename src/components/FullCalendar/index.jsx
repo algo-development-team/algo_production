@@ -534,7 +534,6 @@ export const FullCalendar = () => {
           const updatedGoogleCalendarEvent = {
             summary: taskName,
             description: taskDescription,
-            start: !info.event.allDay,
             colorId:
               GoogleEventColours.findIndex(
                 (colour) => colour.hex === backgroundColor,
