@@ -67,6 +67,7 @@ export const SetNewTaskSchedulePopper = ({
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 
+  console.log('selection', setSchedule) // DEBUGGING
   const targetedposition = parentPosition
     ? parentPosition
     : { x: xPosition, y: yPosition }

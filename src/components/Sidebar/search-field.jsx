@@ -18,6 +18,12 @@ export const SearchField = ({
   const { projects } = useProjects()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
+  const [filter, setFilter] = useState('None')
+  const [filterSelect, setFilterSelect] = useState('None')
+
+  useEffect(() => {
+    setFilterSelect('None')
+  }, [filter])
 
   useEffect(() => {
     const updateUnscheduledTasks = () => {
@@ -40,6 +46,34 @@ export const SearchField = ({
   const getProjectColourHex = (projectId) => {
     const project = projects.find((project) => project.projectId === projectId)
     return project?.projectColour?.hex || GoogleEventColours[6].hex
+  }
+
+  const filterTasks = (filter, filterSelect, tasks) => {
+    // console.log('filter', filter) // DEBUGGING
+    // console.log('filterSelect', filterSelect) // DEBUGGING
+    // console.log('tasks', tasks) // DEBUGGING
+
+    if (!filter && !filterSelect)  {
+      return tasks
+    }
+
+    const result = []
+    for (let i = 0; i < tasks.length; i++) {
+      if (filter === "Due Date" && tasks[i].date === filterSelect.date) {
+          result.push(tasks[i])
+          // console.log('date not same...') // DEBUGGING 
+        } else if (filter === "Projects" && tasks[i].projectId === filterSelect.projectId) {
+          result.push(tasks[i])
+          // console.log('project not same...') // DEBUGGING 
+        } else if (filter === "Priority" &&  tasks[i].priority === filterSelect) {
+          result.push(tasks[i])
+          // console.log('priority not same...') // DEBUGGING 
+  
+      }
+    } 
+
+    // console.log('result', result) // DEBUGGING
+    return result
   }
 
   const searchTasks = (searchText, tasks) => {
@@ -126,7 +160,7 @@ export const SearchField = ({
       </div>
       <div>
         {filterValue && !addValue && 
-          <FilterTaskbar setFilterValue={setFilterValue} />
+          <FilterTaskbar filter={filter} setFilter={setFilter} filterSelect={filterSelect} setFilterSelect={setFilterSelect} setFilterValue={setFilterValue} />
         }
       </div>
 
@@ -138,7 +172,7 @@ export const SearchField = ({
           overflowX: 'hidden',
         }}
       >
-        {searchTasks(searchText, unscheduledTasks).map((task) => {
+        {searchTasks(searchText, (filterSelect!=='None') ? filterTasks(filter, filterSelect, unscheduledTasks) : unscheduledTasks).map((task) => {
           return (
             <div
               className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'

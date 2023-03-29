@@ -6,6 +6,7 @@ import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-prio
 import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-time-length-popper'
 import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
 import { SetSelectedTasksPopper } from 'components/dropdowns/set-selected-tasks-popper'
+import { SetNewTaskFilterPopper } from 'components/dropdowns/set-filter-tasks-popper'
 import { MenuList } from 'components/MenuList'
 import { UserOptions } from 'components/UserOption'
 import { ViewOptions } from 'components/ViewOptions'
@@ -189,6 +190,45 @@ export const Overlay = () => {
             projectId={dialogProps.projectId}
           />
         )
+      case 'SET_TASK_FILTER':
+        return (
+          <SetNewTaskFilterPopper
+            closeOverlay={closeOverlay}
+            setFilter={dialogProps.setFilter}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+        case 'SET_TASK_FILTER_SCHEDULE':
+          return (
+            <SetNewTaskSchedulePopper
+              closeOverlay={closeOverlay}
+              setSchedule={dialogProps.setFilterSelect}
+              xPosition={dialogProps.elementPosition.x}
+              yPosition={dialogProps.elementPosition.y}
+            />
+          )
+        case 'SET_TASK_FILTER_PROJECT':
+          return (
+            <SetNewTaskProjectPopper
+              closeOverlay={closeOverlay}
+              setProject={dialogProps.setFilterSelect}
+              xPosition={dialogProps.elementPosition.x}
+              yPosition={dialogProps.elementPosition.y}
+              setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+            />
+          )
+        case 'SET_TASK_FILTER_PRIORITY':
+          return (
+            <SetNewTaskPriorityPopper
+              closeOverlay={closeOverlay}
+              setTaskPriority={dialogProps.setFilterSelect}
+              xPosition={dialogProps.elementPosition.x}
+              yPosition={dialogProps.elementPosition.y}
+              setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+            />
+          )
     }
   }
   return <>{renderSwitch(showDialog)}</>

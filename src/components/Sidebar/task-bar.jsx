@@ -16,6 +16,8 @@ export const Taskbar = ({ type, value, setValue }) => {
         return 'Add'
         } else if (type === 'FILTER_TASKS') {
         return 'Filter'
+        } else if (type === 'AUTO_SCHEDULE') {
+        return 'Auto Schedule'
         }
     }
 
@@ -27,11 +29,17 @@ export const Taskbar = ({ type, value, setValue }) => {
         setValue(true)
     }
 
+    const autoScheduleTasks = () => {
+        setValue(true)
+    }
+
     const callTaskbarHandlerFunction = (type) => {
         if (type === 'ADD_TASKS') {
         return handleAddTasks()
         } else if (type === 'FILTER_TASKS') {
         return handleFilterTasks()
+        } else if (type === 'AUTO_SCHEDULE') {
+        return autoScheduleTasks()
         }
     }
 
