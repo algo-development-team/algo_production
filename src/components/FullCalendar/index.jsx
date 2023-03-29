@@ -168,80 +168,94 @@ export const FullCalendar = () => {
         })
       }
 
-      for (const key in fetchedCalendarsEvents) {
-        const eventsData = fetchedCalendarsEvents[key].map((event) => {
-          if (event.recurrence) {
-            console.log('event.recurrence', event.recurrence) // DEBUGGING
-
-            const rruleString = event.recurrence[event.recurrence.length - 1]
-
-            const eventStart = event.start?.dateTime || event.start?.date
-            const allDay = event.start?.dateTime ? false : true
-            const dtStart = getFormattedEventTime(eventStart, allDay)
-            const eventEnd = event.end?.dateTime || event.end?.date
-            const duration = getRecurringEventDuration(eventStart, eventEnd)
-            const formattedDuration = formatEventTimeLength(duration)
-            const formattedRRule = getFormattedRRule(
-              dtStart,
-              rruleString,
-              deletedEventInstances[event.id] || [],
-            )
-
-            const recurringEvent = {
-              id: event.id,
-              title: event.summary,
-              url: event.htmlLink,
-              rrule: formattedRRule,
-              taskId: event?.extendedProperties?.shared?.taskId,
-              description: stripTags(event?.description || ''),
-              backgroundColor: isValidGoogleEventColorId(event.colorId)
-                ? GoogleEventColours[event.colorId - 1].hex
-                : GoogleEventColours[6].hex,
-              duration: formattedDuration,
-              rruleStr: formattedRRule, // used to indentify rrule in block component
-            }
-
-            if (event?.location) {
-              recurringEvent.location = event?.location
-            }
-            if (event.conferenceData && event.conferenceData.entryPoints) {
-              recurringEvent.meetLink = event.conferenceData.entryPoints[0].uri
-            }
-            if (event?.attendees) {
-              recurringEvent.attendees = event?.attendees
-            }
-
-            return recurringEvent
-          } else {
-            const eventStart = event.start?.dateTime || event.start?.date
-            const eventEnd = event.end?.dateTime || event.end?.date
-
-            const nonRecurringEvent = {
-              id: event.id,
-              title: event.summary,
-              start: eventStart,
-              end: eventEnd,
-              url: event.htmlLink,
-              taskId: event?.extendedProperties?.shared?.taskId,
-              description: stripTags(event?.description || ''),
-              backgroundColor: isValidGoogleEventColorId(event.colorId)
-                ? GoogleEventColours[event.colorId - 1].hex
-                : GoogleEventColours[6].hex,
-            }
-            if (event?.location) {
-              nonRecurringEvent.location = event?.location
-            }
-            if (event.conferenceData && event.conferenceData.entryPoints) {
-              nonRecurringEvent.meetLink =
-                event.conferenceData.entryPoints[0].uri
-            }
-            if (event?.attendees) {
-              nonRecurringEvent.attendees = event?.attendees
-            }
-
-            return nonRecurringEvent
+      function findRRULE(strings) {
+        for (let i = 0; i < strings.length; i++) {
+          if (strings[i].startsWith('RRULE:')) {
+            return strings[i]
           }
-        })
+        }
+        return null // return null if no string starts with "RRULE:"
+      }
+
+      for (const key in fetchedCalendarsEvents) {
+        const eventsData = fetchedCalendarsEvents[key]
+          .map((event) => {
+            if (event.recurrence) {
+              console.log('event.recurrence', event.recurrence) // DEBUGGING
+
+              const rruleString = findRRULE(event.recurrence)
+
+              if (!rruleString) return null
+
+              const eventStart = event.start?.dateTime || event.start?.date
+              const allDay = event.start?.dateTime ? false : true
+              const dtStart = getFormattedEventTime(eventStart, allDay)
+              const eventEnd = event.end?.dateTime || event.end?.date
+              const duration = getRecurringEventDuration(eventStart, eventEnd)
+              const formattedDuration = formatEventTimeLength(duration)
+              const formattedRRule = getFormattedRRule(
+                dtStart,
+                rruleString,
+                deletedEventInstances[event.id] || [],
+              )
+
+              const recurringEvent = {
+                id: event.id,
+                title: event.summary,
+                url: event.htmlLink,
+                rrule: formattedRRule,
+                taskId: event?.extendedProperties?.shared?.taskId,
+                description: stripTags(event?.description || ''),
+                backgroundColor: isValidGoogleEventColorId(event.colorId)
+                  ? GoogleEventColours[event.colorId - 1].hex
+                  : GoogleEventColours[6].hex,
+                duration: formattedDuration,
+                rruleStr: formattedRRule, // stores current rrule for FullCalendar event
+              }
+
+              if (event?.location) {
+                recurringEvent.location = event?.location
+              }
+              if (event.conferenceData && event.conferenceData.entryPoints) {
+                recurringEvent.meetLink =
+                  event.conferenceData.entryPoints[0].uri
+              }
+              if (event?.attendees) {
+                recurringEvent.attendees = event?.attendees
+              }
+
+              return recurringEvent
+            } else {
+              const eventStart = event.start?.dateTime || event.start?.date
+              const eventEnd = event.end?.dateTime || event.end?.date
+
+              const nonRecurringEvent = {
+                id: event.id,
+                title: event.summary,
+                start: eventStart,
+                end: eventEnd,
+                url: event.htmlLink,
+                taskId: event?.extendedProperties?.shared?.taskId,
+                description: stripTags(event?.description || ''),
+                backgroundColor: isValidGoogleEventColorId(event.colorId)
+                  ? GoogleEventColours[event.colorId - 1].hex
+                  : GoogleEventColours[6].hex,
+              }
+              if (event?.location) {
+                nonRecurringEvent.location = event?.location
+              }
+              if (event.conferenceData && event.conferenceData.entryPoints) {
+                nonRecurringEvent.meetLink =
+                  event.conferenceData.entryPoints[0].uri
+              }
+              if (event?.attendees) {
+                nonRecurringEvent.attendees = event?.attendees
+              }
+
+              return nonRecurringEvent
+            }
+          })
+          .filter((eventData) => eventData !== null)
 
         newCalendarsEvents[key] = eventsData
       }
@@ -265,8 +279,6 @@ export const FullCalendar = () => {
 
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
-
-    console.log('info.event', info.event) // DEBUGGING
 
     const allDay = info.event.allDay
     const taskname = info.event.title
@@ -330,12 +342,14 @@ export const FullCalendar = () => {
           }
 
           // update at Google Calendar
-          // updateRecurringEventFromUserGoogleCalendar(
-          //   currentUser.id,
-          //   calendarId,
-          //   info.event.id,
-          //   newRRule,
-          // )
+          updateRecurringEventFromUserGoogleCalendar(
+            currentUser.id,
+            calendarId,
+            info.event.id,
+            start,
+            end,
+            start,
+          )
         } else {
           // remove from calendarsEvents
           const newCalendarsEvents = { ...calendarsEvents }

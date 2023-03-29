@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
 import { generatePushId } from 'utils'
+import { timeZone } from 'handleCalendars'
 
 export const getValidToken = async (userId) => {
   try {
@@ -217,18 +218,43 @@ export const updateRecurringEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
   eventId,
-  newRRule,
+  start,
+  end,
+  originalStart,
+  allDay,
 ) => {
   try {
     const accessToken = await getValidToken(userId)
 
     if (!accessToken) return null
 
-    const requestBody = {
-      recurrence: [newRRule],
-    }
-
-    console.log('requestBody: ', requestBody) // DEBUGGING
+    const body = allDay
+      ? {
+          start: {
+            date: start,
+          },
+          end: {
+            date: end,
+          },
+          originalStartTime: {
+            date: originalStart,
+          },
+        }
+      : {
+          start: {
+            dateTime: start,
+            timeZone: timeZone,
+          },
+          end: {
+            dateTime: end,
+            timeZone: timeZone,
+          },
+          originalStartTime: {
+            dateTime: originalStart,
+            timeZone: timeZone,
+          },
+          recurrence: [],
+        }
 
     const request = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
@@ -236,8 +262,9 @@ export const updateRecurringEventFromUserGoogleCalendar = async (
         method: 'PATCH',
         headers: {
           Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(body),
       },
     )
 
