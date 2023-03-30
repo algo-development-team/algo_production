@@ -13,7 +13,6 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
-  updateRecurringEventFromUserGoogleCalendar,
 } from '../../google'
 import {
   useGoogleValue,
@@ -37,6 +36,8 @@ import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
 import { getFormattedEventTime } from '../../handleMoment'
+import { RRule } from 'rrule'
+import { compareByFieldSpecs } from '@fullcalendar/core/internal'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -159,6 +160,52 @@ export const FullCalendar = () => {
     return getFormattedEventTime(dtreq, false)
   }
 
+  const getRRuleAndExdates = (strings, allDay) => {
+    const rruleAndExdates = { rrule: null, exdates: [] }
+    for (let i = 0; i < strings.length; i++) {
+      if (!rruleAndExdates.rrule && strings[i].startsWith('RRULE')) {
+        rruleAndExdates.rrule = strings[i]
+      } else if (strings[i].startsWith('EXDATE')) {
+        rruleAndExdates.exdates.push(
+          getFormattedEventTimeFromExdateString(strings[i], allDay),
+        )
+      }
+    }
+    return rruleAndExdates // return null if no string starts with "RRULE:"
+  }
+
+  const getDayOfWeek = (date, freq) => {
+    /* 0: YEARLY, 1: MONTHLY, 2: WEEKLY, 3: DAILY */
+    if (freq === 0 || freq === 3) {
+      return []
+    }
+
+    const dayOfWeek = date.day()
+    const daysOfWeek = [
+      RRule.SU,
+      RRule.MO,
+      RRule.TU,
+      RRule.WE,
+      RRule.TH,
+      RRule.FR,
+      RRule.SA,
+    ]
+    let weekday = daysOfWeek[dayOfWeek]
+
+    if (freq === 1) {
+    }
+
+    return weekday
+  }
+
+  const updateRRule = (rruleObj, byweekday) => {
+    if (rruleObj.rrule.origOptions.length > 1) return null
+
+    rruleObj.origOptions.byweekday = byweekday
+    const modifiedString = rruleObj.toString()
+    return modifiedString
+  }
+
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
@@ -198,25 +245,14 @@ export const FullCalendar = () => {
         })
       }
 
-      const getRRuleAndExdates = (strings, allDay) => {
-        const rruleAndExdates = { rrule: null, exdates: [] }
-        for (let i = 0; i < strings.length; i++) {
-          if (!rruleAndExdates.rrule && strings[i].startsWith('RRULE')) {
-            rruleAndExdates.rrule = strings[i]
-          } else if (strings[i].startsWith('EXDATE')) {
-            rruleAndExdates.exdates.push(
-              getFormattedEventTimeFromExdateString(strings[i], allDay),
-            )
-          }
-        }
-        return rruleAndExdates // return null if no string starts with "RRULE:"
-      }
-
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           if (event.recurrence) {
             const allDay = event.start?.dateTime ? false : true
             const rruleAndExdates = getRRuleAndExdates(event.recurrence, allDay)
+
+            console.log(event.summary, ': ', rruleAndExdates) // DEBUGGING
+
             const eventStart = event.start?.dateTime || event.start?.date
             const dtStart = getFormattedEventTime(eventStart, allDay)
             const eventEnd = event.end?.dateTime || event.end?.date
@@ -309,6 +345,67 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
+  const handleEventAdjustment = (event) => {
+    const allDay = event.allDay
+    const start = event.start
+    const end = event.end
+    const duration = moment(end).diff(moment(start), 'minutes')
+
+    const rruleStr = event.extendedProps?.rruleStr || ''
+    const dtStart = event.extendedProps?.dtStart || ''
+    const dtStartTime = moment(dtStart)
+    const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
+    const recurrence = event.extendedProps?.recurrence || []
+
+    const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
+    console.log('rruleAndExdates', rruleAndExdates) // DEBUGGING
+
+    const rruleObj = RRule.fromString(rruleAndExdates.rrule)
+    const freq = rruleObj.origOptions.freq
+    console.log('rruleObj', rruleObj) // DEBUGGING
+
+    const newByweekday = [getDayOfWeek(moment(start), freq)]
+    console.log('newByweekday', newByweekday) // DEBUGGING
+
+    const updatedRRule = updateRRule(rruleObj, newByweekday)
+    console.log('updatedRRule', updatedRRule) // DEBUGGING
+
+    if (!updatedRRule) return
+
+    /*
+    const calendarId = getEventCalendarId(event.id)
+
+    const updatedGoogleCalendarEvent = {
+      start: !event.allDay
+        ? {
+            dateTime: dtStartTime.toISOString(),
+            timeZone: timeZone,
+          }
+        : {
+            date: dtStartTime.toISOString(),
+          },
+      end: !event.allDay
+        ? {
+            dateTime: dtEndTime.toISOString(),
+            timeZone: timeZone,
+          }
+        : {
+            date: dtEndTime.toISOString(),
+          },
+    }
+
+    if (rruleStr !== '') {
+    }
+
+    updateEventFromUserGoogleCalendar(
+      currentUser.id,
+      calendarId,
+      event.id,
+      updatedGoogleCalendarEvent,
+    )
+    */
+  }
+
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
@@ -382,14 +479,16 @@ export const FullCalendar = () => {
             calendar.addEvent(updatedEvent)
           }
 
-          console.log('exdate', exdate) // DEBUGGING
+          const updatedGoogleCalendarEvent = {
+            recurrence: newRecurrence,
+          }
 
           // update at Google Calendar
-          updateRecurringEventFromUserGoogleCalendar(
+          updateEventFromUserGoogleCalendar(
             currentUser.id,
             calendarId,
             info.event.id,
-            newRecurrence,
+            updatedGoogleCalendarEvent,
           )
         } else {
           // remove from calendarsEvents
@@ -414,8 +513,6 @@ export const FullCalendar = () => {
         }
       },
       copy: () => {
-        console.log('info.event', info.event) // DEBUGGING
-
         const id = generateEventId()
 
         let newEvent = null
@@ -484,9 +581,6 @@ export const FullCalendar = () => {
                 },
           }
         }
-
-        console.log('newEvent', newEvent) // DEBUGGING
-        console.log('newGoogleCalendarEvent', newGoogleCalendarEvent) // DEBUGGING
 
         setCalendarsEvents({
           ...calendarsEvents,
@@ -769,64 +863,12 @@ export const FullCalendar = () => {
       eventResize: function (eventResizeInfo) {
         const { event } = eventResizeInfo
 
-        const updatedGoogleCalendarEvent = {
-          start: !event.allDay
-            ? {
-                dateTime: event.startStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: event.startStr,
-              },
-          end: !event.allDay
-            ? {
-                dateTime: event.endStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: event.endStr,
-              },
-        }
-
-        const calendarId = getEventCalendarId(event.id)
-
-        updateEventFromUserGoogleCalendar(
-          currentUser.id,
-          calendarId,
-          event.id,
-          updatedGoogleCalendarEvent,
-        )
+        handleEventAdjustment(event)
       },
       eventDrop: function (eventDropInfo) {
         const { event } = eventDropInfo
 
-        const updatedGoogleCalendarEvent = {
-          start: !event.allDay
-            ? {
-                dateTime: event.startStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: event.startStr,
-              },
-          end: !event.allDay
-            ? {
-                dateTime: event.endStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: event.endStr,
-              },
-        }
-
-        const calendarId = getEventCalendarId(event.id)
-
-        updateEventFromUserGoogleCalendar(
-          currentUser.id,
-          calendarId,
-          event.id,
-          updatedGoogleCalendarEvent,
-        )
+        handleEventAdjustment(event)
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
       eventContent: function (info) {

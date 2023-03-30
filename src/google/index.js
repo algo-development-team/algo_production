@@ -214,46 +214,6 @@ export const deleteEventFromUserGoogleCalendar = async (
   }
 }
 
-export const updateRecurringEventFromUserGoogleCalendar = async (
-  userId,
-  calendarId,
-  eventId,
-  updatedRecurrence,
-) => {
-  try {
-    const accessToken = await getValidToken(userId)
-
-    if (!accessToken) return null
-
-    const body = {
-      recurrence: updatedRecurrence,
-    }
-
-    const request = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
-      {
-        method: 'PATCH',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      },
-    )
-
-    console.log('request', request) // DEBUGGING
-
-    const data = await request.json()
-
-    console.log('data', data) // DEBUGGING
-
-    return data
-  } catch (error) {
-    console.log(error)
-    return null
-  }
-}
-
 export const updateEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
