@@ -2,7 +2,8 @@ import { CustomProjects } from './custom-projects'
 import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
 import { CalendarList } from './calendar-list'
-import { SearchField } from './search-field'
+import { SearchField, WarningTask } from './search-field'
+// import { WarningTask } from './warning-task'
 import { useState, useEffect } from 'react'
 import { Taskbar } from './task-bar'
 import { AutoScheduleButton } from './auto-schedule-button'
@@ -24,7 +25,7 @@ export const Sidebar = (props) => {
 
   useEffect(() => {
     if (AddTasks) {
-      setFilterTasks(false)
+      setFilterTasks()
     }
   }, [AddTasks])
 
@@ -37,7 +38,7 @@ export const Sidebar = (props) => {
           style={{ paddingLeft: '18px', paddingRight: '18px' }}
         >
           <div>
-          <button style={{ display: 'flex',
+          <button className='set-Taskbar' style={{ display: 'flex',
                            fontSize: '25px' }}>
           <Taskbar
                   type='AUTO_SCHEDULE'
@@ -46,12 +47,49 @@ export const Sidebar = (props) => {
                   setValue={setAutoSchedule}
                 />
           </button>
-            <button style={{ display: 'flex' }}>
-              {/* <Taskbar
+            <button className='set-Taskbar' style={{ display: 'flex' }}>
+              <Taskbar
                   type='ADD_TASKS'
                   value={AddTasks}
                   setValue={setAddTasks}
-                /> */}
+                />
+            </button>
+          
+            {/* <div style={{ display: 'flex' }}>
+              <WarningTask
+                addValue={AddTasks}
+                setAddValue={setAddTasks}
+                filterValue={FilterTasks}
+                setFilterValue={setFilterTasks}
+              />
+            </div> */}
+
+          <div style={{ display: 'flex' }}>
+            <SearchField
+              addValue={AddTasks}
+              setAddValue={setAddTasks}
+              filterValue={FilterTasks}
+              setFilterValue={setFilterTasks}
+            />
+            <button style={{ 
+              display: 'flex',
+              flexdirection: 'row',
+              alignitems: 'center',
+              textalign: 'center',
+              justifycontent: 'center',
+              display: 'flex',
+              padding: '1px 1px 1px 1px',
+              borderRadius: '5px',
+              border: 'none',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+              fontSize: '10px',
+              outline: 'none',
+              width: '10%',
+              height: '38px',
+              boxSizing: 'border-box',
+              marginBottom: '10px',
+              display: 'flex',
+              }}>
               <Taskbar
                   type='FILTER_TASKS'
                   onOff={FilterTasks}
@@ -60,12 +98,7 @@ export const Sidebar = (props) => {
                 />
             </button>
 
-            <SearchField
-              addValue={AddTasks}
-              setAddValue={setAddTasks}
-              filterValue={FilterTasks}
-              setFilterValue={setFilterTasks}
-            />
+            </div>
           </div>
           <CalendarList />
           {/* <AutoScheduleButton /> */}

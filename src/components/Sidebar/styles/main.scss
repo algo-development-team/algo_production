@@ -70,6 +70,39 @@
   transform: translateY(1px);
 }
 
+.set-Warningbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  padding: 6px;
+  border: 1px #555 solid;
+  border-radius: 5px;
+  font-size: 12px;
+  position: relative;
+  //margin-left: 10px;
+  margin-bottom: 10px;
+  // width: 100px;
+  width: 225px;
+  box-shadow: 0 2px 5px #999;
+  color: white;
+  background-color: rgb(32, 31, 31);
+  &:not(:last-child) {
+    margin-right: 0.4rem;
+  }
+  svg {
+    margin-right: 0.2rem;
+  }
+}
+
+.set-Warningbar:active {
+  background-color: rgb(61, 61, 61);
+  box-shadow: 0 2px 5px #323232;
+  transform: translateY(1px);
+}
+
 
 .logo {
   height: 24px;
