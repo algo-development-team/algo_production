@@ -47,7 +47,7 @@ export const Taskbar = ({ type, onOff, value, setValue }) => {
     return (
         <>
           <div
-            className='set-Taskbar'
+            // className='set-Taskbar'
             onClick={() => callTaskbarHandlerFunction(type, onOff)}
             > 
                 <div style={{color:'white'}}>

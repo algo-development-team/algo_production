@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useExternalEventsContextValue } from 'context'
-import { useTasks, useScheduledTasks, useProjects } from 'hooks'
+import { useTasks, useScheduledTasks, useProjects, useTasksCount } from 'hooks'
 import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
 import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
+import moment from 'moment'
+
+const date = new Date()
+const todayMoment = moment(date).startOf('day')
+const tomorrowMoment = moment(date).startOf('day').add(1, 'day')
+console.log(todayMoment)
+
 
 export const SearchField = ({
   addValue,
@@ -76,6 +83,41 @@ export const SearchField = ({
     return result
   }
 
+  const warningTasks = (filter, filterSelect, tasks) => {
+    // console.log('filter', filter) // DEBUGGING
+    // console.log('filterSelect', filterSelect) // DEBUGGING
+    // console.log('tasks', tasks) // DEBUGGING
+
+    const pastDeadline = []
+    const warningDeadline = []
+    for (let i = 0; i < tasks.length; i++) {
+      //console.log(moment(tasks[i].date, 'DD-MM-YYYY').toDate())
+      //console.log(moment(tasks[i].date).toDate())
+      //console.log(tasks[i].date !== '')
+      //console.log(moment(tasks[i].date, 'DD-MM-YYYY').toDate())
+
+      if  (tasks[i].date !== '') {
+        const momentDate = moment(tasks[i].date, 'DD-MM-YYYY').toDate()
+        const momentString = moment(momentDate).startOf('day')
+        //console.log(momentString)
+  
+
+        if ( momentString.format('DD-MM-YYYY') === todayMoment.format('DD-MM-YYYY')) {
+            warningDeadline.push(tasks[i])
+            // console.log('date not same...') // DEBUGGING 
+          } else if ( momentString < todayMoment) {
+            pastDeadline.push(tasks[i])
+            // console.log('project not same...') // DEBUGGING 
+        }
+
+      }
+  
+    } 
+
+    // console.log('result', result) // DEBUGGING
+    return [warningDeadline, pastDeadline]
+  }
+
   const searchTasks = (searchText, tasks) => {
     if (!searchText) {
       return tasks
@@ -111,6 +153,27 @@ export const SearchField = ({
 
   return (
     <div>
+      {/* <div>
+        {warningTasks(filter, filterSelect, unscheduledTasks).map((task) => {
+          return (
+            <div className='set-Warningbar'> 
+              {task} dealines apporaching
+            </div>
+          )
+          })
+        }
+      </div> */}
+      
+      <button className='set-Warningbar'
+      // onClick={() => callTaskbarHandlerFunction(type, onOff)}
+      > 
+      {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} deadlines apporaching
+      </button>
+      <button className='set-Warningbar'> 
+      {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} deadlines past
+      </button>
+
+
       <div
         style={{
           display: 'flex',
@@ -127,7 +190,7 @@ export const SearchField = ({
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               fontSize: '16px',
               outline: 'none',
-              width: '100%',
+              width: '50%',
               height: '38px',
               boxSizing: 'border-box',
               marginBottom: '10px',
