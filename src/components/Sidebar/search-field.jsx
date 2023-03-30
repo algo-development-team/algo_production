@@ -155,11 +155,11 @@ export const SearchField = ({
         />
       </div>
 
+      {/* <div>
+        {!filterValue && <AddTaskbar setAddValue={setAddValue} />}
+      </div> */}
       <div>
-        {addValue && !filterValue && <AddTaskbar setAddValue={setAddValue} />}
-      </div>
-      <div>
-        {filterValue && !addValue && 
+        {filterValue  && 
           <FilterTaskbar filter={filter} setFilter={setFilter} filterSelect={filterSelect} setFilterSelect={setFilterSelect} setFilterValue={setFilterValue} />
         }
       </div>
@@ -172,7 +172,7 @@ export const SearchField = ({
           overflowX: 'hidden',
         }}
       >
-        {searchTasks(searchText, (filterSelect!=='None') ? filterTasks(filter, filterSelect, unscheduledTasks) : unscheduledTasks).map((task) => {
+        {searchTasks(searchText, (filterSelect!=='None' && filterValue) ? filterTasks(filter, filterSelect, unscheduledTasks) : unscheduledTasks).map((task) => {
           return (
             <div
               className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'

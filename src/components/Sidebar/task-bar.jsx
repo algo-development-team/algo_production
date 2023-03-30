@@ -1,7 +1,7 @@
 import { ReactComponent as AddIcon } from 'assets/svg/addnew.svg'
 import { ReactComponent as FilterIcon } from 'assets/svg/filternew.svg'
 
-export const Taskbar = ({ type, value, setValue }) => {
+export const Taskbar = ({ type, onOff, value, setValue }) => {
 
     const getTaskbarIcon = (type) => {
         if (type === 'ADD_TASKS') {
@@ -25,21 +25,22 @@ export const Taskbar = ({ type, value, setValue }) => {
         setValue(true)
     }
 
-    const handleFilterTasks = () => {
-        setValue(true)
+    const handleFilterTasks = (onOff) => {
+        setValue(!onOff)
     }
 
     const autoScheduleTasks = () => {
         setValue(true)
     }
 
-    const callTaskbarHandlerFunction = (type) => {
+    const callTaskbarHandlerFunction = (type, onOff) => {
+        {console.log(onOff)}
         if (type === 'ADD_TASKS') {
-        return handleAddTasks()
+        return handleAddTasks(onOff)
         } else if (type === 'FILTER_TASKS') {
-        return handleFilterTasks()
+        return handleFilterTasks(onOff)
         } else if (type === 'AUTO_SCHEDULE') {
-        return autoScheduleTasks()
+        return autoScheduleTasks(onOff)
         }
     }
 
@@ -47,8 +48,8 @@ export const Taskbar = ({ type, value, setValue }) => {
         <>
           <div
             className='set-Taskbar'
-            onClick={() => callTaskbarHandlerFunction(type)}
-            >
+            onClick={() => callTaskbarHandlerFunction(type, onOff)}
+            > 
                 <div style={{color:'white'}}>
                     {getTaskbarIcon(type)}
                 </div>

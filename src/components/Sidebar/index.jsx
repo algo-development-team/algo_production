@@ -18,6 +18,7 @@ export const Sidebar = (props) => {
   useEffect(() => {
     if (FilterTasks) {
       setAddTasks(false)
+      // setFilterTasks(!FilterTasks)
     }
   }, [FilterTasks])
 
@@ -36,21 +37,24 @@ export const Sidebar = (props) => {
           style={{ paddingLeft: '18px', paddingRight: '18px' }}
         >
           <div>
-          <button style={{ display: 'flex' }}>
+          <button style={{ display: 'flex',
+                           fontSize: '25px' }}>
           <Taskbar
                   type='AUTO_SCHEDULE'
+                  onOff={true}
                   value={autoSchedule}
                   setValue={setAutoSchedule}
                 />
           </button>
             <button style={{ display: 'flex' }}>
-              <Taskbar
+              {/* <Taskbar
                   type='ADD_TASKS'
                   value={AddTasks}
                   setValue={setAddTasks}
-                />
+                /> */}
               <Taskbar
                   type='FILTER_TASKS'
+                  onOff={FilterTasks}
                   value={FilterTasks}
                   setValue={setFilterTasks}
                 />
@@ -64,7 +68,7 @@ export const Sidebar = (props) => {
             />
           </div>
           <CalendarList />
-          <AutoScheduleButton />
+          {/* <AutoScheduleButton /> */}
         </aside>
       </>
     )
