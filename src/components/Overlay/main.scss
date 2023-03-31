@@ -70,6 +70,24 @@
   border-radius: 5px;
 }
 
+.recurring-options-button {
+  background-color: #424242;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.recurring-option-selector-button {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: left;
+  padding-left: 10px;
+  border-radius: 0;
+
+  &:hover {
+    background-color: #424242;
+  }
+}
+
 .google-meet-join-button {
   background-color: #039be5;
   display: flex;
