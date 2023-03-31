@@ -69,6 +69,9 @@ export const Block = ({
   const [recurringEventEditOption, setRecurringEventEditOption] =
     useState('THIS_EVENT')
   const [recurringEventOptionsType, setRecurringEventOptionsType] = useState('')
+  const [recurrenceOption, setRecurrenceOption] = useState(0) // set it to which ever one that applies given current event rrule
+  const [customRecurrenceFieldValues, setCustomRecurrenceFieldValues] =
+    useState(defaultCustomRecurrenceFieldValues)
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {
