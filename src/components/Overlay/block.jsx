@@ -19,6 +19,15 @@ import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
 import { useAuth } from 'hooks'
 
+const defaultCustomRecurrenceFieldValues = {
+  repeatEvery: 1,
+  frequency: 'WEEKLY',
+  repeatOn: [], // set this to be the current day of the week
+  ends: 'NEVER',
+  endsOn: new Date(), // set this to be two months later than the current date
+  endsAfter: 1,
+}
+
 export const Block = ({
   closeOverlay,
   allDay,
