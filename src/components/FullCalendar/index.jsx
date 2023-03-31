@@ -174,56 +174,9 @@ export const FullCalendar = () => {
     return rruleAndExdates // return null if no string starts with "RRULE:"
   }
 
-  const getNthWeekdayOfMonth = (date) => {
-    const firstDayOfMonth = date.clone().startOf('month')
-    const currentWeek = date.clone().startOf('week')
-    const diffWeeks = currentWeek.diff(firstDayOfMonth, 'weeks')
-
-    const nthWeekOfMonth = diffWeeks + 1
-    return nthWeekOfMonth
-  }
-
-  const getRecurringType = (freq, byweekday) => {
-    /* 0: YEARLY, 1: MONTHLY, 2: WEEKLY, 3: DAILY */
-    if (freq === 0) {
-      return 'YEARLY'
-    } else if (freq === 1) {
-      if (byweekday && byweekday.length === 1) {
-        return 'MONTHLY_BY_WEEKDAY'
-      } else {
-        return 'MONTHLY'
-      }
-    } else if (freq === 2) {
-      if (byweekday && byweekday.length === 1) {
-        return 'WEEKLY_SINGLE_WEEKDAY'
-      } else {
-        return 'WEEKLY_MULTIPLE_WEEKDAYS'
-      }
-    } else if (freq === 3) {
-      return 'DAILY'
-    } else {
-      return 'UNKNOWN'
-    }
-  }
-
-  const getRRuleWeekday = (date, freq) => {
-    /* 0: YEARLY, 1: MONTHLY, 2: WEEKLY, 3: DAILY */
-    if (freq !== 2) {
-      return null
-    }
-
-    const weekday = date.day()
-    const rruleWeekday = [
-      RRule.SU,
-      RRule.MO,
-      RRule.TU,
-      RRule.WE,
-      RRule.TH,
-      RRule.FR,
-      RRule.SA,
-    ]
-
-    return rruleWeekday[weekday]
+  const updateDtStartInRRuleStr = (rruleStr, newDtStart) => {
+    const nonDtstartRRuleStr = rruleStr.split('\n')[1]
+    return `DTSTART:${newDtStart}\n${nonDtstartRRuleStr}`
   }
 
   useEffect(() => {
@@ -270,9 +223,6 @@ export const FullCalendar = () => {
           if (event.recurrence) {
             const allDay = event.start?.dateTime ? false : true
             const rruleAndExdates = getRRuleAndExdates(event.recurrence, allDay)
-
-            console.log(event.summary, ': ', rruleAndExdates) // DEBUGGING
-
             const eventStart = event.start?.dateTime || event.start?.date
             const dtStart = getFormattedEventTime(eventStart, allDay)
             const eventEnd = event.end?.dateTime || event.end?.date
@@ -365,70 +315,87 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
-  const handleRecurringEventAdjustment = (event, oldEvent) => {
-    console.log('oldEvent', oldEvent) // DEBUGGING
+  const handleRecurringEventAdjustment = (info) => {
+    const { event, oldEvent } = info
 
     const oldStart = oldEvent.start
     const start = event.start
+
+    // if event is dragged to a new day, then return early
+    if (
+      moment(oldStart).format('YYYY-MM-DD') !==
+      moment(start).format('YYYY-MM-DD')
+    ) {
+      info.revert()
+      alert('Recurring events cannot be dragged to a new day.')
+      return
+    }
+
     const end = event.end
     const change = moment(start).diff(moment(oldStart), 'minutes')
     const duration = moment(end).diff(moment(start), 'minutes')
 
-    // const dtStart = event.extendedProps?.dtStart || ''
-    // // const dtStartTime = moment(dtStart)
-    // // const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
+    const dtStart = event.extendedProps?.dtStart || ''
+    const dtStartTime = moment(dtStart)
+    const newDtStartTime = dtStartTime.clone().add(change, 'minutes')
+    const newDtEndTime = newDtStartTime.clone().add(duration, 'minutes')
+    const rruleStr = event.extendedProps?.rruleStr || ''
+    const formattedNewDtstart = getFormattedEventTime(newDtStartTime)
+    const newRRuleStr = updateDtStartInRRuleStr(rruleStr, formattedNewDtstart)
 
-    const allDay = event.allDay
-    const recurrence = event.extendedProps?.recurrence || []
-    const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
-    const rruleString = rruleAndExdates.rrule
-    const rruleObj = RRule.fromString(rruleString)
-    const freq = rruleObj.origOptions.freq
-    const byweekday = rruleObj.origOptions?.byweekday
+    const calendarId = getEventCalendarId(event.id)
 
-    // const newRRuleWeekday = getRRuleWeekday(moment(start), freq)
+    setCalendarsEvents((prevCalendarsEvents) => {
+      const newCalendarsEvents = { ...prevCalendarsEvents }
+      const events = newCalendarsEvents[calendarId]
+      const newEvents = events.map((prevEvent) => {
+        if (prevEvent.id === event.id) {
+          const updatedEvent = {
+            ...prevEvent,
+            rrule: newRRuleStr,
+            rruleStr: newRRuleStr,
+            duration: formatEventTimeLength(duration),
+            dtStart: formattedNewDtstart,
+          }
+          return updatedEvent
+        } else {
+          return prevEvent
+        }
+      })
+      newCalendarsEvents[calendarId] = newEvents
+      return newCalendarsEvents
+    })
 
-    const recurringType = getRecurringType(freq, byweekday)
-    console.log('recurringType', recurringType) // DEBUGGING
+    const updatedGoogleCalendarEvent = {
+      start: !event.allDay
+        ? {
+            dateTime: newDtStartTime.toISOString(),
+            timeZone: timeZone,
+          }
+        : {
+            date: newDtStartTime.toISOString(),
+          },
+      end: !event.allDay
+        ? {
+            dateTime: newDtEndTime.toISOString(),
+            timeZone: timeZone,
+          }
+        : {
+            date: newDtEndTime.toISOString(),
+          },
+    }
 
-    // const updatedGoogleCalendarEvent = {
-    //   start: !event.allDay
-    //     ? {
-    //         dateTime: dtStartTime.toISOString(),
-    //         timeZone: timeZone,
-    //       }
-    //     : {
-    //         date: dtStartTime.toISOString(),
-    //       },
-    //   end: !event.allDay
-    //     ? {
-    //         dateTime: dtEndTime.toISOString(),
-    //         timeZone: timeZone,
-    //       }
-    //     : {
-    //         date: dtEndTime.toISOString(),
-    //       },
-    // }
-
-    // if (byweekday && byweekday.length === 1 && newRRuleWeekday) {
-    //   const updatedRRule = new RRule({
-    //     ...rruleObj.origOptions,
-    //     byweekday: [newRRuleWeekday],
-    //   })
-    //   const updatedRRuleString = updatedRRule.toString()
-    //   const newRecurrence = [...rruleAndExdates.exdates, updatedRRuleString]
-    //   updatedGoogleCalendarEvent.recurrence = newRecurrence
-    // }
-
-    // updateEventFromUserGoogleCalendar(
-    //   currentUser.id,
-    //   calendarId,
-    //   event.id,
-    //   updatedGoogleCalendarEvent,
-    // )
+    updateEventFromUserGoogleCalendar(
+      currentUser.id,
+      calendarId,
+      event.id,
+      updatedGoogleCalendarEvent,
+    )
   }
 
-  const handleNonRecurringEventAdjustment = (event) => {
+  const handleNonRecurringEventAdjustment = (info) => {
+    const { event } = info
+
     const calendarId = getEventCalendarId(event.id)
 
     setCalendarsEvents((prevCalendarsEvents) => {
@@ -477,14 +444,13 @@ export const FullCalendar = () => {
     )
   }
 
-  const handleEventAdjustment = (event, oldEvent) => {
-    // const calendarId = getEventCalendarId(event.id)
-    const rruleStr = event.extendedProps?.rruleStr || ''
+  const handleEventAdjustment = (info) => {
+    const rruleStr = info.event.extendedProps?.rruleStr || ''
 
     if (rruleStr !== '') {
-      handleRecurringEventAdjustment(event, oldEvent)
+      handleRecurringEventAdjustment(info)
     } else {
-      handleNonRecurringEventAdjustment(event)
+      handleNonRecurringEventAdjustment(info)
     }
   }
 
@@ -599,8 +565,6 @@ export const FullCalendar = () => {
 
         let newEvent = null
         let newGoogleCalendarEvent = null
-
-        console.log('rruleStr', rruleStr) // DEBUGGING
 
         if (rruleStr !== '') {
           newEvent = {
@@ -944,15 +908,11 @@ export const FullCalendar = () => {
           newGoogleCalendarEvent,
         )
       },
-      eventResize: function (eventResizeInfo) {
-        const { event, oldEvent } = eventResizeInfo
-
-        handleEventAdjustment(event, oldEvent)
+      eventResize: function (info) {
+        handleEventAdjustment(info)
       },
-      eventDrop: function (eventDropInfo) {
-        const { event, oldEvent } = eventDropInfo
-
-        handleEventAdjustment(event, oldEvent)
+      eventDrop: function (info) {
+        handleEventAdjustment(info)
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
       eventContent: function (info) {
