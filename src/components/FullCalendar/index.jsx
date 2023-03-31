@@ -174,14 +174,46 @@ export const FullCalendar = () => {
     return rruleAndExdates // return null if no string starts with "RRULE:"
   }
 
-  const getDayOfWeek = (date, freq) => {
+  const getNthWeekdayOfMonth = (date) => {
+    const firstDayOfMonth = date.clone().startOf('month')
+    const currentWeek = date.clone().startOf('week')
+    const diffWeeks = currentWeek.diff(firstDayOfMonth, 'weeks')
+
+    const nthWeekOfMonth = diffWeeks + 1
+    return nthWeekOfMonth
+  }
+
+  const getRecurringType = (freq, byweekday) => {
     /* 0: YEARLY, 1: MONTHLY, 2: WEEKLY, 3: DAILY */
-    if (freq === 0 || freq === 3) {
-      return []
+    if (freq === 0) {
+      return 'YEARLY'
+    } else if (freq === 1) {
+      if (byweekday && byweekday.length === 1) {
+        return 'MONTHLY_BY_WEEKDAY'
+      } else {
+        return 'MONTHLY'
+      }
+    } else if (freq === 2) {
+      if (byweekday && byweekday.length === 1) {
+        return 'WEEKLY_SINGLE_WEEKDAY'
+      } else {
+        return 'WEEKLY_MULTIPLE_WEEKDAYS'
+      }
+    } else if (freq === 3) {
+      return 'DAILY'
+    } else {
+      return 'UNKNOWN'
+    }
+  }
+
+  const getRRuleWeekday = (date, freq) => {
+    /* 0: YEARLY, 1: MONTHLY, 2: WEEKLY, 3: DAILY */
+    if (freq !== 2) {
+      return null
     }
 
-    const dayOfWeek = date.day()
-    const daysOfWeek = [
+    const weekday = date.day()
+    const rruleWeekday = [
       RRule.SU,
       RRule.MO,
       RRule.TU,
@@ -190,20 +222,8 @@ export const FullCalendar = () => {
       RRule.FR,
       RRule.SA,
     ]
-    let weekday = daysOfWeek[dayOfWeek]
 
-    if (freq === 1) {
-    }
-
-    return weekday
-  }
-
-  const updateRRule = (rruleObj, byweekday) => {
-    if (rruleObj.rrule.origOptions.length > 1) return null
-
-    rruleObj.origOptions.byweekday = byweekday
-    const modifiedString = rruleObj.toString()
-    return modifiedString
+    return rruleWeekday[weekday]
   }
 
   useEffect(() => {
@@ -345,56 +365,108 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
-  const handleEventAdjustment = (event) => {
-    const allDay = event.allDay
+  const handleRecurringEventAdjustment = (event, oldEvent) => {
+    console.log('oldEvent', oldEvent) // DEBUGGING
+
+    const oldStart = oldEvent.start
     const start = event.start
     const end = event.end
+    const change = moment(start).diff(moment(oldStart), 'minutes')
     const duration = moment(end).diff(moment(start), 'minutes')
 
-    const rruleStr = event.extendedProps?.rruleStr || ''
-    const dtStart = event.extendedProps?.dtStart || ''
-    const dtStartTime = moment(dtStart)
-    const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
+    // const dtStart = event.extendedProps?.dtStart || ''
+    // // const dtStartTime = moment(dtStart)
+    // // const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
+
+    const allDay = event.allDay
     const recurrence = event.extendedProps?.recurrence || []
-
     const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
-    console.log('rruleAndExdates', rruleAndExdates) // DEBUGGING
-
-    const rruleObj = RRule.fromString(rruleAndExdates.rrule)
+    const rruleString = rruleAndExdates.rrule
+    const rruleObj = RRule.fromString(rruleString)
     const freq = rruleObj.origOptions.freq
-    console.log('rruleObj', rruleObj) // DEBUGGING
+    const byweekday = rruleObj.origOptions?.byweekday
 
-    const newByweekday = [getDayOfWeek(moment(start), freq)]
-    console.log('newByweekday', newByweekday) // DEBUGGING
+    // const newRRuleWeekday = getRRuleWeekday(moment(start), freq)
 
-    const updatedRRule = updateRRule(rruleObj, newByweekday)
-    console.log('updatedRRule', updatedRRule) // DEBUGGING
+    const recurringType = getRecurringType(freq, byweekday)
+    console.log('recurringType', recurringType) // DEBUGGING
 
-    if (!updatedRRule) return
+    // const updatedGoogleCalendarEvent = {
+    //   start: !event.allDay
+    //     ? {
+    //         dateTime: dtStartTime.toISOString(),
+    //         timeZone: timeZone,
+    //       }
+    //     : {
+    //         date: dtStartTime.toISOString(),
+    //       },
+    //   end: !event.allDay
+    //     ? {
+    //         dateTime: dtEndTime.toISOString(),
+    //         timeZone: timeZone,
+    //       }
+    //     : {
+    //         date: dtEndTime.toISOString(),
+    //       },
+    // }
 
-    /*
+    // if (byweekday && byweekday.length === 1 && newRRuleWeekday) {
+    //   const updatedRRule = new RRule({
+    //     ...rruleObj.origOptions,
+    //     byweekday: [newRRuleWeekday],
+    //   })
+    //   const updatedRRuleString = updatedRRule.toString()
+    //   const newRecurrence = [...rruleAndExdates.exdates, updatedRRuleString]
+    //   updatedGoogleCalendarEvent.recurrence = newRecurrence
+    // }
+
+    // updateEventFromUserGoogleCalendar(
+    //   currentUser.id,
+    //   calendarId,
+    //   event.id,
+    //   updatedGoogleCalendarEvent,
+    // )
+  }
+
+  const handleNonRecurringEventAdjustment = (event) => {
     const calendarId = getEventCalendarId(event.id)
+
+    setCalendarsEvents((prevCalendarsEvents) => {
+      const newCalendarsEvents = { ...prevCalendarsEvents }
+      const events = newCalendarsEvents[calendarId]
+      const newEvents = events.map((prevEvent) => {
+        if (prevEvent.id === event.id) {
+          const updatedEvent = {
+            ...prevEvent,
+            start: event.startStr,
+            end: event.endStr,
+          }
+          return updatedEvent
+        } else {
+          return prevEvent
+        }
+      })
+      newCalendarsEvents[calendarId] = newEvents
+      return newCalendarsEvents
+    })
 
     const updatedGoogleCalendarEvent = {
       start: !event.allDay
         ? {
-            dateTime: dtStartTime.toISOString(),
+            dateTime: event.startStr,
             timeZone: timeZone,
           }
         : {
-            date: dtStartTime.toISOString(),
+            date: event.startStr,
           },
       end: !event.allDay
         ? {
-            dateTime: dtEndTime.toISOString(),
+            dateTime: event.endStr,
             timeZone: timeZone,
           }
         : {
-            date: dtEndTime.toISOString(),
+            date: event.endStr,
           },
-    }
-
-    if (rruleStr !== '') {
     }
 
     updateEventFromUserGoogleCalendar(
@@ -403,7 +475,17 @@ export const FullCalendar = () => {
       event.id,
       updatedGoogleCalendarEvent,
     )
-    */
+  }
+
+  const handleEventAdjustment = (event, oldEvent) => {
+    // const calendarId = getEventCalendarId(event.id)
+    const rruleStr = event.extendedProps?.rruleStr || ''
+
+    if (rruleStr !== '') {
+      handleRecurringEventAdjustment(event, oldEvent)
+    } else {
+      handleNonRecurringEventAdjustment(event)
+    }
   }
 
   const showEventPopup = (info, calendar) => {
@@ -517,6 +599,8 @@ export const FullCalendar = () => {
 
         let newEvent = null
         let newGoogleCalendarEvent = null
+
+        console.log('rruleStr', rruleStr) // DEBUGGING
 
         if (rruleStr !== '') {
           newEvent = {
@@ -861,14 +945,14 @@ export const FullCalendar = () => {
         )
       },
       eventResize: function (eventResizeInfo) {
-        const { event } = eventResizeInfo
+        const { event, oldEvent } = eventResizeInfo
 
-        handleEventAdjustment(event)
+        handleEventAdjustment(event, oldEvent)
       },
       eventDrop: function (eventDropInfo) {
-        const { event } = eventDropInfo
+        const { event, oldEvent } = eventDropInfo
 
-        handleEventAdjustment(event)
+        handleEventAdjustment(event, oldEvent)
       },
       events: getSelectedCalendarsEvents(calendarsEvents),
       eventContent: function (info) {
