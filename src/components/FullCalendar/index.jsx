@@ -478,7 +478,6 @@ export const FullCalendar = () => {
     const eventId = info.event.id
 
     setDialogProps({
-      allDay: allDay,
       taskname: taskname,
       taskdescription: taskdescription,
       taskbackgroundcolor: taskbackgroundcolor,

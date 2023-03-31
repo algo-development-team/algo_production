@@ -19,7 +19,7 @@ import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
 import { useAuth } from 'hooks'
 
-const defaultCustomRecurrenceFieldValues = {
+const defaultRecurrenceFieldValues = {
   repeatEvery: 1,
   frequency: 'WEEKLY',
   repeatOn: [], // set this to be the current day of the week
@@ -30,7 +30,6 @@ const defaultCustomRecurrenceFieldValues = {
 
 export const Block = ({
   closeOverlay,
-  allDay,
   taskname,
   taskdescription,
   taskbackgroundcolor,
@@ -69,9 +68,9 @@ export const Block = ({
   const [recurringEventEditOption, setRecurringEventEditOption] =
     useState('THIS_EVENT')
   const [recurringEventOptionsType, setRecurringEventOptionsType] = useState('')
-  const [recurrenceOption, setRecurrenceOption] = useState(0) // set it to which ever one that applies given current event rrule
-  const [customRecurrenceFieldValues, setCustomRecurrenceFieldValues] =
-    useState(defaultCustomRecurrenceFieldValues)
+  const [recurrenceFieldValues, setRecurrenceFieldValues] = useState(
+    defaultRecurrenceFieldValues,
+  ) // if the event is recurring, this will be the values of the recurrence fields
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {
@@ -630,16 +629,7 @@ export const Block = ({
                       setRecurringEventOptionsType('')
                     }}
                   >
-                    Cancel
-                  </button>
-                  <button
-                    className=' action add-task__actions--add-task'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventOptionsType('')
-                    }}
-                  >
-                    Ok
+                    Back
                   </button>
                 </div>
               </div>
