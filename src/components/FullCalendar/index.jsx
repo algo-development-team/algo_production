@@ -36,8 +36,6 @@ import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
 import { getFormattedEventTime } from '../../handleMoment'
-import { RRule } from 'rrule'
-import { compareByFieldSpecs } from '@fullcalendar/core/internal'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
