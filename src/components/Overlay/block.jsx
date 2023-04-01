@@ -20,6 +20,8 @@ import { RRule } from 'rrule'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
 import { useAuth } from 'hooks'
 import moment from 'moment'
+import { RecurringEventEdit } from './block/recurring-event-edit'
+import { RecurringOptions } from './block/recurring-options'
 
 const defaultRecurrenceFieldValues = {
   repeatEvery: 1,
@@ -69,7 +71,8 @@ export const Block = ({
   const [recurringEventEditType, setRecurringEventEditType] = useState('')
   const [recurringEventEditOption, setRecurringEventEditOption] =
     useState('THIS_EVENT')
-  const [recurringEventOptionsType, setRecurringEventOptionsType] = useState('')
+  const [showRecurringEventOptions, setShowRecurringEventOptions] =
+    useState(false)
   const [recurrenceFieldValues, setRecurrenceFieldValues] = useState(
     defaultRecurrenceFieldValues,
   ) // if the event is recurring, this will be the values of the recurrence fields
@@ -224,7 +227,7 @@ export const Block = ({
           className='recurring-options-button'
           onClick={(e) => {
             e.preventDefault()
-            setRecurringEventOptionsType('EDIT')
+            setShowRecurringEventOptions(true)
           }}
         >
           Recurring Options
@@ -520,234 +523,24 @@ export const Block = ({
 
   if (recurringEventEditType !== '') {
     return (
-      <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
-        <div
-          className='event__wrapper'
-          onClick={(event) => {
-            event.stopPropagation()
-          }}
-        >
-          <div className='add-task__wrapper'>
-            <form className='add-task'>
-              <div className={`add-task__container`}>
-                <h3>
-                  {recurringEventEditType === 'DELETE'
-                    ? 'Delete '
-                    : recurringEventEditType === 'BACKLOG'
-                    ? 'Backlog '
-                    : ''}
-                  recurring event
-                </h3>
-                <div>
-                  <input
-                    type='checkbox'
-                    checked={recurringEventEditOption === 'THIS_EVENT'}
-                    onClick={() => setRecurringEventEditOption('THIS_EVENT')}
-                  />
-                  <label>This event</label>
-                </div>
-                <div>
-                  <input
-                    type='checkbox'
-                    checked={recurringEventEditOption === 'ALL_EVENTS'}
-                    onClick={() => setRecurringEventEditOption('ALL_EVENTS')}
-                  />
-                  <label>All events</label>
-                </div>
-                <div
-                  style={{
-                    marginTop: '20px',
-                    marginBottom: '10px',
-                  }}
-                >
-                  <button
-                    className=' action add-task__actions--cancel'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventEditType('')
-                      setRecurringEventEditOption('THIS_EVENT')
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className=' action add-task__actions--add-task'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      if (recurringEventEditType === 'DELETE') {
-                        handleDelete()
-                      } else if (recurringEventEditType === 'BACKLOG') {
-                        handleBacklog()
-                      }
-                    }}
-                  >
-                    Ok
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <RecurringEventEdit
+        closeOverlay={closeOverlay}
+        recurringEventEditType={recurringEventEditType}
+        setRecurringEventEditType={recurringEventEditType}
+        recurringEventEditOption={recurringEventEditOption}
+        setRecurringEventEditOption={setRecurringEventEditOption}
+        handleDelete={handleDelete}
+        handleBacklog={handleBacklog}
+      />
     )
   }
 
-  if (recurringEventOptionsType === 'EDIT') {
+  if (showRecurringEventOptions) {
     return (
-      <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
-        <div
-          className='event__wrapper'
-          onClick={(event) => {
-            event.stopPropagation()
-          }}
-        >
-          <div className='add-task__wrapper'>
-            <form className='add-task'>
-              <div className={`add-task__container`}>
-                <h3>Recurrence Options</h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'left',
-                  }}
-                >
-                  <button className='recurring-option-selector-button'>
-                    Does not repeat
-                  </button>
-                  <button className='recurring-option-selector-button'>
-                    Daily
-                  </button>
-                  <button className='recurring-option-selector-button'>
-                    Weekly on Monday
-                  </button>
-                  <button className='recurring-option-selector-button'>
-                    Monthly on the first Monday
-                  </button>
-                  <button className='recurring-option-selector-button'>
-                    Annually on April 3
-                  </button>
-                  <button className='recurring-option-selector-button'>
-                    Every weekday (Monday to Friday)
-                  </button>
-                  <button
-                    className='recurring-option-selector-button'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventOptionsType('CUSTOM_EDIT')
-                    }}
-                  >
-                    Custom...
-                  </button>
-                </div>
-                <div
-                  style={{
-                    marginTop: '20px',
-                    marginBottom: '10px',
-                  }}
-                >
-                  <button
-                    className=' action add-task__actions--cancel'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventOptionsType('')
-                    }}
-                  >
-                    Back
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    )
-  } else if (recurringEventOptionsType === 'CUSTOM_EDIT') {
-    return (
-      <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
-        <div
-          className='event__wrapper'
-          onClick={(event) => {
-            event.stopPropagation()
-          }}
-        >
-          <div className='add-task__wrapper'>
-            <form className='add-task'>
-              <div className={`add-task__container`}>
-                <h3>Custom Recurrence</h3>
-                <div>
-                  <div>
-                    <label>Repeat every</label>
-                    <input type='number' />
-                    <select>
-                      <option value='day'>Day</option>
-                      <option value='week'>Week</option>
-                      <option value='month'>Month</option>
-                      <option value='year'>Year</option>
-                    </select>
-                  </div>
-                  <div>
-                    <p>Repeats on</p>
-                    <div>
-                      <span>S</span>
-                      <span>M</span>
-                      <span>T</span>
-                      <span>W</span>
-                      <span>T</span>
-                      <span>F</span>
-                      <span>S</span>
-                    </div>
-                  </div>
-                  <div>
-                    <p>Ends</p>
-                    <div>
-                      <input type='radio' />
-                      <label>Never</label>
-                    </div>
-                    <div>
-                      <input type='radio' />
-                      <label>On</label>
-                      <input type='date' />
-                    </div>
-                    <div>
-                      <input type='radio' />
-                      <label>After</label>
-                      <input type='number' />
-                      <label>occurrences</label>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    marginTop: '20px',
-                    marginBottom: '10px',
-                  }}
-                >
-                  <button
-                    className=' action add-task__actions--cancel'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventOptionsType('')
-                    }}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    className=' action add-task__actions--add-task'
-                    onClick={(e) => {
-                      e.preventDefault()
-                      setRecurringEventOptionsType('')
-                    }}
-                  >
-                    Ok
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+      <RecurringOptions
+        closeOverlay={closeOverlay}
+        setShowRecurringEventOptions={setShowRecurringEventOptions}
+      />
     )
   }
 
