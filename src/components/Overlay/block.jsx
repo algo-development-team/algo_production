@@ -73,6 +73,10 @@ export const Block = ({
   ) // if the event is recurring, this will be the values of the recurrence fields
 
   useEffect(() => {
+    console.log('rruleStr', rruleStr) // DEBUGGING
+  }, [rruleStr])
+
+  useEffect(() => {
     for (const eventAttendee of eventAttendees) {
       if (eventAttendee?.self) {
         setCurrentUserResponseStatus(eventAttendee.responseStatus)
