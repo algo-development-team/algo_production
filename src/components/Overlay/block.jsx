@@ -16,8 +16,10 @@ import { cropLabel } from 'handleLabel'
 import { isValidEmail } from 'handleEmail'
 import { ReactComponent as GoogleMeetIcon } from 'assets/svg/google-meet-logo.svg'
 import { ReactComponent as ZoomIcon } from 'assets/svg/zoom-logo.svg'
+import { RRule } from 'rrule'
 import { createGoogleMeet, deleteGoogleMeet } from '../../google'
 import { useAuth } from 'hooks'
+import moment from 'moment'
 
 const defaultRecurrenceFieldValues = {
   repeatEvery: 1,
@@ -71,9 +73,17 @@ export const Block = ({
   const [recurrenceFieldValues, setRecurrenceFieldValues] = useState(
     defaultRecurrenceFieldValues,
   ) // if the event is recurring, this will be the values of the recurrence fields
+  const [dtstart, setDtstart] = useState(null) // moment.js object
+  const [rrule, setRRule] = useState(null) // RRule object
 
   useEffect(() => {
-    console.log('rruleStr', rruleStr) // DEBUGGING
+    if (rruleStr !== '') {
+      const rruleStrObj = destructRRuleStr(rruleStr)
+      const dtstart = moment(rruleStrObj.dtstart.split(':')[1])
+      const rrule = RRule.fromString(rruleStrObj.rrule)
+      setDtstart(dtstart)
+      setRRule(rrule)
+    }
   }, [rruleStr])
 
   useEffect(() => {
@@ -84,6 +94,16 @@ export const Block = ({
       }
     }
   }, [eventAttendees])
+
+  const destructRRuleStr = (rruleStr) => {
+    const rruleStrArr = rruleStr.split('\n')
+    const rruleStrObj = {
+      dtstart: rruleStrArr[0],
+      rrule: rruleStrArr[1],
+      exdates: rruleStrArr.slice(2),
+    }
+    return rruleStrObj
+  }
 
   const getUpdatedEventAttendees = () => {
     const updatedEventAttendees = [...eventAttendees]
