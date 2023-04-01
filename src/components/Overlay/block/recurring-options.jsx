@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { RRule } from 'rrule'
 
 export const RecurringOptions = ({
   closeOverlay,
@@ -8,13 +9,42 @@ export const RecurringOptions = ({
   rrule,
   setRRule,
 }) => {
-  useEffect(() => {
-    console.log('dtstart', dtstart) // DEBUGGING
-  }, [dtstart])
+  const [repeatEvery, setRepeatEvery] = useState(1)
+  const [repeatEveryType, setRepeatEveryType] = useState('DAILY')
+  const [repeatsOn, setRepeatsOn] = useState([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ])
+  const [monthlyRepeatType, setMonthlyRepeatType] = useState('BY_DAY')
+  const [endsType, setEndsType] = useState('NEVER')
+  const [endsOn, setEndsOn] = useState(new Date())
+  const [endsAfter, setEndsAfter] = useState(1)
 
-  useEffect(() => {
-    console.log('rrule', rrule) // DEBUGGING
-  }, [rrule])
+  const getRepeatOnLabel = (index) => {
+    switch (index) {
+      case 0:
+        return 'S'
+      case 1:
+        return 'M'
+      case 2:
+        return 'T'
+      case 3:
+        return 'W'
+      case 4:
+        return 'T'
+      case 5:
+        return 'F'
+      case 6:
+        return 'S'
+      default:
+        return ''
+    }
+  }
 
   return (
     <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
@@ -31,49 +61,96 @@ export const RecurringOptions = ({
               <div>
                 <div>
                   <label>Repeat every</label>
-                  <input type='number' />
-                  <select>
-                    <option value='day'>Day</option>
-                    <option value='week'>Week</option>
-                    <option value='month'>Month</option>
-                    <option value='year'>Year</option>
+                  <input
+                    type='number'
+                    value={repeatEvery}
+                    onChange={(e) => setRepeatEvery(e.target.value)}
+                  />
+                  <select
+                    value={repeatEveryType}
+                    onChange={(e) => setRepeatEveryType(e.target.value)}
+                  >
+                    <option value='DAILY'>Day</option>
+                    <option value='WEEKLY'>Week</option>
+                    <option value='MONTHLY'>Month</option>
+                    <option value='YEARLY'>Year</option>
                   </select>
                 </div>
-                <div>
-                  <p>Repeats on</p>
+                {repeatEveryType === 'WEEKLY' && (
                   <div>
-                    <span>S</span>
-                    <span>M</span>
-                    <span>T</span>
-                    <span>W</span>
-                    <span>T</span>
-                    <span>F</span>
-                    <span>S</span>
+                    <p>Repeats on</p>
+                    <div style={{ display: 'flex' }}>
+                      {repeatsOn.map((isSelected, index) => (
+                        <div
+                          key={index}
+                          value={isSelected}
+                          onClick={() =>
+                            setRepeatsOn((repeatsOn) => {
+                              return repeatsOn.map((isSelected, i) => {
+                                if (i === index) {
+                                  return !isSelected
+                                }
+                                return isSelected
+                              })
+                            })
+                          }
+                        >
+                          {getRepeatOnLabel(index)}
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div>
-                  <select>
-                    <option value='day 3'>Monthly on day 3</option>
-                    <option value='first monday'>
-                      Monthly on the first Monday
-                    </option>
-                  </select>
-                </div>
+                )}
+                {repeatEveryType === 'MONTHLY' && (
+                  <div>
+                    <select
+                      value={monthlyRepeatType}
+                      onChange={(e) => setMonthlyRepeatType(e.target.value)}
+                    >
+                      <option value='BY_DAY'>Monthly on day 3</option>
+                      <option value='BY_WEEKDAY'>
+                        Monthly on the first Monday
+                      </option>
+                    </select>
+                  </div>
+                )}
                 <div>
                   <p>Ends</p>
                   <div>
-                    <input type='radio' />
+                    <input
+                      type='radio'
+                      checked={endsType === 'NEVER'}
+                      onClick={() => setEndsType('NEVER')}
+                    />
                     <label>Never</label>
                   </div>
                   <div>
-                    <input type='radio' />
+                    <input
+                      type='radio'
+                      checked={endsType === 'ON'}
+                      onClick={() => setEndsType('ON')}
+                    />
                     <label>On</label>
-                    <input type='date' />
+                    <input
+                      type='date'
+                      disabled={endsType !== 'ON'}
+                      value={endsOn}
+                      onChange={(e) => setEndsOn(e.target.value)}
+                    />
                   </div>
                   <div>
-                    <input type='radio' />
+                    <input
+                      type='radio'
+                      checked={endsType === 'AFTER'}
+                      onClick={() => setEndsType('AFTER')}
+                    />
                     <label>After</label>
-                    <input type='number' />
+                    <input
+                      type='number'
+                      disabled={endsType !== 'AFTER'}
+                      value={endsAfter}
+                      onChange={(e) => setEndsAfter(e.target.value)}
+                    />
                     <label>occurrences</label>
                   </div>
                 </div>
