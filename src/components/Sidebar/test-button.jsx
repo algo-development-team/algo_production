@@ -1,8 +1,14 @@
 import { RRule, RRuleSet } from 'rrule'
 
-export const TestButton = () => {
-  const dtstart = new Date(2023, 3, 4)
+const dtstart = new Date(2023, 3, 4)
+const rrule = new RRule({
+  freq: RRule.WEEKLY,
+  interval: 1,
+  byweekday: [RRule.MO, RRule.WE, RRule.FR],
+  dtstart: dtstart,
+})
 
+export const TestButton = () => {
   const getDtend = (freq, interval) => {
     const dtend = new Date(dtstart)
     switch (
@@ -26,34 +32,25 @@ export const TestButton = () => {
     return dtend
   }
 
-  const findClosestValidDate = () => {
+  const findNewDtStart = (dtstart, rrule) => {
     // Define the RRule object
-    const rule = new RRule({
-      freq: RRule.WEEKLY,
-      interval: 1,
-      byweekday: [RRule.MO, RRule.WE, RRule.FR],
-      dtstart: dtstart,
-    })
 
     // create an RRuleSet object containing the rule
     const ruleSet = new RRuleSet()
-    ruleSet.rrule(rule)
+    ruleSet.rrule(rrule)
 
     // add one year to dtstart
     const dtend = getDtend(RRule.WEEKLY, 1)
     const occurrences = ruleSet.between(dtstart, dtend, true)
-
-    /* DEBUGGING */
-    for (const occurrence of occurrences) {
-      console.log(occurrence.toISOString())
-    }
 
     return occurrences[0]
   }
 
   return (
     <div>
-      <button onClick={() => findClosestValidDate()}>Test</button>
+      <button onClick={() => console.log(findNewDtStart(dtstart, rrule))}>
+        Test
+      </button>
     </div>
   )
 }

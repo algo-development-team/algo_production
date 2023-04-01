@@ -23,15 +23,6 @@ import moment from 'moment'
 import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
 
-const defaultRecurrenceFieldValues = {
-  repeatEvery: 1,
-  frequency: 'WEEKLY',
-  repeatOn: [], // set this to be the current day of the week
-  ends: 'NEVER',
-  endsOn: new Date(), // set this to be two months later than the current date
-  endsAfter: 1,
-}
-
 export const Block = ({
   closeOverlay,
   taskname,
@@ -73,9 +64,6 @@ export const Block = ({
     useState('THIS_EVENT')
   const [showRecurringEventOptions, setShowRecurringEventOptions] =
     useState(false)
-  const [recurrenceFieldValues, setRecurrenceFieldValues] = useState(
-    defaultRecurrenceFieldValues,
-  ) // if the event is recurring, this will be the values of the recurrence fields
   const [dtstart, setDtstart] = useState(null) // moment.js object
   const [rrule, setRRule] = useState(null) // RRule object
 
@@ -540,6 +528,10 @@ export const Block = ({
       <RecurringOptions
         closeOverlay={closeOverlay}
         setShowRecurringEventOptions={setShowRecurringEventOptions}
+        dtstart={dtstart}
+        setDtstart={setDtstart}
+        rrule={rrule}
+        setRRule={setRRule}
       />
     )
   }

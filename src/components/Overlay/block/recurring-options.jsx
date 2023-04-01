@@ -1,7 +1,21 @@
+import { useState, useEffect } from 'react'
+
 export const RecurringOptions = ({
   closeOverlay,
   setShowRecurringEventOptions,
+  dtstart,
+  setDtstart,
+  rrule,
+  setRRule,
 }) => {
+  useEffect(() => {
+    console.log('dtstart', dtstart) // DEBUGGING
+  }, [dtstart])
+
+  useEffect(() => {
+    console.log('rrule', rrule) // DEBUGGING
+  }, [rrule])
+
   return (
     <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
       <div
@@ -36,6 +50,14 @@ export const RecurringOptions = ({
                     <span>F</span>
                     <span>S</span>
                   </div>
+                </div>
+                <div>
+                  <select>
+                    <option value='day 3'>Monthly on day 3</option>
+                    <option value='first monday'>
+                      Monthly on the first Monday
+                    </option>
+                  </select>
                 </div>
                 <div>
                   <p>Ends</p>
