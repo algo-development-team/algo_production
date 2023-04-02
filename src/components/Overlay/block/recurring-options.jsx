@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { RRule } from 'rrule'
+import { formatRRule } from './handleRRule'
 import moment from 'moment'
 
 export const RecurringOptions = ({
@@ -66,10 +67,6 @@ export const RecurringOptions = ({
   )
   const [endsAfter, setEndsAfter] = useState(rrule?.origOptions?.count || 10)
 
-  useEffect(() => {
-    console.log('rrule', rrule) // DEBUGGING
-  }, [rrule])
-
   const getRepeatOnLabel = (index) => {
     switch (index) {
       case 0:
@@ -91,6 +88,19 @@ export const RecurringOptions = ({
     }
   }
 
+  const handleRecurringEventOptionsSubmit = () => {
+    /* DEBUGGING */
+    const newRRule = formatRRule(
+      repeatEvery,
+      repeatEveryType,
+      repeatsOn,
+      monthlyRepeatType,
+      endsType,
+      endsOn,
+      endsAfter,
+    )
+  }
+
   return (
     <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
       <div
@@ -109,11 +119,13 @@ export const RecurringOptions = ({
                   <input
                     type='number'
                     value={repeatEvery}
-                    onChange={(e) => setRepeatEvery(e.target.value)}
+                    onChange={(e) => setRepeatEvery(parseInt(e.target.value))}
                   />
                   <select
                     value={repeatEveryType}
-                    onChange={(e) => setRepeatEveryType(e.target.value)}
+                    onChange={(e) =>
+                      setRepeatEveryType(parseInt(e.target.value))
+                    }
                   >
                     <option value={3}>Day</option>
                     <option value={2}>Week</option>
@@ -196,7 +208,7 @@ export const RecurringOptions = ({
                       type='number'
                       disabled={endsType !== 'AFTER'}
                       value={endsAfter}
-                      onChange={(e) => setEndsAfter(e.target.value)}
+                      onChange={(e) => setEndsAfter(parseInt(e.target.value))}
                     />
                     <label>occurrences</label>
                   </div>
@@ -222,6 +234,7 @@ export const RecurringOptions = ({
                   className=' action add-task__actions--add-task'
                   onClick={(e) => {
                     e.preventDefault()
+                    handleRecurringEventOptionsSubmit()
                     setShowRecurringEventOptions(false)
                   }}
                 >
