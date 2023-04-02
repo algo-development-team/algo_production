@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { RRule } from 'rrule'
+import moment from 'moment'
 
 export const RecurringOptions = ({
   closeOverlay,
@@ -9,21 +10,65 @@ export const RecurringOptions = ({
   rrule,
   setRRule,
 }) => {
-  const [repeatEvery, setRepeatEvery] = useState(1)
-  const [repeatEveryType, setRepeatEveryType] = useState('DAILY')
-  const [repeatsOn, setRepeatsOn] = useState([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ])
-  const [monthlyRepeatType, setMonthlyRepeatType] = useState('BY_DAY')
-  const [endsType, setEndsType] = useState('NEVER')
-  const [endsOn, setEndsOn] = useState(new Date())
-  const [endsAfter, setEndsAfter] = useState(1)
+  const [repeatEvery, setRepeatEvery] = useState(
+    rrule?.origOptions?.interval || 1,
+  )
+  const [repeatEveryType, setRepeatEveryType] = useState(
+    rrule?.origOptions?.freq || 2,
+  )
+
+  const getRepeatsOnFromByweekday = (byweekday) => {
+    const repeatsOn = Array(7).fill(false)
+    byweekday.forEach((weekdayObj) => {
+      const index = weekdayObj.weekday === 6 ? 0 : weekdayObj.weekday + 1
+      repeatsOn[index] = true
+    })
+    return repeatsOn
+  }
+
+  const [repeatsOn, setRepeatsOn] = useState(
+    rrule?.origOptions?.byweekday
+      ? getRepeatsOnFromByweekday(rrule?.origOptions?.byweekday)
+      : Array(7).fill(false),
+  )
+
+  const getMonthlyRepeatType = (freq, byweekday) => {
+    if (freq && freq === 1 && byweekday && byweekday?.length === 1) {
+      return 'BY_WEEKDAY'
+    } else {
+      return 'BY_MONTHDAY'
+    }
+  }
+
+  const [monthlyRepeatType, setMonthlyRepeatType] = useState(
+    getMonthlyRepeatType(
+      rrule?.origOptions?.freq,
+      rrule?.origOptions?.byweekday,
+    ),
+  )
+
+  const getEndsType = (until, count) => {
+    if (until) {
+      return 'ON'
+    } else if (count) {
+      return 'AFTER'
+    } else {
+      return 'NEVER'
+    }
+  }
+
+  const [endsType, setEndsType] = useState(
+    getEndsType(rrule?.origOptions?.until, rrule?.origOptions?.count),
+  )
+  const [endsOn, setEndsOn] = useState(
+    rrule?.origOptions?.until?.toISOString()?.slice(0, 10) ||
+      moment().add(2, 'months').format('YYYY-MM-DD'),
+  )
+  const [endsAfter, setEndsAfter] = useState(rrule?.origOptions?.count || 10)
+
+  useEffect(() => {
+    console.log('rrule', rrule) // DEBUGGING
+  }, [rrule])
 
   const getRepeatOnLabel = (index) => {
     switch (index) {
@@ -70,20 +115,22 @@ export const RecurringOptions = ({
                     value={repeatEveryType}
                     onChange={(e) => setRepeatEveryType(e.target.value)}
                   >
-                    <option value='DAILY'>Day</option>
-                    <option value='WEEKLY'>Week</option>
-                    <option value='MONTHLY'>Month</option>
-                    <option value='YEARLY'>Year</option>
+                    <option value={3}>Day</option>
+                    <option value={2}>Week</option>
+                    <option value={1}>Month</option>
+                    <option value={0}>Year</option>
                   </select>
                 </div>
-                {repeatEveryType === 'WEEKLY' && (
+                {repeatEveryType === 2 && (
                   <div>
                     <p>Repeats on</p>
                     <div style={{ display: 'flex' }}>
                       {repeatsOn.map((isSelected, index) => (
                         <div
                           key={index}
-                          value={isSelected}
+                          style={{
+                            backgroundColor: isSelected ? 'blue' : 'grey',
+                          }}
                           onClick={() =>
                             setRepeatsOn((repeatsOn) => {
                               return repeatsOn.map((isSelected, i) => {
@@ -101,13 +148,13 @@ export const RecurringOptions = ({
                     </div>
                   </div>
                 )}
-                {repeatEveryType === 'MONTHLY' && (
+                {repeatEveryType === 1 && (
                   <div>
                     <select
                       value={monthlyRepeatType}
                       onChange={(e) => setMonthlyRepeatType(e.target.value)}
                     >
-                      <option value='BY_DAY'>Monthly on day 3</option>
+                      <option value='BY_MONTHDAY'>Monthly on day 3</option>
                       <option value='BY_WEEKDAY'>
                         Monthly on the first Monday
                       </option>
