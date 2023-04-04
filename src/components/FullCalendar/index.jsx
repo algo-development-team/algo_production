@@ -36,10 +36,16 @@ import {
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
+import { useAutoScheduleButtonClickedValue, useScheduleValue, useAvailableTimesValue, useTaskListValue } from 'context'  
+
 
 const USER_SELECTED_CALENDAR = 'primary'
 
 export const FullCalendar = () => {
+  const { AutoScheduleButtonClicked, setAutoScheduleButtonClicked } = useAutoScheduleButtonClickedValue()
+  const { AvailableTimes, setAvailableTimes } = useAvailableTimesValue()
+  const { TaskList, setTaskList } = useTaskListValue()
+  // const { Schedule, setSchedule} = useScheduleValue()
   const [view, setView] = useState(`dayGridWeek`)
   const [infoEvent, setInfoEvent] = useState(null)
   const calendarRef = useRef(null)
@@ -442,7 +448,6 @@ export const FullCalendar = () => {
   }
 
   function formatEventTimeLength(timeLength) {
-    console.log('timeLength', timeLength)
 
     const minutes = timeLength
 
@@ -700,14 +705,88 @@ export const FullCalendar = () => {
       handleWindowResize: true,
       eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
+    const avtimes = AvailableTimes
+    const tlist = TaskList
 
+
+    const addEventsToFullCalendar = (tlist, avtimes) => {
+
+      if(AvailableTimes != null && TaskList != null){
+
+      const newCustomEvents = [...calendarsEvents.custom]
+      let m = 0
+      let y = null
+      let t = avtimes[m].start
+      let buffer = 0
+      let smalltasknumber = 0
+
+      for(let i = 0; i < tlist.length; i++){
+      
+        if(tlist[i].timeLength >= 0){
+                if(tlist[i].timeLength < 120){
+                  smalltasknumber = smalltasknumber + 1
+                }
+                buffer = 0
+              }
+              if(tlist[i].timeLength >= 120){
+                buffer = 15
+              }
+              if(tlist[i].timeLength >= 240){
+                buffer = 30
+              }
+              if(tlist[i].timeLength >= 480){
+                buffer = 60
+              }
+              if(smalltasknumber === 3){
+                buffer = 15
+                smalltasknumber = 0
+              }
+              const diff = moment(avtimes[m].end).diff(moment(t).clone().add(tlist[i].timeLength, 'minutes'), 'minutes')
+              if(diff < 0){
+                console.log(y)
+              for(let p = m + 1; p < avtimes.length; p++){
+                  if(moment(avtimes[p].end).diff(moment(avtimes[p].start), 'minutes') > (tlist[i].timeLength)){
+                       m = p;
+                       t = avtimes[p].start;
+                       console.log('avtimes[m]', avtimes[m],tlist[i].name, 'timelength',tlist[i].timeLength, moment(avtimes[p].end).diff(moment(avtimes[p].start), 'minutes') > (tlist[i].timeLength))
+                       break;
+                  }
+             }
+            }
+      const newEvent1 = {
+              id: tlist[i].id,
+              title: tlist[i].name,
+              start: moment(t).format('YYYY-MM-DD HH:mm'),
+              end: moment(t).add(tlist[i].timeLength, 'minutes').format('YYYY-MM-DD HH:mm'),
+              taskId: tlist[i].id,
+              description: tlist[i].description,
+            }
+            t = moment(t).add(tlist[i].timeLength, 'minutes');
+            t = moment(t).add(buffer, 'minutes');
+      calendar.addEvent(newEvent1)
+     newCustomEvents.push(newEvent1)
+          }
+     setCalendarsEvents({
+      ...calendarsEvents,
+      custom: newCustomEvents,
+     })
+    } else {
+      console.log('cannot schedule - please write code to do something about it later')
+    }
+
+  }
+    if(AutoScheduleButtonClicked === true) {
+    addEventsToFullCalendar(tlist, avtimes)
+    setAutoScheduleButtonClicked(false)
+    setAvailableTimes(null)
+    setTaskList(null)
+    }
     calendar.render()
     
     // Update the current time every 5 minutes
     const intervalId = setInterval(() => {
       setCurrentTime(new Date())
     }, 5 * 60 * 1000) // 5 minutes in milliseconds
-    
     return () => {
       calendar.destroy()
       externalEvents.destroy()
@@ -720,58 +799,54 @@ export const FullCalendar = () => {
     externalEventsRef,
     currentTime,
     googleCalendars,
+    AutoScheduleButtonClicked,
+    AvailableTimes,
+    TaskList,
   ])
 
   return <div ref={calendarRef}></div>
 }
 
 
-// drop: function (info) {
-//   const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
-//   const newEvent = {
-//     id: generatePushId(),
-//     title: draggedEvent.name,
-//     start: info.date,
-//     allDay: info.allDay,
-//     end: moment(info.date)
-//       .add(draggedEvent.timeLength, 'minutes')
-//       .toDate(),
+// if(AvailableTimes != null && TaskList != null){
+//   let m = 0
+//   let t = avtimes[m].start
+//   let buffer = 0
+//   const newCustomEvents = [...calendarsEvents.custom]
+//   for(let i = 0; i < tlist.length; i++){
+//     if(tlist[i].timeLength > moment(avtimes[m].end).diff(moment(t).add(buffer, 'minutes'), 'minutes') && m < avtimes.length) {
+//       t = avtimes[m].start
+//       m = m + 1
+//     }
+//     const newEvent1 = {
+//       id: tlist[i].id,
+//       title: tlist[i].name,
+//       // start: moment(t).add(buffer, 'minutes').format('YYYY-MM-DD HH:mm'),
+//       // end: moment(t).add(tlist[i].timeLength, 'minutes').format('YYYY-MM-DD HH:mm'),
+//       start: moment(t).add(buffer, 'minutes').format('YYYY-MM-DD HH:mm'),
+//       end: moment(t).add(tlist[i].timeLength, 'minutes').format('YYYY-MM-DD HH:mm'),
+//       taskId: tlist[i].id,
+//       description: tlist[i].description,
+//     }
+//     if(tlist[i].timeLength >= 0){
+//       buffer = 0
+//     }
+//     if(tlist[i].timeLength >= 120){
+//       buffer = 15
+//     }
+//     if(tlist[i].timeLength >= 240){
+//       buffer = 30
+//     }
+//     if(tlist[i].timeLength >= 480){
+//       buffer = 60
+//     }
+//     t = moment(t).add(tlist[i].timeLength, 'minutes')
+  
+//      calendar.addEvent(newEvent1)
+//      newCustomEvents.push(newEvent1)
 //   }
-//   setCalendarsEvents({
+//    setCalendarsEvents({
 //     ...calendarsEvents,
-//     custom: [...calendarsEvents.custom, newEvent],
-//   })
-// },
-// eventClick: function (info) {
-//   info.jsEvent.preventDefault()
-//   if (window.confirm('Are you sure you want to delete this event?')) {
-//     // remove from state
-//     setCalendarsEvents({
-//       ...calendarsEvents,
-//       custom: calendarsEvents.custom.filter(
-//         (event) => event.id !== info.event.id,
-//       ),
-//     })
-//     // remove from calendar
-//     info.event.remove()
+//     custom: newCustomEvents,
+//    })
 //   }
-// },
-// select: function (info) {
-//   const newEvent = {
-//     id: generatePushId(),
-//     title: 'New Event',
-//     start: info.startStr,
-//     end: info.endStr,
-//   }
-
-//   setCalendarsEvents({
-//     ...calendarsEvents,
-//     custom: [...calendarsEvents.custom, newEvent],
-//   })
-// },
-// events: getSelectedCalendarsEvents(calendarsEvents),
-// now: new Date(), // set the current time
-// nowIndicator: true, // display a red line through the current time
-// })
-
-// calendar.render()
