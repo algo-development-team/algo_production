@@ -3,6 +3,7 @@ import { HamburgerButton } from './hamburger'
 import { HomeButton } from './home'
 import { CalendarButton } from './calendar'
 import { ProjectsButton } from './projects'
+import { SettingButton } from './setting'
 import './light.scss'
 import './main.scss'
 import { GoogleAuthButton } from './google-auth-button'
@@ -33,6 +34,7 @@ export const Header = (props) => {
           <>
             <CalendarButton />
             <ProjectsButton />
+            <SettingButton />
           </>
         ) : (
           <CalendarOrProjectsButton />
