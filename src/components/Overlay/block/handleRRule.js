@@ -1,4 +1,4 @@
-import { RRule } from 'rrule'
+import { RRule, RRuleSet } from 'rrule'
 import moment from 'moment'
 
 const getFreq = (repeatEveryType) => {
@@ -14,6 +14,32 @@ const getFreq = (repeatEveryType) => {
     default:
       return RRule.DAILY
   }
+}
+
+const getByweekday = (repeatsOn) => {
+  const weekdays = []
+  if (repeatsOn[0]) {
+    weekdays.push(RRule.SU)
+  }
+  if (repeatsOn[1]) {
+    weekdays.push(RRule.MO)
+  }
+  if (repeatsOn[2]) {
+    weekdays.push(RRule.TU)
+  }
+  if (repeatsOn[3]) {
+    weekdays.push(RRule.WE)
+  }
+  if (repeatsOn[4]) {
+    weekdays.push(RRule.TH)
+  }
+  if (repeatsOn[5]) {
+    weekdays.push(RRule.FR)
+  }
+  if (repeatsOn[6]) {
+    weekdays.push(RRule.SA)
+  }
+  return weekdays
 }
 
 /***
@@ -44,15 +70,54 @@ export const formatRRule = (
     (repeatEveryType === 1 && monthlyRepeatType === 'BY_WEEKDAY')
   ) {
     // add byweekday field
+    rruleObj.byweekday = getByweekday(repeatsOn)
   }
 
   if (endsType === 'ON') {
     // add until field
+    rruleObj.until = moment(endsOn).toDate()
   }
 
   if (endsType === 'AFTER') {
     // add count field
+    rruleObj.count = endsAfter
   }
 
   return new RRule(rruleObj)
+}
+
+const getDtend = (freq, interval, dtstart) => {
+  const dtend = new Date(dtstart)
+  switch (
+    freq // * 2 is to handle edge cases by providing a buffer of 2x the interval
+  ) {
+    case RRule.DAILY:
+      dtend.setDate(dtend.getDate() + interval * 2)
+      break
+    case RRule.WEEKLY:
+      dtend.setDate(dtend.getDate() + interval * 7 * 2)
+      break
+    case RRule.MONTHLY:
+      dtend.setMonth(dtend.getMonth() + interval * 2)
+      break
+    case RRule.YEARLY:
+      dtend.setFullYear(dtend.getFullYear() + interval * 2)
+      break
+    default:
+      break
+  }
+  return dtend
+}
+
+export const findNewDtstart = (freq, interval, dtstart, rrule) => {
+  // create an RRuleSet object containing the rule
+  const ruleSet = new RRuleSet()
+  ruleSet.rrule(rrule)
+
+  // add one year to dtstart
+  const dtend = getDtend(freq, interval, dtstart)
+
+  const occurrences = ruleSet.between(dtstart, dtend, true)
+
+  return occurrences[0]
 }

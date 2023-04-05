@@ -70,7 +70,7 @@ export const Block = ({
   useEffect(() => {
     if (rruleStr !== '') {
       const rruleStrObj = destructRRuleStr(rruleStr)
-      const dtstart = moment(rruleStrObj.dtstart.split(':')[1])
+      const dtstart = moment(rruleStrObj.dtstart.split(':')[1]).toDate()
       const rrule = RRule.fromString(rruleStrObj.rrule)
       setDtstart(dtstart)
       setRRule(rrule)

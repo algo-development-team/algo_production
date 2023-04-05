@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react'
 import { RRule } from 'rrule'
-import { formatRRule } from './handleRRule'
+import { formatRRule, findNewDtstart } from './handleRRule'
 import moment from 'moment'
 
 export const RecurringOptions = ({
   closeOverlay,
   setShowRecurringEventOptions,
-  dtstart,
+  dtstart, // JS Date object
   setDtstart,
-  rrule,
+  rrule, // RRule object
   setRRule,
 }) => {
   const [repeatEvery, setRepeatEvery] = useState(
@@ -67,6 +67,26 @@ export const RecurringOptions = ({
   )
   const [endsAfter, setEndsAfter] = useState(rrule?.origOptions?.count || 10)
 
+  useEffect(() => {
+    const newRepeatsOn = Array(7).fill(false)
+    if (repeatEveryType === 0) {
+      setRepeatsOn(newRepeatsOn)
+    } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_MONTHDAY') {
+      setRepeatsOn(newRepeatsOn)
+    } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_WEEKDAY') {
+      newRepeatsOn[dtstart.getDay()] = true
+      setRepeatsOn(newRepeatsOn)
+    } else if (
+      repeatEveryType === 2 &&
+      repeatsOn.every((isSelected) => !isSelected)
+    ) {
+      newRepeatsOn[dtstart.getDay()] = true
+      setRepeatsOn(newRepeatsOn)
+    } else if (repeatEveryType === 3) {
+      setRepeatsOn(newRepeatsOn)
+    }
+  }, [repeatEveryType, monthlyRepeatType])
+
   const getRepeatOnLabel = (index) => {
     switch (index) {
       case 0:
@@ -89,7 +109,6 @@ export const RecurringOptions = ({
   }
 
   const handleRecurringEventOptionsSubmit = () => {
-    /* DEBUGGING */
     const newRRule = formatRRule(
       repeatEvery,
       repeatEveryType,
@@ -99,6 +118,21 @@ export const RecurringOptions = ({
       endsOn,
       endsAfter,
     )
+
+    const newRRuleWithInitialDtstart = new RRule({
+      ...newRRule.origOptions,
+      dtstart: dtstart,
+    })
+
+    const newDtstart = findNewDtstart(
+      newRRule.origOptions.freq,
+      newRRule.origOptions.interval,
+      dtstart,
+      newRRuleWithInitialDtstart,
+    )
+
+    setDtstart(newDtstart)
+    setRRule(newRRule)
   }
 
   return (
@@ -234,6 +268,13 @@ export const RecurringOptions = ({
                   className=' action add-task__actions--add-task'
                   onClick={(e) => {
                     e.preventDefault()
+                    if (
+                      repeatEveryType === 2 &&
+                      repeatsOn.every((isSelected) => !isSelected)
+                    ) {
+                      alert('A weekday must be selected.')
+                      return
+                    }
                     handleRecurringEventOptionsSubmit()
                     setShowRecurringEventOptions(false)
                   }}
