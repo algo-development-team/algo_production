@@ -64,7 +64,7 @@ export const Block = ({
     useState('THIS_EVENT')
   const [showRecurringEventOptions, setShowRecurringEventOptions] =
     useState(false)
-  const [dtstart, setDtstart] = useState(null) // moment.js object
+  const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
 
   useEffect(() => {
@@ -150,6 +150,8 @@ export const Block = ({
       eventLocation,
       eventMeetLink,
       getUpdatedEventAttendees(),
+      dtstart,
+      rrule,
     )
     closeOverlay()
   }

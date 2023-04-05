@@ -678,7 +678,26 @@ export const FullCalendar = () => {
         location,
         meetLink,
         attendees,
+        dtstart, // JS Date object
+        rrule, // RRule object
       ) => {
+        console.log('dtstart', dtstart) // DEBUGGING
+        console.log('rrule', rrule) // DEBUGGING
+
+        const allDay = info.event.allDay
+        const recurrence = info.event.extendedProps?.recurrence
+
+        const rruleStr = rrule.toString()
+        const dtstartStrFullCalendar = getFormattedEventTime(dtstart)
+        const dtstartStrGoogleCalendar = allDay
+          ? dtstart.toISOString().slice(0, 10)
+          : dtstart.toISOString()
+        console.log('dtstartStrFullCalendar', dtstartStrFullCalendar) // DEBUGGING
+        console.log('dtstartStrGoogleCalendar', dtstartStrGoogleCalendar) // DEBUGGING
+
+        const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
+        const newRecurrence = [...rruleAndExdates.exdates, rruleStr]
+
         // update the event in FullCalendar
         info.event.setProp('title', taskName)
         info.event.setProp('backgroundColor', backgroundColor)
@@ -686,6 +705,10 @@ export const FullCalendar = () => {
         info.event.setExtendedProp('location', location)
         info.event.setExtendedProp('meetLink', meetLink)
         info.event.setExtendedProp('attendees', attendees)
+        info.event.setExtendedProp('rrule', rruleStr)
+        info.event.setExtendedProp('rruleStr', rruleStr)
+        info.event.setExtendedProp('dtStart', dtstartStrFullCalendar)
+        info.event.setExtendedProp('recurrence', newRecurrence)
 
         const calendarId = getEventCalendarId(info.event.id)
         const calendarsEventsKey =
@@ -723,7 +746,19 @@ export const FullCalendar = () => {
               (colour) => colour.hex === backgroundColor,
             ) + 1,
           attendees: attendees,
+          recurrence: newRecurrence,
+          start: allDay
+            ? {
+                date: dtstartStrGoogleCalendar,
+                timeZone: timeZone,
+              }
+            : {
+                dateTime: dtstartStrGoogleCalendar,
+                timeZone: timeZone,
+              },
         }
+
+        console.log('updatedGoogleCalendarEvent', updatedGoogleCalendarEvent) // DEBUGGING
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
