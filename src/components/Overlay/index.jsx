@@ -47,6 +47,7 @@ export const Overlay = () => {
             rruleStr={dialogProps.rruleStr}
             eventId={dialogProps.eventId}
             calendarId={dialogProps.calendarId}
+            task={dialogProps.task}
             remove={dialogProps.remove}
             copy={dialogProps.copy}
             backlog={dialogProps.backlog}

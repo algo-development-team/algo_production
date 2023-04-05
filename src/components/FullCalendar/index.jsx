@@ -455,6 +455,11 @@ export const FullCalendar = () => {
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
+    const taskId = info.event.extendedProps?.taskId
+    const task = taskId ? tasks.find((task) => task.taskId === taskId) : null
+
+    console.log('task', task) // DEBUGGING
+
     const allDay = info.event.allDay
     const taskname = info.event.title
     const taskdescription = info.event.extendedProps?.description
@@ -487,6 +492,7 @@ export const FullCalendar = () => {
       rruleStr: rruleStr,
       eventId: eventId,
       calendarId: calendarId,
+      task: task,
       remove: (recurringEventEditOption) => {
         /* find the id of calendar that the event belongs to */
         const calendarId = getEventCalendarId(info.event.id)

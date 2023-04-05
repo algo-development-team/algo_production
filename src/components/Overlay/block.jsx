@@ -22,6 +22,8 @@ import { useAuth } from 'hooks'
 import moment from 'moment'
 import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
+import { SetNewTaskSchedule } from '../TaskEditor/set-new-task-schedule'
+import { SetNewTaskPriority } from '../TaskEditor/set-new-task-priority'
 
 export const Block = ({
   closeOverlay,
@@ -34,6 +36,7 @@ export const Block = ({
   rruleStr,
   eventId,
   calendarId,
+  task,
   remove,
   copy,
   backlog,
@@ -66,6 +69,9 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
+  const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
+  const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
+  const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
 
   useEffect(() => {
     if (rruleStr !== '') {
@@ -511,6 +517,36 @@ export const Block = ({
     )
   }
 
+  const taskAttributesEditor = () => {
+    return (
+      <div style={{ marginTop: '20px' }}>
+        <SetNewTaskSchedule
+          isQuickAdd={false}
+          isPopup={true}
+          schedule={startSchedule}
+          setSchedule={setStartSchedule}
+          task={task}
+          defaultText='Start Date'
+        />
+        <SetNewTaskSchedule
+          isQuickAdd={false}
+          isPopup={true}
+          schedule={endSchedule}
+          setSchedule={setEndSchedule}
+          task={task}
+          defaultText='Due Date'
+        />
+        <SetNewTaskPriority
+          isQuickAdd={false}
+          isPopup={true}
+          taskPriority={taskPriority}
+          setTaskPriority={setTaskPriority}
+          task={task}
+        />
+      </div>
+    )
+  }
+
   if (recurringEventEditType !== '') {
     return (
       <RecurringEventEdit
@@ -555,6 +591,7 @@ export const Block = ({
               {locationEditor()}
               {eventColorSelector()}
               {descriptionEditor()}
+              {task && taskAttributesEditor()}
               <div
                 style={{
                   display: 'flex',
