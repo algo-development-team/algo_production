@@ -80,7 +80,7 @@ export class RecurringEvent extends Event {
       meetLink,
       attendees,
       taskId,
-      false,
+      true,
     )
     this.rrule = rrule
     this.duration = duration

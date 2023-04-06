@@ -94,6 +94,10 @@ export const FullCalendar = () => {
     return events
   }
 
+  const getTask = (taskId) => {
+    return tasks.find((task) => task.taskId === taskId)
+  }
+
   const getEventProperties = (event) => {
     return {
       allDay: event.allDay, // boolean
@@ -261,17 +265,12 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
-  const getTask = (taskId) => {
-    return tasks.find((task) => task.taskId === taskId)
-  }
-
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
-    const allDay = event.allDay
-
     const oldStart = oldEvent.start
-    const start = event.start
+    const { allDay, id, start, end, dtStart, rruleStr, recurrence } =
+      getEventProperties(event)
 
     // if event is dragged to a new day, then return early
     if (
@@ -283,12 +282,10 @@ export const FullCalendar = () => {
       return
     }
 
-    const end = event.end
     const change = moment(start).diff(moment(oldStart), 'minutes')
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
 
-    const dtStart = event.extendedProps?.dtStart || ''
     const dtStartTime = moment(dtStart)
     const newDtStartTime = dtStartTime.clone().add(change, 'minutes')
     const newDtEndTime = newDtStartTime.clone().add(duration, 'minutes')
@@ -298,18 +295,16 @@ export const FullCalendar = () => {
     const formattedNewDtEndTime = allDay
       ? newDtEndTime.format('YYYY-MM-DD')
       : newDtEndTime.toISOString()
-    const rruleStr = event.extendedProps?.rruleStr || ''
     const formattedNewDtstart = getFormattedEventTime(newDtStartTime)
     const newRRuleStr = updateDtStartInRRuleStr(rruleStr, formattedNewDtstart)
-    const recurrence = event.extendedProps?.recurrence || []
 
-    const calendarId = getEventCalendarId(event.id)
+    const calendarId = getEventCalendarId(id)
 
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
       const events = newCalendarsEvents[calendarId]
       const newEvents = events.map((prevEvent) => {
-        if (prevEvent.id === event.id) {
+        if (prevEvent.id === id) {
           prevEvent.updateRecurringFields(
             newRRuleStr,
             formattedDuration,
@@ -332,7 +327,7 @@ export const FullCalendar = () => {
     updateEventFromUserGoogleCalendar(
       currentUser.id,
       calendarId,
-      event.id,
+      id,
       formattedGoogleCalendarEvent,
     )
   }
@@ -341,17 +336,15 @@ export const FullCalendar = () => {
     const { event } = info
 
     const calendarId = getEventCalendarId(event.id)
-
-    const allDay = event.allDay
-    const start = event.startStr
-    const end = event.endStr
+    const { allDay, id, start, end, startStr, endStr } =
+      getEventProperties(event)
 
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
       const events = newCalendarsEvents[calendarId]
       const newEvents = events.map((prevEvent) => {
-        if (prevEvent.id === event.id) {
-          prevEvent.updateNonRecurringFields(event.start, event.end)
+        if (prevEvent.id === id) {
+          prevEvent.updateNonRecurringFields(start, end)
         }
         return prevEvent
       })
@@ -360,21 +353,24 @@ export const FullCalendar = () => {
     })
 
     const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-      startTime: start,
-      endTime: end,
+      startTime: startStr,
+      endTime: endStr,
       allDay: allDay,
     })
 
     updateEventFromUserGoogleCalendar(
       currentUser.id,
       calendarId,
-      event.id,
+      id,
       formattedGoogleCalendarEvent,
     )
   }
 
   const handleEventAdjustment = (info) => {
-    const recurring = info.event.extendedProps?.recurring
+    const { recurring } = getEventProperties(info.event)
+
+    console.log('info.event', info.event) // DEBUGGING
+    console.log('recurring', recurring) // DEBUGGING
 
     if (recurring) {
       handleRecurringEventAdjustment(info)
@@ -387,40 +383,37 @@ export const FullCalendar = () => {
     info.jsEvent.preventDefault()
 
     console.log('info.event', info.event) // DEBUGGING
-    console.log(
-      'getEventProperties(info.event)',
-      getEventProperties(info.event),
-    ) // DEBUGGING
 
-    const recurring = info.event.extendedProps?.recurring
+    const {
+      allDay,
+      id,
+      title,
+      start,
+      end,
+      startStr,
+      endStr,
+      backgroundColor,
+      description,
+      location,
+      meetLink,
+      attendees,
+      recurring,
+      dtStart,
+      rruleStr,
+      recurrence,
+      taskId,
+    } = getEventProperties(info.event)
 
-    const taskId = info.event.extendedProps?.taskId
     const task = getTask(taskId)
 
-    const allDay = info.event.allDay
-    const title = info.event.title
-    const description = info.event.extendedProps?.description
-    const backgroundColor = info.event.backgroundColor
-    const start = info.event.start
-    const end = info.event.end
-    const startTime = info.event.startStr
-    const endTime = info.event.endStr
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
-
-    const location = info.event.extendedProps?.location || ''
-    const meetLink = info.event.extendedProps?.meetLink || ''
-    const attendees = info.event.extendedProps?.attendees || []
-    const rruleStr = info.event.extendedProps?.rruleStr || ''
-    const recurrence = info.event.extendedProps?.recurrence || []
-    const dtStart = info.event.extendedProps?.dtStart || ''
     const dtStartTime = moment(dtStart)
     const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
 
     const recurrenceId = getFormattedEventTime(start, allDay)
 
-    const calendarId = getEventCalendarId(info.event.id)
-    const eventId = info.event.id
+    const calendarId = getEventCalendarId(id)
 
     const colorId =
       GoogleEventColours.findIndex((colour) => colour.hex === backgroundColor) +
@@ -434,12 +427,11 @@ export const FullCalendar = () => {
       meetLink: meetLink,
       attendees: attendees,
       rruleStr: rruleStr,
-      eventId: eventId,
+      eventId: id,
       calendarId: calendarId,
       task: task,
       remove: (recurringEventEditOption) => {
         /* find the id of calendar that the event belongs to */
-        const calendarId = getEventCalendarId(info.event.id)
         const calendarsEventsKey =
           calendarId === 'primary' ? 'custom' : calendarId
 
@@ -456,7 +448,7 @@ export const FullCalendar = () => {
           newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
             calendarsEventsKey
           ].map((prevEvent) => {
-            if (prevEvent.id === info.event.id) {
+            if (prevEvent.id === id) {
               prevEvent.updateRecurringFields(
                 newRRule,
                 formattedDuration,
@@ -482,7 +474,7 @@ export const FullCalendar = () => {
           updateEventFromUserGoogleCalendar(
             currentUser.id,
             calendarId,
-            info.event.id,
+            id,
             formattedGoogleCalendarEvent,
           )
         } else {
@@ -490,7 +482,7 @@ export const FullCalendar = () => {
           const newCalendarsEvents = { ...calendarsEvents }
           for (const key in newCalendarsEvents) {
             newCalendarsEvents[key] = newCalendarsEvents[key].filter(
-              (event) => event.id !== info.event.id,
+              (event) => event.id !== id,
             )
           }
 
@@ -500,22 +492,18 @@ export const FullCalendar = () => {
           info.event.remove()
 
           // remove from Google Calendar
-          deleteEventFromUserGoogleCalendar(
-            currentUser.id,
-            calendarId,
-            info.event.id,
-          )
+          deleteEventFromUserGoogleCalendar(currentUser.id, calendarId, id)
         }
       },
       copy: () => {
-        const id = generateEventId()
+        const newId = generateEventId()
 
         let newEvent = null
         let formattedGoogleCalendarEvent = null
 
         if (recurring) {
           newEvent = new RecurringEvent(
-            id,
+            newId,
             title,
             backgroundColor,
             description,
@@ -530,21 +518,21 @@ export const FullCalendar = () => {
           )
 
           formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-            id: id,
+            id: newId,
             summary: title,
             description: description,
             colorId: colorId,
             location: location,
             attendees: attendees,
             recurrence: recurrence,
-            startTime: startTime,
-            endTime: endTime,
+            startTime: startStr,
+            endTime: endStr,
             allDay: allDay,
             taskId: taskId,
           })
         } else {
           newEvent = new NonRecurringEvent(
-            id,
+            newId,
             title,
             backgroundColor,
             description,
@@ -557,14 +545,14 @@ export const FullCalendar = () => {
           )
 
           formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-            id: id,
+            id: newId,
             summary: title,
             description: description,
             colorId: colorId,
             location: location,
             attendees: attendees,
-            startTime: startTime,
-            endTime: endTime,
+            startTime: startStr,
+            endTime: endStr,
             allDay: allDay,
             taskId: taskId,
           })
@@ -584,30 +572,25 @@ export const FullCalendar = () => {
         )
       },
       backlog: async () => {
-        const id = info.event.extendedProps?.taskId
-
-        if (id) {
+        if (taskId) {
           /* if id exists, then remove it from scheduledTasks array in Firestore */
           const eventsInfo = await getEventsInfo(currentUser.id)
           const scheduledTasks = eventsInfo.scheduledTasks
           const newScheduledTasks = scheduledTasks.filter(
-            (taskId) => taskId !== info.event.extendedProps.taskId,
+            (scheduledTaskId) => scheduledTaskId !== taskId,
           )
           updateEventsInfo(currentUser.id, {
             scheduledTasks: newScheduledTasks,
           })
         } else {
           /* if id does not exists, then create a quick task, and add it to notScheduledTasks array in Firestore */
-          const taskId = generatePushId()
-          const taskTimeLength = moment(info.event.end).diff(
-            moment(info.event.start),
-            'minutes',
-          )
+          const newTaskId = generatePushId()
+          const taskTimeLength = moment(end).diff(moment(start), 'minutes')
 
           await quickAddTask(
             currentUser.id,
             title,
-            taskId,
+            newTaskId,
             description,
             taskTimeLength,
             'DUPLICATE',
@@ -624,10 +607,7 @@ export const FullCalendar = () => {
         dtstart, // JS Date object
         rrule, // RRule object
       ) => {
-        const allDay = info.event.allDay
-        const recurrence = info.event.extendedProps?.recurrence
-
-        const rruleStr = rrule.toString()
+        const newRRuleStr = rrule.toString()
         const dtstartStrFullCalendar = getFormattedEventTime(dtstart)
         const dtstartStrGoogleCalendar = allDay
           ? dtstart.toISOString().slice(0, 10)
@@ -643,34 +623,30 @@ export const FullCalendar = () => {
         info.event.setExtendedProp('location', location)
         info.event.setExtendedProp('meetLink', meetLink)
         info.event.setExtendedProp('attendees', attendees)
-        info.event.setExtendedProp('rruleStr', rruleStr)
+        info.event.setExtendedProp('rruleStr', newRRuleStr)
         info.event.setExtendedProp('dtStart', dtstartStrFullCalendar)
         info.event.setExtendedProp('recurrence', newRecurrence)
 
-        const calendarId = getEventCalendarId(info.event.id)
-        const calendarsEventsKey =
-          calendarId === 'primary' ? 'custom' : calendarId
-
         // update the event in calendarsEvents
         const newCalendarsEvents = { ...calendarsEvents }
-        newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
-          calendarsEventsKey
-        ].map((event) => {
-          if (event.id === info.event.id) {
-            const updatedEvent = {
-              ...event,
-              title: taskName,
-              backgroundColor: backgroundColor,
-              description: taskDescription,
+        newCalendarsEvents[calendarId] = newCalendarsEvents[calendarId].map(
+          (event) => {
+            if (event.id === id) {
+              const updatedEvent = {
+                ...event,
+                title: taskName,
+                backgroundColor: backgroundColor,
+                description: taskDescription,
+              }
+              if (attendees.length > 0) {
+                updatedEvent.attendees = attendees
+              }
+              return updatedEvent
+            } else {
+              return event
             }
-            if (attendees.length > 0) {
-              updatedEvent.attendees = attendees
-            }
-            return updatedEvent
-          } else {
-            return event
-          }
-        })
+          },
+        )
 
         setCalendarsEvents(newCalendarsEvents)
 
@@ -688,7 +664,7 @@ export const FullCalendar = () => {
         updateEventFromUserGoogleCalendar(
           currentUser.id,
           calendarId,
-          info.event.id,
+          id,
           formattedGoogleCalendarEvent,
         )
       },
@@ -744,11 +720,14 @@ export const FullCalendar = () => {
       drop: async function (info) {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
-        const id = generateEventId()
+        const newId = generateEventId()
+
         const allDay = draggedEvent.allDay
         const title = draggedEvent.name
         const description = draggedEvent.description
         const backgroundColor = draggedEvent.backgroundColor
+        const taskId = draggedEvent.taskId
+
         const start = info.date
         const end = moment(info.date)
           .add(draggedEvent.timeLength, 'minutes')
@@ -759,18 +738,17 @@ export const FullCalendar = () => {
         const endTime = allDay
           ? end.toISOString().slice(0, 10)
           : end.toISOString()
+        const colorId =
+          GoogleEventColours.findIndex(
+            (colour) => colour.hex === backgroundColor,
+          ) + 1
+
         const location = ''
         const meetLink = ''
         const attendees = []
-        const taskId = draggedEvent.taskId
-
-        const colorId =
-          GoogleEventColours.findIndex(
-            (colour) => colour.hex === draggedEvent.backgroundColor,
-          ) + 1
 
         const newEvent = new NonRecurringEvent(
-          id,
+          newId,
           title,
           backgroundColor,
           description,
@@ -788,7 +766,7 @@ export const FullCalendar = () => {
         })
 
         const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-          id: id,
+          id: newId,
           summary: title,
           description: description,
           colorId: colorId,
@@ -817,13 +795,14 @@ export const FullCalendar = () => {
         showEventPopup(info, calendar)
       },
       select: function (info) {
-        const id = generateEventId()
+        const newId = generateEventId()
+
         const allDay = info.allDay
         const start = info.startStr
         const end = info.endStr
 
         const newEvent = new NonRecurringEvent(
-          id,
+          newId,
           'New Event',
           GoogleEventColours[6].hex,
           '',
@@ -841,7 +820,7 @@ export const FullCalendar = () => {
         })
 
         const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-          id: id,
+          id: newId,
           summary: 'New Event',
           startTime: start,
           endTime: end,
