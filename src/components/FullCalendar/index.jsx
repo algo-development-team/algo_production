@@ -64,14 +64,16 @@ export const FullCalendar = () => {
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks } = useTasks()
 
-  const getEventCalendarId = (eventId) => {
-    let calendarId = null
+  const getEventCalendarIdAndKey = (eventId) => {
+    let calendarId = null // Google Calendar ID
+    let calendarKey = null // Key in calendarsEvents
     for (const key in calendarsEvents) {
       if (
         calendarsEvents[key].find(
           (calendarEvent) => calendarEvent.id === eventId,
         )
       ) {
+        calendarKey = key
         if (key === 'custom') {
           calendarId = USER_SELECTED_CALENDAR
         } else {
@@ -80,7 +82,7 @@ export const FullCalendar = () => {
         break
       }
     }
-    return calendarId
+    return { calendarId: calendarId, calendarKey: calendarKey }
   }
 
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
@@ -298,11 +300,11 @@ export const FullCalendar = () => {
     const formattedNewDtstart = getFormattedEventTime(newDtStartTime)
     const newRRuleStr = updateDtStartInRRuleStr(rruleStr, formattedNewDtstart)
 
-    const calendarId = getEventCalendarId(id)
+    const { calendarId, calendarKey } = getEventCalendarIdAndKey(id)
 
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
-      const events = newCalendarsEvents[calendarId]
+      const events = newCalendarsEvents[calendarKey]
       const newEvents = events.map((prevEvent) => {
         if (prevEvent.id === id) {
           prevEvent.updateRecurringFields(
@@ -314,7 +316,7 @@ export const FullCalendar = () => {
         }
         return prevEvent
       })
-      newCalendarsEvents[calendarId] = newEvents
+      newCalendarsEvents[calendarKey] = newEvents
       return newCalendarsEvents
     })
 
@@ -335,20 +337,20 @@ export const FullCalendar = () => {
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
-    const calendarId = getEventCalendarId(event.id)
     const { allDay, id, start, end, startStr, endStr } =
       getEventProperties(event)
+    const { calendarId, calendarKey } = getEventCalendarIdAndKey(id)
 
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
-      const events = newCalendarsEvents[calendarId]
+      const events = newCalendarsEvents[calendarKey]
       const newEvents = events.map((prevEvent) => {
         if (prevEvent.id === id) {
           prevEvent.updateNonRecurringFields(start, end)
         }
         return prevEvent
       })
-      newCalendarsEvents[calendarId] = newEvents
+      newCalendarsEvents[calendarKey] = newEvents
       return newCalendarsEvents
     })
 
@@ -370,7 +372,6 @@ export const FullCalendar = () => {
     const { recurring } = getEventProperties(info.event)
 
     console.log('info.event', info.event) // DEBUGGING
-    console.log('recurring', recurring) // DEBUGGING
 
     if (recurring) {
       handleRecurringEventAdjustment(info)
@@ -413,7 +414,7 @@ export const FullCalendar = () => {
 
     const recurrenceId = getFormattedEventTime(start, allDay)
 
-    const calendarId = getEventCalendarId(id)
+    const { calendarId, calendarKey } = getEventCalendarIdAndKey(id)
 
     const colorId =
       GoogleEventColours.findIndex((colour) => colour.hex === backgroundColor) +
@@ -431,10 +432,6 @@ export const FullCalendar = () => {
       calendarId: calendarId,
       task: task,
       remove: (recurringEventEditOption) => {
-        /* find the id of calendar that the event belongs to */
-        const calendarsEventsKey =
-          calendarId === 'primary' ? 'custom' : calendarId
-
         const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
         const newRecurrence = [...recurrence, exdate]
 
@@ -445,19 +442,19 @@ export const FullCalendar = () => {
           let updatedEvent = null
 
           const newCalendarsEvents = { ...calendarsEvents }
-          newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
-            calendarsEventsKey
-          ].map((prevEvent) => {
-            if (prevEvent.id === id) {
-              prevEvent.updateRecurringFields(
-                newRRule,
-                formattedDuration,
-                dtStart,
-                newRecurrence,
-              )
-            }
-            return prevEvent
-          })
+          newCalendarsEvents[calendarKey] = newCalendarsEvents[calendarKey].map(
+            (prevEvent) => {
+              if (prevEvent.id === id) {
+                prevEvent.updateRecurringFields(
+                  newRRule,
+                  formattedDuration,
+                  dtStart,
+                  newRecurrence,
+                )
+              }
+              return prevEvent
+            },
+          )
 
           setCalendarsEvents(newCalendarsEvents)
 
@@ -629,7 +626,7 @@ export const FullCalendar = () => {
 
         // update the event in calendarsEvents
         const newCalendarsEvents = { ...calendarsEvents }
-        newCalendarsEvents[calendarId] = newCalendarsEvents[calendarId].map(
+        newCalendarsEvents[calendarKey] = newCalendarsEvents[calendarKey].map(
           (event) => {
             if (event.id === id) {
               const updatedEvent = {
