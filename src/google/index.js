@@ -4,7 +4,7 @@ import { generatePushId } from 'utils'
 import { timeZone } from 'handleCalendars'
 
 /* all parameters can be null if they are not to be included */
-export const getFormattedGoogleCalendarEvent = (
+export const getFormattedGoogleCalendarEvent = ({
   id,
   summary,
   description,
@@ -16,7 +16,7 @@ export const getFormattedGoogleCalendarEvent = (
   endTime,
   allDay,
   taskId,
-) => {
+}) => {
   const formattedGoogleCalendarEvent = {}
   if (id) formattedGoogleCalendarEvent.id = id
   if (summary) formattedGoogleCalendarEvent.summary = summary
@@ -54,6 +54,8 @@ export const getFormattedGoogleCalendarEvent = (
       private: { taskId: taskId },
     }
   }
+
+  return formattedGoogleCalendarEvent
 }
 
 export const getValidToken = async (userId) => {

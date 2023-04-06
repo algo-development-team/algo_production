@@ -13,6 +13,7 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
+  getFormattedGoogleCalendarEvent,
 } from '../../google'
 import {
   useGoogleValue,
@@ -621,9 +622,6 @@ export const FullCalendar = () => {
         dtstart, // JS Date object
         rrule, // RRule object
       ) => {
-        console.log('dtstart', dtstart) // DEBUGGING
-        console.log('rrule', rrule) // DEBUGGING
-
         const allDay = info.event.allDay
         const recurrence = info.event.extendedProps?.recurrence
 
@@ -632,8 +630,6 @@ export const FullCalendar = () => {
         const dtstartStrGoogleCalendar = allDay
           ? dtstart.toISOString().slice(0, 10)
           : dtstart.toISOString()
-        console.log('dtstartStrFullCalendar', dtstartStrFullCalendar) // DEBUGGING
-        console.log('dtstartStrGoogleCalendar', dtstartStrGoogleCalendar) // DEBUGGING
 
         const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
         const newRecurrence = [...rruleAndExdates.exdates, rruleStr]
@@ -759,17 +755,29 @@ export const FullCalendar = () => {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
         const id = generateEventId()
+        const allDay = draggedEvent.allDay
         const title = draggedEvent.name
         const description = draggedEvent.description
         const backgroundColor = draggedEvent.backgroundColor
-        const taskId = draggedEvent.taskId
         const start = info.date
         const end = moment(info.date)
           .add(draggedEvent.timeLength, 'minutes')
           .toDate()
+        const startTime = allDay
+          ? start.toISOString().slice(0, 10)
+          : start.toISOString()
+        const endTime = allDay
+          ? end.toISOString().slice(0, 10)
+          : end.toISOString()
         const location = ''
         const meetLink = ''
         const attendees = []
+        const taskId = draggedEvent.taskId
+
+        const colorId =
+          GoogleEventColours.findIndex(
+            (colour) => colour.hex === draggedEvent.backgroundColor,
+          ) + 1
 
         const newEvent = new NonRecurringEvent(
           id,
@@ -789,46 +797,25 @@ export const FullCalendar = () => {
           custom: [...calendarsEvents.custom, newEvent],
         })
 
-        const newGoogleCalendarEvent = {
+        const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
           id: id,
-          summary: draggedEvent.name,
-          description: draggedEvent.description,
-          start: !info.allDay
-            ? {
-                dateTime: info.dateStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: info.dateStr,
-              },
-          end: !info.allDay
-            ? {
-                dateTime: moment(info.date)
-                  .add(draggedEvent.timeLength, 'minutes')
-                  .toISOString(),
-                timeZone: timeZone,
-              }
-            : {
-                date: moment(info.dateStr, 'YYYY-MM-DD')
-                  .add(1, 'days')
-                  .format('YYYY-MM-DD'),
-              },
-          extendedProperties: {
-            private: {
-              taskId: draggedEvent.taskId,
-            },
-          },
-          colorId:
-            GoogleEventColours.findIndex(
-              (colour) => colour.hex === draggedEvent.backgroundColor,
-            ) + 1,
-        }
+          summary: title,
+          description: description,
+          colorId: colorId,
+          location: null,
+          attendees: null,
+          recurrence: null,
+          startTime: startTime,
+          endTime: endTime,
+          allDay: allDay,
+          taskId: taskId,
+        })
 
         // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,
-          newGoogleCalendarEvent,
+          formattedGoogleCalendarEvent,
         )
 
         /* stores the taskId to scheduledTasks array in eventsInfo collection */
@@ -844,6 +831,9 @@ export const FullCalendar = () => {
       },
       select: function (info) {
         const id = generateEventId()
+        const allDay = info.allDay
+        const start = info.startStr
+        const end = info.endStr
 
         const newEvent = new NonRecurringEvent(
           id,
@@ -854,8 +844,8 @@ export const FullCalendar = () => {
           '',
           [],
           null,
-          info.startStr,
-          info.endStr,
+          start,
+          end,
         )
 
         setCalendarsEvents({
@@ -863,33 +853,25 @@ export const FullCalendar = () => {
           custom: [...calendarsEvents.custom, newEvent],
         })
 
-        // add to Google Calendar
-        const newGoogleCalendarEvent = {
+        const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
           id: id,
           summary: 'New Event',
-          start: !info.allDay
-            ? {
-                dateTime: info.startStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: info.startStr,
-              },
-          end: !info.allDay
-            ? {
-                dateTime: info.endStr,
-                timeZone: timeZone,
-              }
-            : {
-                date: info.endStr,
-              },
-        }
+          description: null,
+          colorId: null,
+          location: null,
+          attendees: null,
+          recurrence: null,
+          startTime: start,
+          endTime: end,
+          allDay: allDay,
+          taskId: null,
+        })
 
         // add to Google Calendar
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,
-          newGoogleCalendarEvent,
+          formattedGoogleCalendarEvent,
         )
       },
       eventResize: function (info) {
