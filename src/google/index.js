@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid'
 import { generatePushId } from 'utils'
 import { timeZone } from 'handleCalendars'
 
-/* all parameters can be null if they are not to be included */
 export const getFormattedGoogleCalendarEvent = ({
   id,
   summary,

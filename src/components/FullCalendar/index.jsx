@@ -246,6 +246,8 @@ export const FullCalendar = () => {
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
+    const allDay = event.allDay
+
     const oldStart = oldEvent.start
     const start = event.start
 
@@ -268,6 +270,12 @@ export const FullCalendar = () => {
     const dtStartTime = moment(dtStart)
     const newDtStartTime = dtStartTime.clone().add(change, 'minutes')
     const newDtEndTime = newDtStartTime.clone().add(duration, 'minutes')
+    const formattedNewDtStartTime = allDay
+      ? newDtStartTime.format('YYYY-MM-DD')
+      : newDtStartTime.toISOString()
+    const formattedNewDtEndTime = allDay
+      ? newDtEndTime.format('YYYY-MM-DD')
+      : newDtEndTime.toISOString()
     const rruleStr = event.extendedProps?.rruleStr || ''
     const formattedNewDtstart = getFormattedEventTime(newDtStartTime)
     const newRRuleStr = updateDtStartInRRuleStr(rruleStr, formattedNewDtstart)
@@ -293,30 +301,17 @@ export const FullCalendar = () => {
       return newCalendarsEvents
     })
 
-    const updatedGoogleCalendarEvent = {
-      start: !event.allDay
-        ? {
-            dateTime: newDtStartTime.toISOString(),
-            timeZone: timeZone,
-          }
-        : {
-            date: newDtStartTime.toISOString(),
-          },
-      end: !event.allDay
-        ? {
-            dateTime: newDtEndTime.toISOString(),
-            timeZone: timeZone,
-          }
-        : {
-            date: newDtEndTime.toISOString(),
-          },
-    }
+    const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+      startTime: formattedNewDtStartTime,
+      endTime: formattedNewDtEndTime,
+      allDay: allDay,
+    })
 
     updateEventFromUserGoogleCalendar(
       currentUser.id,
       calendarId,
       event.id,
-      updatedGoogleCalendarEvent,
+      formattedGoogleCalendarEvent,
     )
   }
 
@@ -324,6 +319,10 @@ export const FullCalendar = () => {
     const { event } = info
 
     const calendarId = getEventCalendarId(event.id)
+
+    const allDay = event.allDay
+    const start = event.startStr
+    const end = event.endStr
 
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
@@ -338,30 +337,17 @@ export const FullCalendar = () => {
       return newCalendarsEvents
     })
 
-    const updatedGoogleCalendarEvent = {
-      start: !event.allDay
-        ? {
-            dateTime: event.startStr,
-            timeZone: timeZone,
-          }
-        : {
-            date: event.startStr,
-          },
-      end: !event.allDay
-        ? {
-            dateTime: event.endStr,
-            timeZone: timeZone,
-          }
-        : {
-            date: event.endStr,
-          },
-    }
+    const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+      startTime: start,
+      endTime: end,
+      allDay: allDay,
+    })
 
     updateEventFromUserGoogleCalendar(
       currentUser.id,
       calendarId,
       event.id,
-      updatedGoogleCalendarEvent,
+      formattedGoogleCalendarEvent,
     )
   }
 
@@ -391,6 +377,8 @@ export const FullCalendar = () => {
     const backgroundColor = info.event.backgroundColor
     const start = info.event.start
     const end = info.event.end
+    const startTime = info.event.startStr
+    const endTime = info.event.endStr
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
 
@@ -407,6 +395,10 @@ export const FullCalendar = () => {
 
     const calendarId = getEventCalendarId(info.event.id)
     const eventId = info.event.id
+
+    const colorId =
+      GoogleEventColours.findIndex((colour) => colour.hex === backgroundColor) +
+      1
 
     setDialogProps({
       taskname: title,
@@ -456,16 +448,16 @@ export const FullCalendar = () => {
             calendar.addEvent(updatedEvent)
           }
 
-          const updatedGoogleCalendarEvent = {
+          const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
             recurrence: newRecurrence,
-          }
+          })
 
           // update at Google Calendar
           updateEventFromUserGoogleCalendar(
             currentUser.id,
             calendarId,
             info.event.id,
-            updatedGoogleCalendarEvent,
+            formattedGoogleCalendarEvent,
           )
         } else {
           // remove from calendarsEvents
@@ -493,7 +485,7 @@ export const FullCalendar = () => {
         const id = generateEventId()
 
         let newEvent = null
-        let newGoogleCalendarEvent = null
+        let formattedGoogleCalendarEvent = null
 
         if (recurring) {
           newEvent = new RecurringEvent(
@@ -511,27 +503,19 @@ export const FullCalendar = () => {
             recurrence,
           )
 
-          newGoogleCalendarEvent = {
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
             id: id,
-            summary: info.event.title,
-            start: !info.event.allDay
-              ? {
-                  dateTime: dtStartTime.toISOString(),
-                  timeZone: timeZone,
-                }
-              : {
-                  date: dtStartTime.toISOString(),
-                },
-            end: !info.event.allDay
-              ? {
-                  dateTime: dtEndTime.toISOString(),
-                  timeZone: timeZone,
-                }
-              : {
-                  date: dtEndTime.toISOString(),
-                },
+            summary: title,
+            description: description,
+            colorId: colorId,
+            location: location,
+            attendees: attendees,
             recurrence: recurrence,
-          }
+            startTime: startTime,
+            endTime: endTime,
+            allDay: allDay,
+            taskId: taskId,
+          })
         } else {
           newEvent = new NonRecurringEvent(
             id,
@@ -546,26 +530,18 @@ export const FullCalendar = () => {
             end,
           )
 
-          newGoogleCalendarEvent = {
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
             id: id,
-            summary: info.event.title,
-            start: !info.event.allDay
-              ? {
-                  dateTime: info.event.startStr,
-                  timeZone: timeZone,
-                }
-              : {
-                  date: info.event.startStr,
-                },
-            end: !info.event.allDay
-              ? {
-                  dateTime: info.event.endStr,
-                  timeZone: timeZone,
-                }
-              : {
-                  date: info.event.endStr,
-                },
-          }
+            summary: title,
+            description: description,
+            colorId: colorId,
+            location: location,
+            attendees: attendees,
+            startTime: startTime,
+            endTime: endTime,
+            allDay: allDay,
+            taskId: taskId,
+          })
         }
 
         setCalendarsEvents({
@@ -578,7 +554,7 @@ export const FullCalendar = () => {
         addEventToUserGoogleCalendar(
           currentUser.id,
           USER_SELECTED_CALENDAR,
-          newGoogleCalendarEvent,
+          formattedGoogleCalendarEvent,
         )
       },
       backlog: async () => {
@@ -672,34 +648,22 @@ export const FullCalendar = () => {
 
         setCalendarsEvents(newCalendarsEvents)
 
-        // adjust the start and end date such that it is in the same day as the original event
-
-        // update the event in Google Calendar
-        const updatedGoogleCalendarEvent = {
+        const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
           summary: taskName,
           description: taskDescription,
-          colorId:
-            GoogleEventColours.findIndex(
-              (colour) => colour.hex === backgroundColor,
-            ) + 1,
+          colorId: colorId,
+          location: location,
           attendees: attendees,
           recurrence: newRecurrence,
-          start: allDay
-            ? {
-                date: dtstartStrGoogleCalendar,
-                timeZone: timeZone,
-              }
-            : {
-                dateTime: dtstartStrGoogleCalendar,
-                timeZone: timeZone,
-              },
-        }
+          startTime: dtstartStrGoogleCalendar,
+          allDay: allDay,
+        })
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
           calendarId,
           info.event.id,
-          updatedGoogleCalendarEvent,
+          formattedGoogleCalendarEvent,
         )
       },
     })
@@ -802,9 +766,6 @@ export const FullCalendar = () => {
           summary: title,
           description: description,
           colorId: colorId,
-          location: null,
-          attendees: null,
-          recurrence: null,
           startTime: startTime,
           endTime: endTime,
           allDay: allDay,
@@ -856,15 +817,9 @@ export const FullCalendar = () => {
         const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
           id: id,
           summary: 'New Event',
-          description: null,
-          colorId: null,
-          location: null,
-          attendees: null,
-          recurrence: null,
           startTime: start,
           endTime: end,
           allDay: allDay,
-          taskId: null,
         })
 
         // add to Google Calendar
