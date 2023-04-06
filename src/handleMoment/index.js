@@ -12,11 +12,3 @@ export const roundUp15Min = (date) => {
 export const roundDown15Min = (date) => {
   return round(date, moment.duration(15, 'minutes'), 'floor')
 }
-
-export const getFormattedEventTime = (start, allDay) => {
-  if (!allDay) {
-    return moment.utc(start).format('YYYYMMDDTHHmmss[Z]')
-  } else {
-    return moment(start).format('YYYYMMDD')
-  }
-}

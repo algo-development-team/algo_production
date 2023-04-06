@@ -35,7 +35,16 @@ import {
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
-import { getFormattedEventTime } from '../../handleMoment'
+import {
+  getFormattedEventTime,
+  formatEventTimeLength,
+  getRecurringEventDuration,
+} from './eventTimeHelpers'
+import {
+  getFormattedRRule,
+  getRRuleAndExdates,
+  updateDtStartInRRuleStr,
+} from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
 
 const USER_SELECTED_CALENDAR = 'primary'
@@ -53,38 +62,6 @@ export const FullCalendar = () => {
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks } = useTasks()
-
-  useEffect(() => {
-    const ws = new WebSocket(
-      `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
-    )
-
-    ws.addEventListener('open', (event) => {
-      console.log('WebSocket connection established')
-    })
-
-    ws.addEventListener('message', (event) => {
-      console.log(`Received message: ${event.data}`)
-    })
-
-    return () => {
-      ws.close()
-    }
-  }, [])
-
-  const formatEventTimeLength = (timeLength) => {
-    const minutes = timeLength
-
-    // Calculate hours and minutes
-    const hours = Math.floor(minutes / 60)
-    const remainingMinutes = minutes % 60
-
-    // Format as HH:MM
-    const formattedHours = ('0' + hours).slice(-2)
-    const formattedMinutes = ('0' + remainingMinutes).slice(-2)
-
-    return formattedHours + ':' + formattedMinutes
-  }
 
   const getEventCalendarId = (eventId) => {
     let calendarId = null
@@ -116,69 +93,24 @@ export const FullCalendar = () => {
     return events
   }
 
-  const getRecurringEventDuration = (eventStart, eventEnd) => {
-    return Math.floor(
-      moment.duration(moment(eventEnd).diff(moment(eventStart))).asMinutes(),
+  useEffect(() => {
+    const ws = new WebSocket(
+      `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
     )
-  }
 
-  const getFormattedRRule = (dtStart, rruleString, exdates) => {
-    for (const exdate of exdates) {
-      rruleString = rruleString.concat(`\nEXDATE:${exdate}`)
+    ws.addEventListener('open', (event) => {
+      console.log('WebSocket connection established')
+    })
+
+    ws.addEventListener('message', (event) => {
+      console.log(`Received message: ${event.data}`)
+    })
+
+    return () => {
+      ws.close()
     }
-    return `DTSTART:${dtStart}\n${rruleString}`
-  }
+  }, [])
 
-  const getFormattedEventTimeFromExdateString = (exdateString) => {
-    // Extract the timezone and date-time information from the string
-    const tz = exdateString.split(':')[0].split('=')[1] // "America/Toronto"
-    const dt = exdateString.split(':')[1] // "20230406T000000"
-
-    // Create a Date object from the date-time information in the given timezone
-    const date = new Date(
-      dt.slice(0, 4),
-      dt.slice(4, 6) - 1,
-      dt.slice(6, 8),
-      dt.slice(9, 11),
-      dt.slice(11, 13),
-      dt.slice(13, 15),
-    )
-    date.toLocaleString('en-US', { timeZone: tz }) // "4/6/2023, 12:00:00 AM"
-
-    // Convert the date object to UTC format
-    const utc = date.toISOString() // "2023-04-06T04:00:00.000Z"
-
-    // Extract only the date and time information from the UTC string and remove the milliseconds
-    const dtutc = utc.slice(0, 17) + '00Z' // "2023-04-06T04:00:00Z"
-
-    // Subtract 1 day and convert to required format
-    const dtreq =
-      new Date(date.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 8) +
-      dtutc.slice(8) // "20230405T210000Z"
-
-    return getFormattedEventTime(dtreq, false)
-  }
-
-  const getRRuleAndExdates = (strings, allDay) => {
-    const rruleAndExdates = { rrule: null, exdates: [] }
-    for (let i = 0; i < strings.length; i++) {
-      if (!rruleAndExdates.rrule && strings[i].startsWith('RRULE')) {
-        rruleAndExdates.rrule = strings[i]
-      } else if (strings[i].startsWith('EXDATE')) {
-        rruleAndExdates.exdates.push(
-          getFormattedEventTimeFromExdateString(strings[i], allDay),
-        )
-      }
-    }
-    return rruleAndExdates // return null if no string starts with "RRULE:"
-  }
-
-  const updateDtStartInRRuleStr = (rruleStr, newDtStart) => {
-    const nonDtstartRRuleStr = rruleStr.split('\n')[1]
-    return `DTSTART:${newDtStart}\n${nonDtstartRRuleStr}`
-  }
-
-  /* VALIDATED */
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
@@ -306,7 +238,10 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
-  /* VALIDATED */
+  const getTask = (taskId) => {
+    return tasks.find((task) => task.taskId === taskId)
+  }
+
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
@@ -386,7 +321,6 @@ export const FullCalendar = () => {
     )
   }
 
-  /* VALIDATED */
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
@@ -452,7 +386,7 @@ export const FullCalendar = () => {
     const recurring = info.event.extendedProps?.recurring
 
     const taskId = info.event.extendedProps?.taskId
-    const task = taskId ? tasks.find((task) => task.taskId === taskId) : null
+    const task = getTask(taskId)
 
     const allDay = info.event.allDay
     const title = info.event.title
@@ -565,18 +499,6 @@ export const FullCalendar = () => {
         let newGoogleCalendarEvent = null
 
         if (recurring) {
-          // newEvent = {
-          //   // default event properties
-          //   id: id,
-          //   title: info.event.title,
-          //   backgroundColor: info.event.backgroundColor,
-          //   duration: formatEventTimeLength(duration),
-          //   rrule: rruleStr,
-          //   rruleStr: rruleStr,
-          //   recurrence: recurrence,
-          //   dtStart: dtStart,
-          // }
-
           newEvent = new RecurringEvent(
             id,
             title,
