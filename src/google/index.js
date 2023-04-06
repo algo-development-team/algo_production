@@ -3,6 +3,59 @@ import { v4 as uuidv4 } from 'uuid'
 import { generatePushId } from 'utils'
 import { timeZone } from 'handleCalendars'
 
+/* all parameters can be null if they are not to be included */
+export const getFormattedGoogleCalendarEvent = (
+  id,
+  summary,
+  description,
+  colorId,
+  location,
+  attendees,
+  recurrence,
+  startTime,
+  endTime,
+  allDay,
+  taskId,
+) => {
+  const formattedGoogleCalendarEvent = {}
+  if (id) formattedGoogleCalendarEvent.id = id
+  if (summary) formattedGoogleCalendarEvent.summary = summary
+  if (description) formattedGoogleCalendarEvent.description = description
+  if (colorId) formattedGoogleCalendarEvent.colorId = colorId
+  if (location) formattedGoogleCalendarEvent.location = location
+  if (attendees) formattedGoogleCalendarEvent.attendees = attendees
+  if (recurrence) formattedGoogleCalendarEvent.recurrence = recurrence
+  if (startTime) {
+    if (allDay) {
+      formattedGoogleCalendarEvent.start = {
+        date: startTime,
+      }
+    } else {
+      formattedGoogleCalendarEvent.start = {
+        dateTime: startTime,
+        timeZone: timeZone,
+      }
+    }
+  }
+  if (endTime) {
+    if (allDay) {
+      formattedGoogleCalendarEvent.end = {
+        date: endTime,
+      }
+    } else {
+      formattedGoogleCalendarEvent.end = {
+        dateTime: endTime,
+        timeZone: timeZone,
+      }
+    }
+  }
+  if (taskId) {
+    formattedGoogleCalendarEvent.extendedProperties = {
+      private: { taskId: taskId },
+    }
+  }
+}
+
 export const getValidToken = async (userId) => {
   try {
     const response = await axios.post(

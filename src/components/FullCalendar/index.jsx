@@ -161,7 +161,7 @@ export const FullCalendar = () => {
           const location = event?.location || ''
           const meetLink = event.conferenceData?.entryPoints[0].uri || ''
           const attendees = event?.attendees || []
-          const taskId = event?.extendedProperties?.shared?.taskId || null
+          const taskId = event?.extendedProperties?.private?.taskId || null
 
           const start = event.start?.dateTime || event.start?.date
 
@@ -285,10 +285,8 @@ export const FullCalendar = () => {
             formattedNewDtstart,
             recurrence,
           )
-          return prevEvent
-        } else {
-          return prevEvent
         }
+        return prevEvent
       })
       newCalendarsEvents[calendarId] = newEvents
       return newCalendarsEvents
@@ -332,10 +330,8 @@ export const FullCalendar = () => {
       const newEvents = events.map((prevEvent) => {
         if (prevEvent.id === event.id) {
           prevEvent.updateNonRecurringFields(event.start, event.end)
-          return prevEvent
-        } else {
-          return prevEvent
         }
+        return prevEvent
       })
       newCalendarsEvents[calendarId] = newEvents
       return newCalendarsEvents
@@ -440,19 +436,19 @@ export const FullCalendar = () => {
           const newCalendarsEvents = { ...calendarsEvents }
           newCalendarsEvents[calendarsEventsKey] = newCalendarsEvents[
             calendarsEventsKey
-          ].map((event) => {
-            if (event.id === info.event.id) {
-              updatedEvent = {
-                ...event,
-                rrule: newRRule,
-                rruleStr: newRRule,
-                recurrence: newRecurrence,
-              }
-              return updatedEvent
-            } else {
-              return event
+          ].map((prevEvent) => {
+            if (prevEvent.id === info.event.id) {
+              prevEvent.updateRecurringFields(
+                newRRule,
+                formattedDuration,
+                dtStart,
+                newRecurrence,
+              )
             }
+            return prevEvent
           })
+
+          setCalendarsEvents(newCalendarsEvents)
 
           info.event.remove()
           if (updatedEvent) {
@@ -678,6 +674,8 @@ export const FullCalendar = () => {
           }
         })
 
+        setCalendarsEvents(newCalendarsEvents)
+
         // adjust the start and end date such that it is in the same day as the original event
 
         // update the event in Google Calendar
@@ -700,8 +698,6 @@ export const FullCalendar = () => {
                 timeZone: timeZone,
               },
         }
-
-        console.log('updatedGoogleCalendarEvent', updatedGoogleCalendarEvent) // DEBUGGING
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
@@ -818,7 +814,7 @@ export const FullCalendar = () => {
                   .format('YYYY-MM-DD'),
               },
           extendedProperties: {
-            shared: {
+            private: {
               taskId: draggedEvent.taskId,
             },
           },
