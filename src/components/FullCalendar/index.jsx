@@ -36,6 +36,7 @@ import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
 import { generatePushId } from 'utils'
 import { getFormattedEventTime } from '../../handleMoment'
+import { NonRecurringEvent, RecurringEvent } from './event'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -177,6 +178,7 @@ export const FullCalendar = () => {
     return `DTSTART:${newDtStart}\n${nonDtstartRRuleStr}`
   }
 
+  /* VALIDATED */
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
@@ -193,7 +195,7 @@ export const FullCalendar = () => {
       const deletedEventInstances = {}
 
       for (const key in fetchedCalendarsEvents) {
-        fetchedCalendarsEvents[key].map((event) => {
+        fetchedCalendarsEvents[key].forEach((event) => {
           if (event.status === 'cancelled') {
             const formattedEventTime = getFormattedEventTime(
               event.originalStartTime?.dateTime,
@@ -218,13 +220,26 @@ export const FullCalendar = () => {
 
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
+          const id = event.id
+          const title = event.summary
+          const backgroundColor = isValidGoogleEventColorId(event.colorId)
+            ? GoogleEventColours[event.colorId - 1].hex
+            : GoogleEventColours[6].hex
+          const description = stripTags(event?.description || '')
+          const location = event?.location || ''
+          const meetLink = event.conferenceData?.entryPoints[0].uri || ''
+          const attendees = event?.attendees || []
+          const taskId = event?.extendedProperties?.shared?.taskId || null
+
+          const start = event.start?.dateTime || event.start?.date
+
           if (event.recurrence) {
             const allDay = event.start?.dateTime ? false : true
             const rruleAndExdates = getRRuleAndExdates(event.recurrence, allDay)
-            const eventStart = event.start?.dateTime || event.start?.date
-            const dtStart = getFormattedEventTime(eventStart, allDay)
+            const dtStart = getFormattedEventTime(start, allDay)
+            const recurrence = event.recurrence
             const eventEnd = event.end?.dateTime || event.end?.date
-            const duration = getRecurringEventDuration(eventStart, eventEnd)
+            const duration = getRecurringEventDuration(start, eventEnd)
             const formattedDuration = formatEventTimeLength(duration)
             const formattedRRule = getFormattedRRule(
               dtStart,
@@ -235,59 +250,37 @@ export const FullCalendar = () => {
               ],
             )
 
-            const recurringEvent = {
-              id: event.id,
-              title: event.summary,
-              url: event.htmlLink,
-              rrule: formattedRRule,
-              taskId: event?.extendedProperties?.shared?.taskId,
-              description: stripTags(event?.description || ''),
-              backgroundColor: isValidGoogleEventColorId(event.colorId)
-                ? GoogleEventColours[event.colorId - 1].hex
-                : GoogleEventColours[6].hex,
-              duration: formattedDuration,
-              rruleStr: formattedRRule, // stores current rrule for FullCalendar event, if rruleStr is non-empty string, then event is recurring
-              recurrence: event.recurrence, // stores recurrence data from Google Calendar
-              dtStart: dtStart, // stores start time of recurring event
-            }
-
-            if (event?.location) {
-              recurringEvent.location = event?.location
-            }
-            if (event.conferenceData && event.conferenceData.entryPoints) {
-              recurringEvent.meetLink = event.conferenceData.entryPoints[0].uri
-            }
-            if (event?.attendees) {
-              recurringEvent.attendees = event?.attendees
-            }
+            const recurringEvent = new RecurringEvent(
+              id,
+              title,
+              backgroundColor,
+              description,
+              location,
+              meetLink,
+              attendees,
+              taskId,
+              formattedRRule,
+              formattedDuration,
+              dtStart,
+              recurrence,
+            )
 
             return recurringEvent
           } else {
-            const eventStart = event.start?.dateTime || event.start?.date
-            const eventEnd = event.end?.dateTime || event.end?.date
+            const end = event.end?.dateTime || event.end?.date
 
-            const nonRecurringEvent = {
-              id: event.id,
-              title: event.summary,
-              start: eventStart,
-              end: eventEnd,
-              url: event.htmlLink,
-              taskId: event?.extendedProperties?.shared?.taskId,
-              description: stripTags(event?.description || ''),
-              backgroundColor: isValidGoogleEventColorId(event.colorId)
-                ? GoogleEventColours[event.colorId - 1].hex
-                : GoogleEventColours[6].hex,
-            }
-            if (event?.location) {
-              nonRecurringEvent.location = event?.location
-            }
-            if (event.conferenceData && event.conferenceData.entryPoints) {
-              nonRecurringEvent.meetLink =
-                event.conferenceData.entryPoints[0].uri
-            }
-            if (event?.attendees) {
-              nonRecurringEvent.attendees = event?.attendees
-            }
+            const nonRecurringEvent = new NonRecurringEvent(
+              id,
+              title,
+              backgroundColor,
+              description,
+              location,
+              meetLink,
+              attendees,
+              taskId,
+              start,
+              end,
+            )
 
             return nonRecurringEvent
           }
@@ -313,6 +306,7 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
+  /* VALIDATED */
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
@@ -332,6 +326,7 @@ export const FullCalendar = () => {
     const end = event.end
     const change = moment(start).diff(moment(oldStart), 'minutes')
     const duration = moment(end).diff(moment(start), 'minutes')
+    const formattedDuration = formatEventTimeLength(duration)
 
     const dtStart = event.extendedProps?.dtStart || ''
     const dtStartTime = moment(dtStart)
@@ -340,6 +335,7 @@ export const FullCalendar = () => {
     const rruleStr = event.extendedProps?.rruleStr || ''
     const formattedNewDtstart = getFormattedEventTime(newDtStartTime)
     const newRRuleStr = updateDtStartInRRuleStr(rruleStr, formattedNewDtstart)
+    const recurrence = event.extendedProps?.recurrence || []
 
     const calendarId = getEventCalendarId(event.id)
 
@@ -348,14 +344,13 @@ export const FullCalendar = () => {
       const events = newCalendarsEvents[calendarId]
       const newEvents = events.map((prevEvent) => {
         if (prevEvent.id === event.id) {
-          const updatedEvent = {
-            ...prevEvent,
-            rrule: newRRuleStr,
-            rruleStr: newRRuleStr,
-            duration: formatEventTimeLength(duration),
-            dtStart: formattedNewDtstart,
-          }
-          return updatedEvent
+          prevEvent.updateRecurringFields(
+            newRRuleStr,
+            formattedDuration,
+            formattedNewDtstart,
+            recurrence,
+          )
+          return prevEvent
         } else {
           return prevEvent
         }
@@ -391,6 +386,7 @@ export const FullCalendar = () => {
     )
   }
 
+  /* VALIDATED */
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
@@ -401,12 +397,8 @@ export const FullCalendar = () => {
       const events = newCalendarsEvents[calendarId]
       const newEvents = events.map((prevEvent) => {
         if (prevEvent.id === event.id) {
-          const updatedEvent = {
-            ...prevEvent,
-            start: event.startStr,
-            end: event.endStr,
-          }
-          return updatedEvent
+          prevEvent.updateNonRecurringFields(event.start, event.end)
+          return prevEvent
         } else {
           return prevEvent
         }
@@ -443,9 +435,9 @@ export const FullCalendar = () => {
   }
 
   const handleEventAdjustment = (info) => {
-    const rruleStr = info.event.extendedProps?.rruleStr || ''
+    const recurring = info.event.extendedProps?.recurring
 
-    if (rruleStr !== '') {
+    if (recurring) {
       handleRecurringEventAdjustment(info)
     } else {
       handleNonRecurringEventAdjustment(info)
@@ -455,18 +447,21 @@ export const FullCalendar = () => {
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
+    console.log('info.event', info.event) // DEBUGGING
+
+    const recurring = info.event.extendedProps?.recurring
+
     const taskId = info.event.extendedProps?.taskId
     const task = taskId ? tasks.find((task) => task.taskId === taskId) : null
 
-    console.log('task', task) // DEBUGGING
-
     const allDay = info.event.allDay
-    const taskname = info.event.title
-    const taskdescription = info.event.extendedProps?.description
-    const taskbackgroundcolor = info.event.backgroundColor
+    const title = info.event.title
+    const description = info.event.extendedProps?.description
+    const backgroundColor = info.event.backgroundColor
     const start = info.event.start
     const end = info.event.end
     const duration = moment(end).diff(moment(start), 'minutes')
+    const formattedDuration = formatEventTimeLength(duration)
 
     const location = info.event.extendedProps?.location || ''
     const meetLink = info.event.extendedProps?.meetLink || ''
@@ -483,9 +478,9 @@ export const FullCalendar = () => {
     const eventId = info.event.id
 
     setDialogProps({
-      taskname: taskname,
-      taskdescription: taskdescription,
-      taskbackgroundcolor: taskbackgroundcolor,
+      taskname: title,
+      taskdescription: description,
+      taskbackgroundcolor: backgroundColor,
       location: location,
       meetLink: meetLink,
       attendees: attendees,
@@ -502,7 +497,7 @@ export const FullCalendar = () => {
         const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
         const newRecurrence = [...recurrence, exdate]
 
-        if (rruleStr !== '' && recurringEventEditOption === 'THIS_EVENT') {
+        if (recurring && recurringEventEditOption === 'THIS_EVENT') {
           const newRRule = rruleStr + '\nEXDATE:' + recurrenceId
 
           // update at calendarsEvents
@@ -569,17 +564,33 @@ export const FullCalendar = () => {
         let newEvent = null
         let newGoogleCalendarEvent = null
 
-        if (rruleStr !== '') {
-          newEvent = {
-            id: id,
-            duration: formatEventTimeLength(duration),
-            title: info.event.title,
-            backgroundColor: info.event.backgroundColor,
-            rrule: rruleStr,
-            rruleStr: rruleStr,
-            recurrence: recurrence,
-            dtStart: dtStart,
-          }
+        if (recurring) {
+          // newEvent = {
+          //   // default event properties
+          //   id: id,
+          //   title: info.event.title,
+          //   backgroundColor: info.event.backgroundColor,
+          //   duration: formatEventTimeLength(duration),
+          //   rrule: rruleStr,
+          //   rruleStr: rruleStr,
+          //   recurrence: recurrence,
+          //   dtStart: dtStart,
+          // }
+
+          newEvent = new RecurringEvent(
+            id,
+            title,
+            backgroundColor,
+            description,
+            location,
+            meetLink,
+            attendees,
+            taskId,
+            rruleStr,
+            formattedDuration,
+            dtStart,
+            recurrence,
+          )
 
           newGoogleCalendarEvent = {
             id: id,
@@ -603,13 +614,18 @@ export const FullCalendar = () => {
             recurrence: recurrence,
           }
         } else {
-          newEvent = {
-            id: id,
-            start: info.event.startStr,
-            end: info.event.endStr,
-            title: info.event.title,
-            backgroundColor: info.event.backgroundColor,
-          }
+          newEvent = new NonRecurringEvent(
+            id,
+            title,
+            backgroundColor,
+            description,
+            location,
+            meetLink,
+            attendees,
+            taskId,
+            start,
+            end,
+          )
 
           newGoogleCalendarEvent = {
             id: id,
@@ -669,9 +685,9 @@ export const FullCalendar = () => {
 
           await quickAddTask(
             currentUser.id,
-            taskname,
+            title,
             taskId,
-            taskdescription,
+            description,
             taskTimeLength,
             'DUPLICATE',
           )
@@ -711,7 +727,6 @@ export const FullCalendar = () => {
         info.event.setExtendedProp('location', location)
         info.event.setExtendedProp('meetLink', meetLink)
         info.event.setExtendedProp('attendees', attendees)
-        info.event.setExtendedProp('rrule', rruleStr)
         info.event.setExtendedProp('rruleStr', rruleStr)
         info.event.setExtendedProp('dtStart', dtstartStrFullCalendar)
         info.event.setExtendedProp('recurrence', newRecurrence)
@@ -826,20 +841,31 @@ export const FullCalendar = () => {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
         const id = generateEventId()
+        const title = draggedEvent.name
+        const description = draggedEvent.description
+        const backgroundColor = draggedEvent.backgroundColor
+        const taskId = draggedEvent.taskId
+        const start = info.date
+        const end = moment(info.date)
+          .add(draggedEvent.timeLength, 'minutes')
+          .toDate()
+        const location = ''
+        const meetLink = ''
+        const attendees = []
 
-        // add to FullCalendar
-        const newEvent = {
-          id: id,
-          title: draggedEvent.name,
-          start: info.date,
-          allDay: info.allDay,
-          end: moment(info.date)
-            .add(draggedEvent.timeLength, 'minutes')
-            .toDate(),
-          taskId: draggedEvent.taskId,
-          description: draggedEvent.description,
-          backgroundColor: draggedEvent.backgroundColor,
-        }
+        const newEvent = new NonRecurringEvent(
+          id,
+          title,
+          backgroundColor,
+          description,
+          location,
+          meetLink,
+          attendees,
+          taskId,
+          start,
+          end,
+        )
+
         setCalendarsEvents({
           ...calendarsEvents,
           custom: [...calendarsEvents.custom, newEvent],
@@ -901,16 +927,18 @@ export const FullCalendar = () => {
       select: function (info) {
         const id = generateEventId()
 
-        // add to FullCalendar
-        const newEvent = {
-          id: id,
-          title: 'New Event',
-          start: info.startStr,
-          end: info.endStr,
-          taskId: null,
-          description: '',
-          backgroundColor: GoogleEventColours[6].hex,
-        }
+        const newEvent = new NonRecurringEvent(
+          id,
+          'New Event',
+          GoogleEventColours[6].hex,
+          '',
+          '',
+          '',
+          [],
+          null,
+          info.startStr,
+          info.endStr,
+        )
 
         setCalendarsEvents({
           ...calendarsEvents,
