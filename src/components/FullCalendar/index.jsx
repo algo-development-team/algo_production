@@ -94,6 +94,28 @@ export const FullCalendar = () => {
     return events
   }
 
+  const getEventProperties = (event) => {
+    return {
+      allDay: event.allDay, // boolean
+      id: event.id, // string
+      title: event.title, // string
+      start: event.start, // JS Date Object
+      end: event.end, // JS Date Object
+      startStr: event.startStr, // ISOString or YYYY-MM-DD
+      endStr: event.endStr, // ISOString or YYYY-MM-DD
+      backgroundColor: event.backgroundColor, // Hex Code
+      description: event.extendedProps.description, // string
+      location: event.extendedProps.location, // string
+      meetLink: event.extendedProps.meetLink, // string (URL)
+      attendees: event.extendedProps.attendees, // array of string (email[])
+      recurring: event.extendedProps.recurring, // boolean
+      dtStart: event.extendedProps?.dtStart || null, // ISO8601 | null
+      rruleStr: event.extendedProps?.rruleStr || null, // string (RRule.toString()) | null
+      recurrence: event.extendedProps?.recurrence || null, // array of string (RRule.toString()[]) | null
+      taskId: event.extendedProps?.taskId, // string | null
+    }
+  }
+
   useEffect(() => {
     const ws = new WebSocket(
       `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
@@ -365,6 +387,10 @@ export const FullCalendar = () => {
     info.jsEvent.preventDefault()
 
     console.log('info.event', info.event) // DEBUGGING
+    console.log(
+      'getEventProperties(info.event)',
+      getEventProperties(info.event),
+    ) // DEBUGGING
 
     const recurring = info.event.extendedProps?.recurring
 
