@@ -15,7 +15,7 @@ export const Taskbar = ({ type, onOff, value, setValue }) => {
         if (type === 'ADD_TASKS') {
         return 'Add'
         } else if (type === 'FILTER_TASKS') {
-        return 'Filter'
+        return ''
         } else if (type === 'AUTO_SCHEDULE') {
         return 'Auto Schedule'
         }
@@ -48,6 +48,9 @@ export const Taskbar = ({ type, onOff, value, setValue }) => {
         <>
           <div
             // className='set-Taskbar'
+            style={{ display: 'flex',
+                           textalign: 'center',
+                           whitespace: 'nowrap' }}
             onClick={() => callTaskbarHandlerFunction(type, onOff)}
             > 
                 <div style={{color:'white'}}>

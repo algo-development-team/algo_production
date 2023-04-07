@@ -37,70 +37,49 @@ export const Sidebar = (props) => {
           className='sidebar'
           style={{ paddingLeft: '18px', paddingRight: '18px' }}
         >
-          <div>
-          <button className='set-Taskbar' style={{ display: 'flex',
-                           fontSize: '25px' }}>
-          <Taskbar
+        <div className='sidebar__overlay'>
+
+          {/* Auto Schedule Button */}
+          <button className='set-Taskbar' 
+                  style={{ display: 'flex',
+                           fontSize: '20px',
+                           width: '248px' }}>
+              <Taskbar
                   type='AUTO_SCHEDULE'
                   onOff={true}
                   value={autoSchedule}
                   setValue={setAutoSchedule}
                 />
           </button>
-            <button className='set-Taskbar' style={{ display: 'flex' }}>
+
+          {/* Add Tasks Button */}
+          <button className='set-Taskbar'
+                  style={{ display: 'flex',
+                           fontSize: '15px',
+                           width: '248px' }}>
               <Taskbar
                   type='ADD_TASKS'
                   value={AddTasks}
                   setValue={setAddTasks}
                 />
-            </button>
-          
-            {/* <div style={{ display: 'flex' }}>
-              <WarningTask
-                addValue={AddTasks}
-                setAddValue={setAddTasks}
-                filterValue={FilterTasks}
-                setFilterValue={setFilterTasks}
-              />
-            </div> */}
+          </button>
 
-          <div style={{ display: 'flex' }}>
+
+          {/* Search Bar Button */}
+          <div className='set-Searchbar' 
+               style={{ display: 'flex' }}>
             <SearchField
               addValue={AddTasks}
               setAddValue={setAddTasks}
               filterValue={FilterTasks}
               setFilterValue={setFilterTasks}
             />
-            <button style={{ 
-              display: 'flex',
-              flexdirection: 'row',
-              alignitems: 'center',
-              textalign: 'center',
-              justifycontent: 'center',
-              display: 'flex',
-              padding: '1px 1px 1px 1px',
-              borderRadius: '5px',
-              border: 'none',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-              fontSize: '10px',
-              outline: 'none',
-              width: '10%',
-              height: '38px',
-              boxSizing: 'border-box',
-              marginBottom: '10px',
-              display: 'flex',
-              }}>
-              <Taskbar
-                  type='FILTER_TASKS'
-                  onOff={FilterTasks}
-                  value={FilterTasks}
-                  setValue={setFilterTasks}
-                />
-            </button>
-
-            </div>
           </div>
+        </div>
+
+          {/* Calendar List */}
           <CalendarList />
+
           {/* <AutoScheduleButton /> */}
         </aside>
       </>

@@ -7,6 +7,7 @@ import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-ti
 import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
 import { SetSelectedTasksPopper } from 'components/dropdowns/set-selected-tasks-popper'
 import { SetNewTaskFilterPopper } from 'components/dropdowns/set-filter-tasks-popper'
+import { SetNewTaskDueDatePopper } from 'components/dropdowns/set-filter-duedate-popper'
 import { MenuList } from 'components/MenuList'
 import { UserOptions } from 'components/UserOption'
 import { ViewOptions } from 'components/ViewOptions'
@@ -202,7 +203,7 @@ export const Overlay = () => {
         )
         case 'SET_TASK_FILTER_SCHEDULE':
           return (
-            <SetNewTaskSchedulePopper
+            <SetNewTaskDueDatePopper
               closeOverlay={closeOverlay}
               setSchedule={dialogProps.setFilterSelect}
               xPosition={dialogProps.elementPosition.x}

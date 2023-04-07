@@ -71,7 +71,7 @@ export const FilterTaskbar = ({filter, setFilter, filterSelect, setFilterSelect,
                 marginBottom: '10px',
                 display: 'inline-flex',
             }}
-            >Filter By</label>
+            >Filter</label>
             <SetNewFilterTask isQuickAdd={false} isPoppup={false} filter={filter} setFilter={setFilter} />
         </div>
         <div style = {{display:'inline-flex', width: '100%', }}>
