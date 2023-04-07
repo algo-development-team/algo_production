@@ -6,19 +6,26 @@ import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
 import moment from 'moment'
+import { Taskbar } from './task-bar'
 
+
+// Global Const
 const date = new Date()
 const todayMoment = moment(date).startOf('day')
 const tomorrowMoment = moment(date).startOf('day').add(1, 'day')
-console.log(todayMoment)
 
 
+// Search Field: Important sections of the Side-bar contents are here
+//               with Search & Filter of the unscheduled tasks
 export const SearchField = ({
   addValue,
   setAddValue,
   filterValue,
   setFilterValue,
 }) => {
+
+
+  // Local Const
   const [searchText, setSearchText] = useState('')
   const { externalEventsRef } = useExternalEventsContextValue()
   const { tasks } = useTasks()
@@ -27,7 +34,11 @@ export const SearchField = ({
   const { scheduledTasks, loading } = useScheduledTasks()
   const [filter, setFilter] = useState('None')
   const [filterSelect, setFilterSelect] = useState('None')
+  const [AddTasks, setAddTasks] = useState(false)
+  const [FilterTasks, setFilterTasks] = useState(false)
 
+
+  // Use Effect
   useEffect(() => {
     setFilterSelect('None')
   }, [filter])
@@ -50,74 +61,74 @@ export const SearchField = ({
     }
   }, [loading, scheduledTasks, tasks])
 
+
+  // getProjectColourHex: Gets the colour hex of each project
   const getProjectColourHex = (projectId) => {
     const project = projects.find((project) => project.projectId === projectId)
     return project?.projectColour?.hex || GoogleEventColours[6].hex
   }
 
+
+  // filterTasks: Fuction filters tasks based on  (Due Date, Projects, Priority)
+  //              It loops through the unscheduled tasks list to collect
+  //              tasks that meets the requirement. 
   const filterTasks = (filter, filterSelect, tasks) => {
-    // console.log('filter', filter) // DEBUGGING
-    // console.log('filterSelect', filterSelect) // DEBUGGING
-    // console.log('tasks', tasks) // DEBUGGING
 
     if (!filter && !filterSelect)  {
       return tasks
     }
 
+    if (filter === "Due Date" && filterSelect.day === 'Past Deadline') {
+      return warningTasks(filter, filterSelect, tasks)[1]
+    }
+
     const result = []
     for (let i = 0; i < tasks.length; i++) {
+
       if (filter === "Due Date" && tasks[i].date === filterSelect.date) {
           result.push(tasks[i])
-          // console.log('date not same...') // DEBUGGING 
+
         } else if (filter === "Projects" && tasks[i].projectId === filterSelect.projectId) {
           result.push(tasks[i])
-          // console.log('project not same...') // DEBUGGING 
+
         } else if (filter === "Priority" &&  tasks[i].priority === filterSelect) {
           result.push(tasks[i])
-          // console.log('priority not same...') // DEBUGGING 
-  
       }
     } 
 
-    // console.log('result', result) // DEBUGGING
     return result
   }
 
+
+  // warningTasks: Creates a warning bars (past deadline & due today)
+  //               It loops through the unscheduled tasks list to collect
+  //               tasks that meets the requirement. 
   const warningTasks = (filter, filterSelect, tasks) => {
-    // console.log('filter', filter) // DEBUGGING
-    // console.log('filterSelect', filterSelect) // DEBUGGING
-    // console.log('tasks', tasks) // DEBUGGING
 
     const pastDeadline = []
     const warningDeadline = []
     for (let i = 0; i < tasks.length; i++) {
-      //console.log(moment(tasks[i].date, 'DD-MM-YYYY').toDate())
-      //console.log(moment(tasks[i].date).toDate())
-      //console.log(tasks[i].date !== '')
-      //console.log(moment(tasks[i].date, 'DD-MM-YYYY').toDate())
 
       if  (tasks[i].date !== '') {
         const momentDate = moment(tasks[i].date, 'DD-MM-YYYY').toDate()
         const momentString = moment(momentDate).startOf('day')
-        //console.log(momentString)
   
-
         if ( momentString.format('DD-MM-YYYY') === todayMoment.format('DD-MM-YYYY')) {
             warningDeadline.push(tasks[i])
-            // console.log('date not same...') // DEBUGGING 
           } else if ( momentString < todayMoment) {
             pastDeadline.push(tasks[i])
-            // console.log('project not same...') // DEBUGGING 
         }
 
       }
   
     } 
-
-    // console.log('result', result) // DEBUGGING
     return [warningDeadline, pastDeadline]
   }
 
+
+  // searchTasks: Allows for user to search through the tasks
+  //              As user types each word, only the tasks with matching
+  //              characters will appear 
   const searchTasks = (searchText, tasks) => {
     if (!searchText) {
       return tasks
@@ -140,6 +151,7 @@ export const SearchField = ({
     return result
   }
 
+  // displayHourMin: Breaks down time length to hours & minutes
   const displayHourMin = (timeLength) => {
     const hours = Math.floor(timeLength / 60)
     const minutes = timeLength % 60
@@ -153,28 +165,36 @@ export const SearchField = ({
 
   return (
     <div>
-      {/* <div>
-        {warningTasks(filter, filterSelect, unscheduledTasks).map((task) => {
-          return (
-            <div className='set-Warningbar'> 
-              {task} dealines apporaching
-            </div>
-          )
-          })
-        }
-      </div> */}
-      
+     
+      {/* Warning bar task */}
       <button className='set-Warningbar'
-      // onClick={() => callTaskbarHandlerFunction(type, onOff)}
+        onClick={() =>  {
+          setFilterValue(true)
+          setFilter("Due Date")
+          setFilterSelect({
+            day: 'Today',
+            date: moment().format('DD-MM-YYYY'),
+          })
+        }}
       > 
-      {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} deadlines apporaching
+      {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} Due Today
       </button>
-      <button className='set-Warningbar'> 
-      {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} deadlines past
+      <button className='set-Warningbar'
+        onClick={() =>  {
+          setFilterValue(true)
+          setFilter("Due Date")
+          setFilterSelect({
+            day: 'Past Deadline',
+            date: moment().format('DD-MM-YYYY'),
+          })
+        }}
+        > 
+      {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} Past Deadline
       </button>
 
 
-      <div
+      {/* Search bar task */}
+      <div className='set-Searchbar'
         style={{
           display: 'flex',
           justifyContent: 'center',
@@ -184,13 +204,13 @@ export const SearchField = ({
         <div style={{ paddingLeft: '5px' }}>
           <LookupIcon
             style={{
-              padding: '1px 1px 1px 1px',
+              padding: '1px 0px 1px 1px',
               borderRadius: '5px',
               border: 'none',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               fontSize: '16px',
               outline: 'none',
-              width: '50%',
+              width: '100%',
               height: '38px',
               boxSizing: 'border-box',
               marginBottom: '10px',
@@ -207,7 +227,7 @@ export const SearchField = ({
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
             fontSize: '16px',
             outline: 'none',
-            width: '100%',
+            width: '150%',
             boxSizing: 'border-box',
             marginBottom: '10px',
             display: 'flex',
@@ -216,11 +236,36 @@ export const SearchField = ({
           onChange={(e) => setSearchText(e.target.value)}
           value={searchText}
         />
+        
+        <button style={{ 
+              display: 'flex',
+              flexdirection: 'row',
+              alignitems: 'center',
+              textalign: 'center',
+              justifycontent: 'center',
+              display: 'flex',
+              padding: '1px 1px 1px 1px',
+              borderRadius: '5px',
+              border: 'none',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+              fontSize: '10px',
+              outline: 'none',
+              width: '10%',
+              height: '38px',
+              boxSizing: 'border-box',
+              marginBottom: '10px',
+              display: 'flex',
+              }}>
+          <Taskbar
+              type='FILTER_TASKS'
+              onOff={filterValue}
+              value={filterValue}
+              setValue={setFilterValue}
+            />
+        </button>
       </div>
 
-      {/* <div>
-        {!filterValue && <AddTaskbar setAddValue={setAddValue} />}
-      </div> */}
+      {/* Filter bar task */}
       <div>
         {filterValue  && 
           <FilterTaskbar filter={filter} setFilter={setFilter} filterSelect={filterSelect} setFilterSelect={setFilterSelect} setFilterValue={setFilterValue} />

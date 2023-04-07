@@ -1,5 +1,6 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
+import { SetNewTaskDueDatePopper } from 'components/dropdowns/set-filter-duedate-popper'
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
 export const DueDateFilter = ({
@@ -57,7 +58,7 @@ export const DueDateFilter = ({
         {filterSelect.day}
       </div>
       {showPopup && (
-        <SetNewTaskSchedulePopper
+        <SetNewTaskDueDatePopper
           isQuickAdd={isQuickAdd}
           isPopup={isPopup}
           setShowPopup={setShowPopup}
