@@ -604,6 +604,8 @@ export const FullCalendar = () => {
         dtstart, // JS Date object
         rrule, // RRule object
       ) => {
+        // Convertion between NonRecurringEvent and RecurringEvent if the recurring option has been selected/unselected
+        /*
         const newRRuleStr = rrule.toString()
         const dtstartStrFullCalendar = getFormattedEventTime(dtstart)
         const dtstartStrGoogleCalendar = allDay
@@ -664,6 +666,7 @@ export const FullCalendar = () => {
           id,
           formattedGoogleCalendarEvent,
         )
+        */
       },
     })
     setShowDialog('BLOCK')
