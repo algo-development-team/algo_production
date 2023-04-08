@@ -121,3 +121,42 @@ export const findNewDtstart = (freq, interval, dtstart, rrule) => {
 
   return occurrences[0]
 }
+
+export const getWeekday = (date) => {
+  const weekdays = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ]
+  const weekday = weekdays[date.getDay()]
+  return weekday
+}
+
+export const getNthWeekdayOfMonth = (date) => {
+  const ordinalSuffixes = [
+    'st',
+    'nd',
+    'rd',
+    'th',
+    'th',
+    'th',
+    'th',
+    'th',
+    'th',
+    'th',
+  ]
+  const month = date.getMonth()
+  const year = date.getFullYear()
+  const firstDayOfMonth = new Date(year, month, 1)
+  const dayOfWeek = firstDayOfMonth.getDay() // 0 for Sunday, 1 for Monday, etc.
+  const daysToAdd = (date.getDate() - 1) % 7
+  const nthDayOfMonth =
+    firstDayOfMonth.getDate() + daysToAdd + (dayOfWeek <= daysToAdd ? 7 : 0)
+  const nthWeekday = Math.ceil(nthDayOfMonth / 7)
+  const ordinalSuffix = ordinalSuffixes[nthWeekday - 1]
+  return `${nthWeekday}${ordinalSuffix}`
+}

@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
 import { RRule } from 'rrule'
-import { formatRRule, findNewDtstart } from './handleRRule'
+import {
+  formatRRule,
+  findNewDtstart,
+  getWeekday,
+  getNthWeekdayOfMonth,
+} from './handleRRuleAndDate'
 import moment from 'moment'
 
 export const RecurringOptions = ({
@@ -215,8 +220,13 @@ export const RecurringOptions = ({
               value={monthlyRepeatType}
               onChange={(e) => setMonthlyRepeatType(e.target.value)}
             >
-              <option value='BY_MONTHDAY'>Monthly on day 3</option>
-              <option value='BY_WEEKDAY'>Monthly on the first Monday</option>
+              <option value='BY_MONTHDAY'>
+                Monthly on day {dtstart.getDate()}
+              </option>
+              <option value='BY_WEEKDAY'>
+                Monthly on the {getNthWeekdayOfMonth(dtstart)}{' '}
+                {getWeekday(dtstart)}
+              </option>
             </select>
           </div>
         )}
