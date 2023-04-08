@@ -6,6 +6,8 @@ import moment from 'moment'
 export const RecurringOptions = ({
   closeOverlay,
   setShowRecurringEventOptions,
+  isRecurring,
+  setIsRecurring,
   dtstart, // JS Date object
   setDtstart,
   rrule, // RRule object
@@ -135,6 +137,142 @@ export const RecurringOptions = ({
     setRRule(newRRule)
   }
 
+  const selectRecurringOrNot = () => {
+    return (
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <div>
+          <input
+            type='radio'
+            checked={!isRecurring}
+            onChange={() => setIsRecurring(false)}
+          />
+          <label htmlFor='not-recurring'>Not recurring</label>
+        </div>
+        <div>
+          <input
+            type='radio'
+            checked={isRecurring}
+            onChange={() => setIsRecurring(true)}
+          />
+          <label htmlFor='recurring'>Recurring</label>
+        </div>
+      </div>
+    )
+  }
+
+  const recurringOptions = () => {
+    return (
+      <div style={{ marginTop: '20px' }}>
+        <div>
+          <label style={{ marginRight: '10px' }}>Repeat every</label>
+          <input
+            type='number'
+            value={repeatEvery}
+            onChange={(e) => setRepeatEvery(parseInt(e.target.value))}
+          />
+          <select
+            value={repeatEveryType}
+            onChange={(e) => setRepeatEveryType(parseInt(e.target.value))}
+          >
+            <option value={3}>Day</option>
+            <option value={2}>Week</option>
+            <option value={1}>Month</option>
+            <option value={0}>Year</option>
+          </select>
+        </div>
+        {repeatEveryType === 2 && (
+          <div style={{ marginTop: '10px' }}>
+            <p>Repeats on</p>
+            <div style={{ marginTop: '10px' }}>
+              <div style={{ display: 'flex', gap: '5px' }}>
+                {repeatsOn.map((isSelected, index) => (
+                  <div
+                    key={index}
+                    className={`recurring-weekday-button${
+                      isSelected ? '__selected' : ''
+                    }`}
+                    onClick={() =>
+                      setRepeatsOn((repeatsOn) => {
+                        return repeatsOn.map((isSelected, i) => {
+                          if (i === index) {
+                            return !isSelected
+                          }
+                          return isSelected
+                        })
+                      })
+                    }
+                  >
+                    {getRepeatOnLabel(index)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {repeatEveryType === 1 && (
+          <div style={{ marginTop: '10px' }}>
+            <select
+              value={monthlyRepeatType}
+              onChange={(e) => setMonthlyRepeatType(e.target.value)}
+            >
+              <option value='BY_MONTHDAY'>Monthly on day 3</option>
+              <option value='BY_WEEKDAY'>Monthly on the first Monday</option>
+            </select>
+          </div>
+        )}
+        <div style={{ marginTop: '10px' }}>
+          <p>Ends</p>
+          <div
+            style={{
+              marginTop: '10px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '5px',
+            }}
+          >
+            <div>
+              <input
+                type='radio'
+                checked={endsType === 'NEVER'}
+                onClick={() => setEndsType('NEVER')}
+              />
+              <label>Never</label>
+            </div>
+            <div>
+              <input
+                type='radio'
+                checked={endsType === 'ON'}
+                onClick={() => setEndsType('ON')}
+              />
+              <label style={{ marginRight: '10px' }}>On</label>
+              <input
+                type='date'
+                disabled={endsType !== 'ON'}
+                value={endsOn}
+                onChange={(e) => setEndsOn(e.target.value)}
+              />
+            </div>
+            <div>
+              <input
+                type='radio'
+                checked={endsType === 'AFTER'}
+                onClick={() => setEndsType('AFTER')}
+              />
+              <label style={{ marginRight: '10px' }}>After</label>
+              <input
+                type='number'
+                disabled={endsType !== 'AFTER'}
+                value={endsAfter}
+                onChange={(e) => setEndsAfter(parseInt(e.target.value))}
+              />
+              <label style={{ marginLeft: '10px' }}>occurrences</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className='option__overlay' onClick={(event) => closeOverlay(event)}>
       <div
@@ -147,107 +285,8 @@ export const RecurringOptions = ({
           <form className='add-task'>
             <div className={`add-task__container`}>
               <h3>Custom Recurrence</h3>
-              <div>
-                <div>
-                  <label>Repeat every</label>
-                  <input
-                    type='number'
-                    value={repeatEvery}
-                    onChange={(e) => setRepeatEvery(parseInt(e.target.value))}
-                  />
-                  <select
-                    value={repeatEveryType}
-                    onChange={(e) =>
-                      setRepeatEveryType(parseInt(e.target.value))
-                    }
-                  >
-                    <option value={3}>Day</option>
-                    <option value={2}>Week</option>
-                    <option value={1}>Month</option>
-                    <option value={0}>Year</option>
-                  </select>
-                </div>
-                {repeatEveryType === 2 && (
-                  <div>
-                    <p>Repeats on</p>
-                    <div style={{ display: 'flex' }}>
-                      {repeatsOn.map((isSelected, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            backgroundColor: isSelected ? 'blue' : 'grey',
-                          }}
-                          onClick={() =>
-                            setRepeatsOn((repeatsOn) => {
-                              return repeatsOn.map((isSelected, i) => {
-                                if (i === index) {
-                                  return !isSelected
-                                }
-                                return isSelected
-                              })
-                            })
-                          }
-                        >
-                          {getRepeatOnLabel(index)}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {repeatEveryType === 1 && (
-                  <div>
-                    <select
-                      value={monthlyRepeatType}
-                      onChange={(e) => setMonthlyRepeatType(e.target.value)}
-                    >
-                      <option value='BY_MONTHDAY'>Monthly on day 3</option>
-                      <option value='BY_WEEKDAY'>
-                        Monthly on the first Monday
-                      </option>
-                    </select>
-                  </div>
-                )}
-                <div>
-                  <p>Ends</p>
-                  <div>
-                    <input
-                      type='radio'
-                      checked={endsType === 'NEVER'}
-                      onClick={() => setEndsType('NEVER')}
-                    />
-                    <label>Never</label>
-                  </div>
-                  <div>
-                    <input
-                      type='radio'
-                      checked={endsType === 'ON'}
-                      onClick={() => setEndsType('ON')}
-                    />
-                    <label>On</label>
-                    <input
-                      type='date'
-                      disabled={endsType !== 'ON'}
-                      value={endsOn}
-                      onChange={(e) => setEndsOn(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <input
-                      type='radio'
-                      checked={endsType === 'AFTER'}
-                      onClick={() => setEndsType('AFTER')}
-                    />
-                    <label>After</label>
-                    <input
-                      type='number'
-                      disabled={endsType !== 'AFTER'}
-                      value={endsAfter}
-                      onChange={(e) => setEndsAfter(parseInt(e.target.value))}
-                    />
-                    <label>occurrences</label>
-                  </div>
-                </div>
-              </div>
+              {selectRecurringOrNot()}
+              {isRecurring && recurringOptions()}
 
               <div
                 style={{

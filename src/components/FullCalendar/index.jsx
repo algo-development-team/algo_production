@@ -140,6 +140,7 @@ export const FullCalendar = () => {
     }
   }, [])
 
+  /* TESTED */
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
@@ -267,6 +268,7 @@ export const FullCalendar = () => {
     }
   }, [currentUser, googleCalendars])
 
+  /* TESTED */
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
@@ -334,6 +336,7 @@ export const FullCalendar = () => {
     )
   }
 
+  /* TESTED */
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
@@ -368,10 +371,9 @@ export const FullCalendar = () => {
     )
   }
 
+  /* TESTED */
   const handleEventAdjustment = (info) => {
     const { recurring } = getEventProperties(info.event)
-
-    console.log('info.event', info.event) // DEBUGGING
 
     if (recurring) {
       handleRecurringEventAdjustment(info)
@@ -409,16 +411,12 @@ export const FullCalendar = () => {
 
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
-    const dtStartTime = moment(dtStart)
-    const dtEndTime = dtStartTime.clone().add(duration, 'minutes')
-
     const recurrenceId = getFormattedEventTime(start, allDay)
-
-    const { calendarId, calendarKey } = getEventCalendarIdAndKey(id)
-
     const colorId =
       GoogleEventColours.findIndex((colour) => colour.hex === backgroundColor) +
       1
+
+    const { calendarId, calendarKey } = getEventCalendarIdAndKey(id)
 
     setDialogProps({
       taskname: title,
@@ -427,16 +425,17 @@ export const FullCalendar = () => {
       location: location,
       meetLink: meetLink,
       attendees: attendees,
+      recurring: recurring,
       rruleStr: rruleStr,
       eventId: id,
       calendarId: calendarId,
       task: task,
+      /* TESTED */
       remove: (recurringEventEditOption) => {
-        const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
-        const newRecurrence = [...recurrence, exdate]
-
         if (recurring && recurringEventEditOption === 'THIS_EVENT') {
           const newRRule = rruleStr + '\nEXDATE:' + recurrenceId
+          const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
+          const newRecurrence = [...recurrence, exdate]
 
           // update at calendarsEvents
           let updatedEvent = null
@@ -492,6 +491,7 @@ export const FullCalendar = () => {
           deleteEventFromUserGoogleCalendar(currentUser.id, calendarId, id)
         }
       },
+      /* TESTED */
       copy: () => {
         const newId = generateEventId()
 
@@ -568,6 +568,7 @@ export const FullCalendar = () => {
           formattedGoogleCalendarEvent,
         )
       },
+      /* TESTED */
       backlog: async () => {
         if (taskId) {
           /* if id exists, then remove it from scheduledTasks array in Firestore */
@@ -596,15 +597,40 @@ export const FullCalendar = () => {
       },
       save: (
         taskName,
-        taskDescription,
         backgroundColor,
+        taskDescription,
         location,
         meetLink,
         attendees,
+        isRecurring,
         dtstart, // JS Date object
         rrule, // RRule object
       ) => {
-        // Convertion between NonRecurringEvent and RecurringEvent if the recurring option has been selected/unselected
+        console.log('taskName', taskName) // DEBUGGING
+        console.log('backgroundColor', backgroundColor) // DEBUGGING
+        console.log('taskDescription', taskDescription) // DEBUGGING
+        console.log('location', location) // DEBUGGING
+        console.log('meetLink', meetLink) // DEBUGGING
+        console.log('attendees', attendees) // DEBUGGING
+        console.log('isRecurring', isRecurring) // DEBUGGING
+        console.log('dtstart', dtstart) // DEBUGGING
+        console.log('rrule', rrule) // DEBUGGING
+
+        /***
+         * Steps:
+         * 1. Update info.event
+         * 2. Update calendarsEvents, convert between NonRecurringEvent and RecurringEvent if the recurring option has been selected/unselected
+         * 3. Update Google Calendar
+         * ***/
+
+        // update info.event
+        info.event.setProp('title', taskName)
+        info.event.setProp('backgroundColor', backgroundColor)
+        info.event.setExtendedProp('description', taskDescription)
+        info.event.setExtendedProp('location', location)
+        info.event.setExtendedProp('meetLink', meetLink)
+        info.event.setExtendedProp('attendees', attendees)
+
         /*
         const newRRuleStr = rrule.toString()
         const dtstartStrFullCalendar = getFormattedEventTime(dtstart)
@@ -616,12 +642,7 @@ export const FullCalendar = () => {
         const newRecurrence = [...rruleAndExdates.exdates, rruleStr]
 
         // update the event in FullCalendar
-        info.event.setProp('title', taskName)
-        info.event.setProp('backgroundColor', backgroundColor)
-        info.event.setExtendedProp('description', taskDescription)
-        info.event.setExtendedProp('location', location)
-        info.event.setExtendedProp('meetLink', meetLink)
-        info.event.setExtendedProp('attendees', attendees)
+        
         info.event.setExtendedProp('rruleStr', newRRuleStr)
         info.event.setExtendedProp('dtStart', dtstartStrFullCalendar)
         info.event.setExtendedProp('recurrence', newRecurrence)
@@ -672,6 +693,7 @@ export const FullCalendar = () => {
     setShowDialog('BLOCK')
   }
 
+  /* TESTED */
   useEffect(() => {
     const externalEvents = new Draggable(externalEventsRef.current, {
       itemSelector: '.fc-event',

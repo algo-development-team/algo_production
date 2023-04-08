@@ -33,6 +33,7 @@ export const Block = ({
   location,
   meetLink,
   attendees,
+  recurring,
   rruleStr,
   eventId,
   calendarId,
@@ -62,6 +63,7 @@ export const Block = ({
   const [newEventAttendee, setNewEventAttendee] = useState('')
   const [currentUserResponseStatus, setCurrentUserResponseStatus] =
     useState('needsAction')
+  const [isRecurring, setIsRecurring] = useState(recurring)
   const [recurringEventEditType, setRecurringEventEditType] = useState('')
   const [recurringEventEditOption, setRecurringEventEditOption] =
     useState('THIS_EVENT')
@@ -73,24 +75,38 @@ export const Block = ({
   const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
 
+  /* DEBUGGING SECTION */
   useEffect(() => {
-    if (rruleStr !== '') {
-      const rruleStrObj = destructRRuleStr(rruleStr)
-      const dtstart = moment(rruleStrObj.dtstart.split(':')[1]).toDate()
-      const rrule = RRule.fromString(rruleStrObj.rrule)
-      setDtstart(dtstart)
-      setRRule(rrule)
-    }
+    console.log('taskname', taskname) // DEBUGGING
+  }, [taskname])
+  useEffect(() => {
+    console.log('taskdescription', taskdescription) // DEBUGGING
+  }, [taskdescription])
+  useEffect(() => {
+    console.log('taskbackgroundcolor', taskbackgroundcolor) // DEBUGGING
+  }, [taskbackgroundcolor])
+  useEffect(() => {
+    console.log('location', location) // DEBUGGING
+  }, [location])
+  useEffect(() => {
+    console.log('meetLink', meetLink) // DEBUGGING
+  }, [meetLink])
+  useEffect(() => {
+    console.log('attendees', attendees) // DEBUGGING
+  }, [attendees])
+  useEffect(() => {
+    console.log('recurring', recurring) // DEBUGGING
+  }, [recurring])
+  useEffect(() => {
+    console.log('rruleStr', rruleStr) // DEBUGGING
   }, [rruleStr])
-
   useEffect(() => {
-    for (const eventAttendee of eventAttendees) {
-      if (eventAttendee?.self) {
-        setCurrentUserResponseStatus(eventAttendee.responseStatus)
-        break
-      }
-    }
-  }, [eventAttendees])
+    console.log('dtstart', dtstart) // DEBUGGING
+  }, [dtstart])
+  useEffect(() => {
+    console.log('rrule', rrule) // DEBUGGING
+  }, [rrule])
+  /* DEBUGGING SECTION */
 
   const destructRRuleStr = (rruleStr) => {
     const rruleStrArr = rruleStr.split('\n')
@@ -101,6 +117,25 @@ export const Block = ({
     }
     return rruleStrObj
   }
+
+  useEffect(() => {
+    if (isRecurring) {
+      const rruleStrObj = destructRRuleStr(rruleStr)
+      const dtstart = moment(rruleStrObj.dtstart.split(':')[1]).toDate()
+      const rrule = RRule.fromString(rruleStrObj.rrule)
+      setDtstart(dtstart)
+      setRRule(rrule)
+    }
+  }, [isRecurring, rruleStr])
+
+  useEffect(() => {
+    for (const eventAttendee of eventAttendees) {
+      if (eventAttendee?.self) {
+        setCurrentUserResponseStatus(eventAttendee.responseStatus)
+        break
+      }
+    }
+  }, [eventAttendees])
 
   const getUpdatedEventAttendees = () => {
     const updatedEventAttendees = [...eventAttendees]
@@ -151,11 +186,12 @@ export const Block = ({
   const handleSave = () => {
     save(
       taskName,
-      taskDescription,
       eventColour.hex,
+      taskDescription,
       eventLocation,
       eventMeetLink,
       getUpdatedEventAttendees(),
+      isRecurring,
       dtstart,
       rrule,
     )
@@ -192,7 +228,7 @@ export const Block = ({
           <BacklogIcon
             className='action-btn'
             onClick={() => {
-              if (rruleStr === '') {
+              if (!isRecurring) {
                 handleBacklog()
               } else {
                 setRecurringEventEditType('BACKLOG')
@@ -203,7 +239,7 @@ export const Block = ({
           <DeleteIcon
             className='action-btn'
             onClick={() => {
-              if (rruleStr === '') {
+              if (!isRecurring) {
                 handleDelete()
               } else {
                 setRecurringEventEditType('DELETE')
@@ -566,6 +602,8 @@ export const Block = ({
       <RecurringOptions
         closeOverlay={closeOverlay}
         setShowRecurringEventOptions={setShowRecurringEventOptions}
+        isRecurring={isRecurring}
+        setIsRecurring={setIsRecurring}
         dtstart={dtstart}
         setDtstart={setDtstart}
         rrule={rrule}
@@ -600,7 +638,8 @@ export const Block = ({
               >
                 <button
                   className=' action add-task__actions--add-task'
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault()
                     handleSave()
                   }}
                 >

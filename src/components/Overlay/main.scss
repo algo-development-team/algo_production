@@ -94,3 +94,23 @@
   padding-left: 5px;
   padding-right: 5px;
 }
+
+.recurring-weekday-button {
+  background-color: #424242;
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.recurring-weekday-button__selected {
+  background-color: #4c9aff;
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

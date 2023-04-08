@@ -34,7 +34,7 @@ export const Header = (props) => {
           <>
             <CalendarButton />
             <ProjectsButton />
-            <SettingButton />
+            {/* <SettingButton /> */}
           </>
         ) : (
           <CalendarOrProjectsButton />
