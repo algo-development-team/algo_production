@@ -18,29 +18,45 @@ export const RecurringOptions = ({
   rrule, // RRule object
   setRRule,
 }) => {
+  const getRepeatEvery = () => {
+    return rrule?.origOptions?.interval || 1
+  }
+
   const [repeatEvery, setRepeatEvery] = useState(
-    rrule?.origOptions?.interval || 1,
-  )
-  const [repeatEveryType, setRepeatEveryType] = useState(
-    rrule?.origOptions?.freq || 2,
+    isRecurring ? getRepeatEvery() : 1,
   )
 
-  const getRepeatsOnFromByweekday = (byweekday) => {
+  const getRepeatEveryType = () => {
+    return rrule?.origOptions?.freq || 2
+  }
+
+  const [repeatEveryType, setRepeatEveryType] = useState(
+    isRecurring ? getRepeatEveryType() : 2,
+  )
+
+  const getRepeatsOnFromByweekday = () => {
     const repeatsOn = Array(7).fill(false)
-    byweekday.forEach((weekdayObj) => {
-      const index = weekdayObj.weekday === 6 ? 0 : weekdayObj.weekday + 1
-      repeatsOn[index] = true
-    })
+
+    const byweekday = rrule?.origOptions?.byweekday
+
+    if (byweekday) {
+      byweekday.forEach((weekdayObj) => {
+        const index = weekdayObj.weekday === 6 ? 0 : weekdayObj.weekday + 1
+        repeatsOn[index] = true
+      })
+    }
+
     return repeatsOn
   }
 
   const [repeatsOn, setRepeatsOn] = useState(
-    rrule?.origOptions?.byweekday
-      ? getRepeatsOnFromByweekday(rrule?.origOptions?.byweekday)
-      : Array(7).fill(false),
+    isRecurring ? getRepeatsOnFromByweekday() : Array(7).fill(false),
   )
 
-  const getMonthlyRepeatType = (freq, byweekday) => {
+  const getMonthlyRepeatType = () => {
+    const freq = rrule?.origOptions?.freq
+    const byweekday = rrule?.origOptions?.byweekday
+
     if (freq && freq === 1 && byweekday && byweekday?.length === 1) {
       return 'BY_WEEKDAY'
     } else {
@@ -49,13 +65,13 @@ export const RecurringOptions = ({
   }
 
   const [monthlyRepeatType, setMonthlyRepeatType] = useState(
-    getMonthlyRepeatType(
-      rrule?.origOptions?.freq,
-      rrule?.origOptions?.byweekday,
-    ),
+    isRecurring ? getMonthlyRepeatType() : 'BY_MONTHDAY',
   )
 
-  const getEndsType = (until, count) => {
+  const getEndsType = () => {
+    const until = rrule?.origOptions?.until
+    const count = rrule?.origOptions?.count
+
     if (until) {
       return 'ON'
     } else if (count) {
@@ -66,33 +82,53 @@ export const RecurringOptions = ({
   }
 
   const [endsType, setEndsType] = useState(
-    getEndsType(rrule?.origOptions?.until, rrule?.origOptions?.count),
+    isRecurring ? getEndsType() : 'NEVER',
   )
+
+  const getEndsOn = () => {
+    return (
+      rrule?.origOptions?.until?.toISOString()?.slice(0, 10) ||
+      moment().add(2, 'months').format('YYYY-MM-DD')
+    )
+  }
+
   const [endsOn, setEndsOn] = useState(
-    rrule?.origOptions?.until?.toISOString()?.slice(0, 10) ||
-      moment().add(2, 'months').format('YYYY-MM-DD'),
+    isRecurring ? getEndsOn() : moment().add(2, 'months').format('YYYY-MM-DD'),
   )
-  const [endsAfter, setEndsAfter] = useState(rrule?.origOptions?.count || 10)
+
+  const getEndsAfter = () => {
+    return rrule?.origOptions?.count || 10
+  }
+
+  const [endsAfter, setEndsAfter] = useState(isRecurring ? getEndsAfter() : 10)
 
   useEffect(() => {
-    const newRepeatsOn = Array(7).fill(false)
-    if (repeatEveryType === 0) {
-      setRepeatsOn(newRepeatsOn)
-    } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_MONTHDAY') {
-      setRepeatsOn(newRepeatsOn)
-    } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_WEEKDAY') {
-      newRepeatsOn[dtstart.getDay()] = true
-      setRepeatsOn(newRepeatsOn)
-    } else if (
-      repeatEveryType === 2 &&
-      repeatsOn.every((isSelected) => !isSelected)
-    ) {
-      newRepeatsOn[dtstart.getDay()] = true
-      setRepeatsOn(newRepeatsOn)
-    } else if (repeatEveryType === 3) {
-      setRepeatsOn(newRepeatsOn)
+    if (isRecurring && !dtstart) {
+      setDtstart(new Date()) // set it to the correct value here
     }
-  }, [repeatEveryType, monthlyRepeatType])
+  }, [isRecurring, dtstart])
+
+  useEffect(() => {
+    if (isRecurring && dtstart) {
+      const newRepeatsOn = Array(7).fill(false)
+      if (repeatEveryType === 0) {
+        setRepeatsOn(newRepeatsOn)
+      } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_MONTHDAY') {
+        setRepeatsOn(newRepeatsOn)
+      } else if (repeatEveryType === 1 && monthlyRepeatType === 'BY_WEEKDAY') {
+        newRepeatsOn[dtstart.getDay()] = true
+        setRepeatsOn(newRepeatsOn)
+      } else if (
+        repeatEveryType === 2 &&
+        repeatsOn.every((isSelected) => !isSelected)
+      ) {
+        newRepeatsOn[dtstart.getDay()] = true
+        setRepeatsOn(newRepeatsOn)
+      } else if (repeatEveryType === 3) {
+        setRepeatsOn(newRepeatsOn)
+      }
+    }
+  }, [isRecurring, dtstart, repeatEveryType, monthlyRepeatType])
 
   const getRepeatOnLabel = (index) => {
     switch (index) {
