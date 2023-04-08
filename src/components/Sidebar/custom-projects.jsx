@@ -3,6 +3,7 @@ import { useOverlayContextValue } from 'context/overlay-context'
 import { useProjects } from 'hooks'
 import { useState } from 'react'
 import { CustomProject } from './custom-project'
+
 export const CustomProjects = () => {
   const { projects } = useProjects()
   const [showProjects, setShowProjects] = useState(true)

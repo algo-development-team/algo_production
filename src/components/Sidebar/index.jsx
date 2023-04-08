@@ -62,6 +62,19 @@ export const Sidebar = (props) => {
     )
   }
 
+  if (defaultGroup === 'Setting') {
+    return (
+      <>
+        <div className='sidebar__overlay' onClick={props.onClick}></div>
+        <aside className='sidebar'>
+          <div className='sidebar-clickables'>
+            <DefaultProjects />
+          </div>
+        </aside>
+      </>
+    )
+  }
+
   return (
     <>
       <div className='sidebar__overlay' onClick={props.onClick}></div>
