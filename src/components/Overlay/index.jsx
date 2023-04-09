@@ -7,6 +7,8 @@ import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-prio
 import { SetNewTaskTimeLengthPopper } from 'components/dropdowns/set-new-task-time-length-popper'
 import { SetNewTaskLinkedTasksPopper } from 'components/dropdowns/set-new-task-linked-tasks-popper'
 import { SetSelectedTasksPopper } from 'components/dropdowns/set-selected-tasks-popper'
+import { SetNewTaskFilterPopper } from 'components/dropdowns/set-filter-tasks-popper'
+import { SetNewTaskDueDatePopper } from 'components/dropdowns/set-filter-duedate-popper'
 import { MenuList } from 'components/MenuList'
 import { UserOptions } from 'components/UserOption'
 import { ViewOptions } from 'components/ViewOptions'
@@ -26,6 +28,7 @@ import { Block } from './block'
 
 export const Overlay = () => {
   const { showDialog, setShowDialog, dialogProps } = useOverlayContextValue()
+
   const closeOverlay = () => {
     setShowDialog('')
   }
@@ -212,6 +215,45 @@ export const Overlay = () => {
           <ConfrimDeleteSchedule
             closeOverlay={closeOverlay}
             scheduleId={dialogProps.scheduleId}
+          />
+        )
+      case 'SET_TASK_FILTER':
+        return (
+          <SetNewTaskFilterPopper
+            closeOverlay={closeOverlay}
+            setFilter={dialogProps.setFilter}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+      case 'SET_TASK_FILTER_SCHEDULE':
+        return (
+          <SetNewTaskDueDatePopper
+            closeOverlay={closeOverlay}
+            setSchedule={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+          />
+        )
+      case 'SET_TASK_FILTER_PROJECT':
+        return (
+          <SetNewTaskProjectPopper
+            closeOverlay={closeOverlay}
+            setProject={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+      case 'SET_TASK_FILTER_PRIORITY':
+        return (
+          <SetNewTaskPriorityPopper
+            closeOverlay={closeOverlay}
+            setTaskPriority={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
           />
         )
     }

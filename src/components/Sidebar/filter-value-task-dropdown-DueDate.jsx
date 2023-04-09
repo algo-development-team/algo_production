@@ -1,15 +1,11 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
-import { SetNewTaskFilterPopper } from 'components/dropdowns/set-filter-tasks-popper'
-import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
-import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
 import { SetNewTaskDueDatePopper } from 'components/dropdowns/set-filter-duedate-popper'
 import { useOverlayContextValue } from 'context'
 import { useState } from 'react'
-export const SetNewFilterValueTask = ({
+export const DueDateFilter = ({
   isQuickAdd,
   isPopup,
-  filter,
   filterSelect,
   setFilterSelect,
 }) => {
@@ -33,8 +29,9 @@ export const SetNewFilterValueTask = ({
         //     fontSize: '12px',
         //     outline: 'none',
         //     width: '65%',
+        //     //height: '30px',
         //     boxSizing: 'border-box',
-        //     marginBottom: '10px',
+        //     marginBottom: '15px',
         //     display: 'flex',
         // }}
         onClick={(e) => {
@@ -45,52 +42,27 @@ export const SetNewFilterValueTask = ({
             ),
           )
           if (isPopup) {
+            // console.log('isPopup...') // DEBUGGING
             setDialogProps({ setFilterSelect }) // Match the name 'task' with the 'setTaskTimeLength'
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else if (isQuickAdd) {
+            // console.log('isQuickAdd...') // DEBUGGING
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else {
-            if (filter === 'Due Date') {
               setShowDialog('SET_TASK_FILTER_SCHEDULE')
-            }
-            else if (filter === 'Projects') {
-              setShowDialog('SET_TASK_FILTER_PROJECT')
-            }
-            else if (filter === 'Priority') {
-              setShowDialog('SET_TASK_FILTER_PRIORITY')
-            }
-
           }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {filterSelect}
+        {filterSelect.day}
       </div>
-      {(filter === 'Due Date') && showPopup && (
+      {showPopup && (
         <SetNewTaskDueDatePopper
           isQuickAdd={isQuickAdd}
           isPopup={isPopup}
           setShowPopup={setShowPopup}
           setSchedule={setFilterSelect}
-          parentPosition={parentPosition}
-        />
-      )}
-      {(filter === 'Projects') && showPopup && (
-        <SetNewTaskProjectPopper
-          isQuickAdd={isQuickAdd}
-          isPopup={isPopup}
-          setShowPopup={setShowPopup}
-          setProject={setFilterSelect}
-          parentPosition={parentPosition}
-        />
-      )}
-      {(filter === 'Priority') && showPopup && (
-        <SetNewTaskPriorityPopper
-          isQuickAdd={isQuickAdd}
-          isPopup={isPopup}
-          setShowPopup={setShowPopup}
-          setTaskPriority={setFilterSelect}
           parentPosition={parentPosition}
         />
       )}

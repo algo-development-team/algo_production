@@ -1,21 +1,28 @@
 import { ReactComponent as AddIcon } from 'assets/svg/addnew.svg'
 import { ReactComponent as FilterIcon } from 'assets/svg/filternew.svg'
 
-export const Taskbar = ({ type, value, setValue }) => {
 
+// Taskbar: This is where the Hhndler (On & Off) of the 
+//          [Add Task, Fiter Task, AutoSchedule] is located in. 
+export const Taskbar = ({ type, onOff, value, setValue }) => {
+
+    // TaskbarIcon: Get the Icons of the tasks action
     const getTaskbarIcon = (type) => {
         if (type === 'ADD_TASKS') {
             return <AddIcon width={'30px'} height={'18px'} />
         } else if (type === 'FILTER_TASKS') {
-            return <FilterIcon width={'30px'} height={'18px'}/>
+            return <FilterIcon width={'15px'} height={'38px'}/>
         }
     }
 
+    // getTaskbarText: Get the type of the tasks action to match
     const getTaskbarText = (type) => {
         if (type === 'ADD_TASKS') {
         return 'Add'
         } else if (type === 'FILTER_TASKS') {
-        return 'Filter'
+        return ''
+        } else if (type === 'AUTO_SCHEDULE') {
+        return 'Auto Schedule'
         }
     }
 
@@ -23,24 +30,35 @@ export const Taskbar = ({ type, value, setValue }) => {
         setValue(true)
     }
 
-    const handleFilterTasks = () => {
+    const handleFilterTasks = (onOff) => {
+        setValue(!onOff)
+    }
+
+    const autoScheduleTasks = () => {
         setValue(true)
     }
 
-    const callTaskbarHandlerFunction = (type) => {
+    // callTaskbarHandlerFunction: Handler of the each action tasks
+    const callTaskbarHandlerFunction = (type, onOff) => {
+        {console.log(onOff)}
         if (type === 'ADD_TASKS') {
-        return handleAddTasks()
+        return handleAddTasks(onOff)
         } else if (type === 'FILTER_TASKS') {
-        return handleFilterTasks()
+        return handleFilterTasks(onOff)
+        } else if (type === 'AUTO_SCHEDULE') {
+        return autoScheduleTasks(onOff)
         }
     }
 
     return (
         <>
           <div
-            className='set-Taskbar'
-            onClick={() => callTaskbarHandlerFunction(type)}
-            >
+            // className='set-Taskbar'
+            style={{ display: 'flex',
+                           textalign: 'center',
+                           whitespace: 'nowrap' }}
+            onClick={() => callTaskbarHandlerFunction(type, onOff)}
+            > 
                 <div style={{color:'white'}}>
                     {getTaskbarIcon(type)}
                 </div>

@@ -1,6 +1,16 @@
 import { SetNewTaskTimeLength } from './add-task-dropdown'
+import { TaskEditor } from '../TaskEditor'
+import { quickAddTask } from '../../backend/handleUserTasks'
+import { useState, useEffect } from 'react'
+import { useAuth } from 'hooks'
+import { generatePushId } from '../../utils'
+
 
 export const AddTaskbar = ({setAddValue}) => {
+    const [searchText, setSearchText] = useState('')
+    const { currentUser } = useAuth()
+    const { taskID } = generatePushId()
+
     return (
         <>
         <div style = {{display:'inline-flex'}}>
@@ -19,8 +29,10 @@ export const AddTaskbar = ({setAddValue}) => {
                 display: 'inline-flex',
             }}
             placeholder="Add task..."
+            onChange={(e) => setSearchText(e.target.value)}
+            value={searchText}
             />
-            <SetNewTaskTimeLength/>
+            {/* <SetNewTaskTimeLength/> */}
         </div>
             <button
             className='taskbar__actions--add-task'
@@ -28,6 +40,17 @@ export const AddTaskbar = ({setAddValue}) => {
                 setAddValue(false)
             }}
             >
+
+            <quickAddTask
+                userId={currentUser}
+                taskName={searchText}
+                taskId={taskID}
+                taskDescription=''
+                taskTimeLength=''
+                projectId=''
+            />
+
+                
             Add
             </button>
             <button

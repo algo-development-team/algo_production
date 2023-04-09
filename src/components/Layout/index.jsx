@@ -6,12 +6,14 @@ import { useThemeContextValue } from 'context'
 import { TaskEditorContextProvider } from 'context/board-task-editor-context'
 import { ColumnEditorContextProvider } from 'context/board-column-editor-context'
 import { useProjects } from 'hooks'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, createContext } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { updateUserInfo } from '../../backend/handleUserInfo'
 import { useIsSetup, useAuth } from 'hooks'
 import { useOverlayContextValue } from 'context'
 
+
+export const MyContext = createContext();
 export const Layout = () => {
   const { isLight } = useThemeContextValue()
   const [showSidebar, setShowSidebar] = useState(true)
@@ -61,6 +63,7 @@ export const Layout = () => {
 
   return (
     <>
+    <MyContext.Provider value={showSidebar}>
       <TaskEditorContextProvider>
         <ColumnEditorContextProvider>
           {!loading ? (
@@ -79,6 +82,7 @@ export const Layout = () => {
           )}{' '}
         </ColumnEditorContextProvider>
       </TaskEditorContextProvider>
+      </MyContext.Provider>
     </>
   )
 }

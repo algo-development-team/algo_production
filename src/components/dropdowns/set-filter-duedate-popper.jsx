@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { ReactComponent as NextWeekIcon } from 'assets/svg/next-week.svg'
+import { useState } from 'react'
 import { ReactComponent as NoDateIcon } from 'assets/svg/none.svg'
 import { ReactComponent as SetScheduleIcon } from 'assets/svg/set-schedule.svg'
 import { ReactComponent as DaysLaterIcon } from 'assets/svg/weekend.svg'
@@ -8,7 +8,7 @@ import moment from 'moment'
 import './light.scss'
 import './main.scss'
 
-export const SetNewTaskSchedulePopper = ({
+export const SetNewTaskDueDatePopper = ({
   isQuickAdd,
   isPopup,
   setShowPopup,
@@ -38,17 +38,10 @@ export const SetNewTaskSchedulePopper = ({
     setSchedule({ day: 'Today', date: moment().format('DD-MM-YYYY') })
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
-  const set2DaysLater = () => {
+  const setPastDeadline = () => {
     setSchedule({
-      day: '2 Days Later',
-      date: moment().add(2, 'day').format('DD-MM-YYYY'),
-    })
-    isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
-  }
-  const set3DaysLater = () => {
-    setSchedule({
-      day: '3 Days Later',
-      date: moment().add(3, 'day').format('DD-MM-YYYY'),
+      day: 'Past Deadline',
+      date: moment().format('DD-MM-YYYY'),
     })
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
@@ -116,41 +109,15 @@ export const SetNewTaskSchedulePopper = ({
           </li>
           <li
             className='set-schedule__popper--option'
-            onClick={() => set2DaysLater()}
+            onClick={() => setPastDeadline()}
           >
             <div className=''>
-              <DaysLaterIcon fill={'#5297ff'} />
+              <SetScheduleIcon fill={'#ff9a14'} />
             </div>
 
-            <p className='set-new-task__schedule--name'>2 Days Later</p>
+            <p className='set-new-task__schedule--name'>Past Deadline</p>
             <p className='set-new-task__schedule--weekday'>
-              {moment().add(2, 'day').format('ddd')}
-            </p>
-          </li>
-          <li
-            className='set-schedule__popper--option'
-            onClick={() => set3DaysLater()}
-          >
-            <div className=''>
-              <DaysLaterIcon fill={'#5297ff'} />
-            </div>
-
-            <p className='set-new-task__schedule--name'>3 Days Later</p>
-            <p className='set-new-task__schedule--weekday'>
-              {moment().add(3, 'day').format('ddd')}
-            </p>
-          </li>
-          <li
-            className='set-schedule__popper--option'
-            onClick={() => setNext7days()}
-          >
-            <div className=''>
-              <NextWeekIcon fill={'#a970ff'} />
-            </div>
-
-            <p className='set-new-task__schedule--name'>Next Week</p>
-            <p className='set-new-task__schedule--weekday'>
-              {moment().add(7, 'day').format('ddd MMM D ')}
+              {moment().add(1, 'day').format('ddd')}
             </p>
           </li>
           <li

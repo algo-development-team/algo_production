@@ -1,12 +1,15 @@
 import { ReactComponent as ScheduleIcon } from 'assets/svg/scheduler.svg'
-import { SetNewTaskFilterPopper } from 'components/dropdowns/set-filter-tasks-popper'
+import { SetNewEventSchedulePopper } from 'components/dropdowns/set-new-event-schedule-popper'
 import { useOverlayContextValue } from 'context'
+import { useEffect } from 'react'
 import { useState } from 'react'
-export const SetNewFilterTask = ({
+export const SetNewEventSchedule = ({
   isQuickAdd,
   isPopup,
-  filter,
-  setFilter,
+  setSchedule,
+  schedule,
+  task,
+  defaultText,
 }) => {
   const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
@@ -15,55 +18,56 @@ export const SetNewFilterTask = ({
     setParentPosition(parentPosition)
     setShowPopup(true)
   }
+  const getDateStyle = () => {
+    if (schedule?.day === 'Today') {
+      let day = 'date__today'
+      return day
+    }
+    if (schedule?.day === 'Tomorrow') {
+      let day = 'date__tomorrow'
+      return day
+    }
+    if (schedule?.day === '2 Days Later' || schedule?.day === '3 Days Later') {
+      let day = 'date__weekend'
+      return day
+    }
+    if (schedule?.day === 'Next Week') {
+      let day = 'date__next-week'
+      return day
+    }
+  }
 
   return (
     <>
       <div
-        className={'set-filterbar'}
-        // style={{
-        //     padding: '5px 10px 5px 10px',
-        //     borderRadius: '5px',
-        //     border: 'none',
-        //     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-        //     fontSize: '12px',
-        //     outline: 'none',
-        //     width: '65%',
-        //     //height: '30px',
-        //     boxSizing: 'border-box',
-        //     marginBottom: '10px',
-        //     display: 'flex',
-        // }}
+        className={`set-new-task__schedule ${getDateStyle()}`}
         onClick={(e) => {
           setDialogProps(
             Object.assign(
               { elementPosition: e.currentTarget.getBoundingClientRect() },
-              { setFilter }
+              { setSchedule },
             ),
           )
           if (isPopup) {
-            // console.log('isPopup...') // DEBUGGING
-            setDialogProps({ setFilter }) // Match the name 'task' with the 'setTaskTimeLength'
+            setDialogProps({ task })
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else if (isQuickAdd) {
-            // console.log('isQuickAdd...') // DEBUGGING
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else {
-            // console.log('neither...') // DEBUGGING
-             setShowDialog('SET_TASK_FILTER')
-            // setShowDialog('SET_TASK_PRIORITY')
+            setShowDialog('SET_SCHEDULE')
           }
         }}
       >
         <ScheduleIcon width={'18px'} height={'18px'} />
 
-        {filter}
+        {schedule.time}
       </div>
       {showPopup && (
-        <SetNewTaskFilterPopper
+        <SetNewEventSchedulePopper
           isQuickAdd={isQuickAdd}
           isPopup={isPopup}
           setShowPopup={setShowPopup}
-          setFilter={setFilter}
+          setSchedule={setSchedule}
           parentPosition={parentPosition}
         />
       )}

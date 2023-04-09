@@ -57,7 +57,7 @@ export const BoardColumn = ({
                         className='action action__add-project'
                         type='submit'
                       >
-                        Save
+                        Sav
                       </button>
                       <button
                         className='action action__cancel'

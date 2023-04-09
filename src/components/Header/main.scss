@@ -12,7 +12,12 @@
   height: 56px;
   align-items: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.489);
-  &__left,
+
+  &__left {
+    display: flex;
+    align-items: center;
+    height: 56px;
+  }
   &__right {
     display: flex;
     align-items: center;
