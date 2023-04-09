@@ -20,7 +20,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
         },
   )
   const [projectIsList, setProjectIsList] = useState(
-    isEdit ? projectToEdit.projectIsList : true,
+    isEdit ? projectToEdit.projectIsList : false,
   )
   const [projectIsWork, setProjectIsWork] = useState(
     isEdit ? projectToEdit.projectIsWork : true,
@@ -154,106 +154,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
               </div>
             </div>
             <div className='add-project__form-group'>
-              <label>View</label>
-              <div className='add-project__set-view-type'>
-                <div
-                  className={`${
-                    projectIsList ? 'selected' : ''
-                  } add-project__set-view-type--option`}
-                  onClick={() => setProjectIsList(true)}
-                >
-                  <div className='add-project__set-view-type--preview preview__list' />
-                  <div className='add-project__set-view-type--description'>
-                    <div className='add-project__set-view-type--radio'>
-                      <svg
-                        width='11'
-                        height='11'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='1'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <use xlinkHref={`${featherIcon}#check`}></use>
-                      </svg>
-                    </div>
-                    <p className='add-project__set-view-type--name'>List</p>
-                  </div>
-                </div>
-                <div
-                  className={`${
-                    !projectIsList ? 'selected' : ''
-                  } add-project__set-view-type--option`}
-                  onClick={() => setProjectIsList(false)}
-                >
-                  <div className='add-project__set-view-type--preview preview__board' />
-                  <div className='add-project__set-view-type--description'>
-                    <div className='add-project__set-view-type--radio'>
-                      <svg
-                        width='11'
-                        height='11'
-                        fill='none'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <use xlinkHref={`${featherIcon}#check`}></use>
-                      </svg>
-                    </div>
-                    <p className='add-project__set-view-type--name'>Board</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className='add-project__form-group'>
-              <label>Work or Personal</label>
-              <div className='add-project__set-view-type'>
-                <div
-                  className={`${
-                    projectIsWork ? 'selected' : ''
-                  } add-project__set-view-type--option`}
-                  onClick={() => setProjectIsWork(true)}
-                >
-                  <div className='add-project__set-view-type--description'>
-                    <div className='add-project__set-view-type--radio'>
-                      <svg
-                        width='11'
-                        height='11'
-                        fill='none'
-                        stroke='currentColor'
-                        strokeWidth='1'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <use xlinkHref={`${featherIcon}#check`}></use>
-                      </svg>
-                    </div>
-                    <p className='add-project__set-view-type--name'>Work</p>
-                  </div>
-                </div>
-                <div
-                  className={`${
-                    !projectIsWork ? 'selected' : ''
-                  } add-project__set-view-type--option`}
-                  onClick={() => setProjectIsWork(false)}
-                >
-                  <div className='add-project__set-view-type--description'>
-                    <div className='add-project__set-view-type--radio'>
-                      <svg
-                        width='11'
-                        height='11'
-                        fill='none'
-                        strokeWidth='2'
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                      >
-                        <use xlinkHref={`${featherIcon}#check`}></use>
-                      </svg>
-                    </div>
-                    <p className='add-project__set-view-type--name'>Personal</p>
-                  </div>
-                </div>
-              </div>
+              <label>Schedule</label>
             </div>
           </form>
         </div>
