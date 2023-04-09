@@ -3,6 +3,7 @@ import { TaskList } from 'components/ListView'
 import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
 import { FullCalendar } from 'components/FullCalendar'
+import { ScheduleCalendar } from 'components/FullCalendar/schedule-calendar'
 import './styles/content.scss'
 import './styles/light.scss'
 import React from 'react'
@@ -28,8 +29,7 @@ export const Content = () => {
     } else if (projectId) {
       return currentView ? <TaskList /> : <Board />
     } else if (scheduleId) {
-      // return <ScheduleCalendar />
-      return null
+      return <ScheduleCalendar />
     } else {
       return null
     }

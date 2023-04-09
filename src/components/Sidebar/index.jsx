@@ -17,10 +17,6 @@ export const Sidebar = (props) => {
   const [FilterTasks, setFilterTasks] = useState(false)
 
   useEffect(() => {
-    console.log('scheduleId', scheduleId) // DEBUGGING
-  }, [scheduleId])
-
-  useEffect(() => {
     if (FilterTasks) {
       setAddTasks(false)
     }
