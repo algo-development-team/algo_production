@@ -4,6 +4,7 @@
 }
 
 .light .add-task__input,
+.light .add-task__input--no-bottom-margin,
 .light .add-task__description {
   color: #202020;
   &::placeholder {

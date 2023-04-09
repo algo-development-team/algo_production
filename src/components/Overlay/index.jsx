@@ -1,5 +1,6 @@
 /* eslint-disable default-case */
 import { ConfrimDeleteProject } from 'components/ConfirmDeleteProject'
+import { ConfrimDeleteSchedule } from 'components/ConfirmDeleteSchedule'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
 import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
@@ -14,6 +15,8 @@ import { ViewOptions } from 'components/ViewOptions'
 import { useOverlayContextValue } from 'context/overlay-context'
 import { useEffect } from 'react'
 import './main.scss'
+import './light.scss'
+import { ScheduleEditor } from './schedule-editor'
 import { ProjectEditor } from './ProjectEditor'
 import { QuickAddTaskDialog } from './quick-add-task-dialog'
 import { TaskPopup } from './task-popup'
@@ -34,21 +37,23 @@ export const Overlay = () => {
     setShowDialog(false)
   }, [])
 
-  const renderSwitch = (params) => {
+  const renderSwitch = () => {
     switch (showDialog) {
       case 'BLOCK':
         return (
           <Block
             closeOverlay={closeOverlay}
-            allDay={dialogProps.allDay}
             taskname={dialogProps.taskname}
             taskdescription={dialogProps.taskdescription}
             taskbackgroundcolor={dialogProps.taskbackgroundcolor}
             location={dialogProps.location}
             meetLink={dialogProps.meetLink}
             attendees={dialogProps.attendees}
-            start={dialogProps.start}
-            end={dialogProps.end}
+            recurring={dialogProps.recurring}
+            rruleStr={dialogProps.rruleStr}
+            eventId={dialogProps.eventId}
+            calendarId={dialogProps.calendarId}
+            task={dialogProps.task}
             remove={dialogProps.remove}
             copy={dialogProps.copy}
             backlog={dialogProps.backlog}
@@ -57,6 +62,8 @@ export const Overlay = () => {
         )
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
+      case 'ADD_SCHEDULE':
+        return <ScheduleEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
         return <QuickAddTaskDialog closeOverlay={closeOverlay} />
       case 'TASK_POPUP':
@@ -99,17 +106,21 @@ export const Overlay = () => {
         return (
           <MenuList
             closeOverlay={closeOverlay}
-            taskId={dialogProps.taskId}
-            columnId={dialogProps.columnId}
+            scheduleId={dialogProps.scheduleId}
             projectId={dialogProps.projectId}
+            columnId={dialogProps.columnId}
+            taskId={dialogProps.taskId}
             taskIndex={dialogProps.taskIndex}
+            schedule={dialogProps.schedule}
+            project={dialogProps.project}
             columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
+            targetIsSchedule={dialogProps.targetIsSchedule}
             targetIsProject={dialogProps.targetIsProject}
             targetIsColumn={dialogProps.targetIsColumn}
+            targetIsBoardTask={dialogProps.targetIsBoardTask}
             targetIsTask={dialogProps.targetIsTask}
-            taskIsImportant={dialogProps.taskIsImportant}
           />
         )
       case 'SET_SCHEDULE':
@@ -184,11 +195,26 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
           />
         )
-      case 'CONFIRM_DELETE':
+      case 'EDIT_SCHEDULE':
+        return (
+          <ScheduleEditor
+            isEdit
+            scheduleToEdit={dialogProps.schedule}
+            closeOverlay={closeOverlay}
+          />
+        )
+      case 'CONFIRM_DELETE_PROJECT':
         return (
           <ConfrimDeleteProject
             closeOverlay={closeOverlay}
             projectId={dialogProps.projectId}
+          />
+        )
+      case 'CONFIRM_DELETE_SCHEDULE':
+        return (
+          <ConfrimDeleteSchedule
+            closeOverlay={closeOverlay}
+            scheduleId={dialogProps.scheduleId}
           />
         )
       case 'SET_TASK_FILTER':
@@ -201,36 +227,36 @@ export const Overlay = () => {
             setPopupSelectedProject={dialogProps.setPopupSelectedProject}
           />
         )
-        case 'SET_TASK_FILTER_SCHEDULE':
-          return (
-            <SetNewTaskDueDatePopper
-              closeOverlay={closeOverlay}
-              setSchedule={dialogProps.setFilterSelect}
-              xPosition={dialogProps.elementPosition.x}
-              yPosition={dialogProps.elementPosition.y}
-            />
-          )
-        case 'SET_TASK_FILTER_PROJECT':
-          return (
-            <SetNewTaskProjectPopper
-              closeOverlay={closeOverlay}
-              setProject={dialogProps.setFilterSelect}
-              xPosition={dialogProps.elementPosition.x}
-              yPosition={dialogProps.elementPosition.y}
-              setPopupSelectedProject={dialogProps.setPopupSelectedProject}
-            />
-          )
-        case 'SET_TASK_FILTER_PRIORITY':
-          return (
-            <SetNewTaskPriorityPopper
-              closeOverlay={closeOverlay}
-              setTaskPriority={dialogProps.setFilterSelect}
-              xPosition={dialogProps.elementPosition.x}
-              yPosition={dialogProps.elementPosition.y}
-              setPopupSelectedProject={dialogProps.setPopupSelectedProject}
-            />
-          )
+      case 'SET_TASK_FILTER_SCHEDULE':
+        return (
+          <SetNewTaskDueDatePopper
+            closeOverlay={closeOverlay}
+            setSchedule={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+          />
+        )
+      case 'SET_TASK_FILTER_PROJECT':
+        return (
+          <SetNewTaskProjectPopper
+            closeOverlay={closeOverlay}
+            setProject={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
+      case 'SET_TASK_FILTER_PRIORITY':
+        return (
+          <SetNewTaskPriorityPopper
+            closeOverlay={closeOverlay}
+            setTaskPriority={dialogProps.setFilterSelect}
+            xPosition={dialogProps.elementPosition.x}
+            yPosition={dialogProps.elementPosition.y}
+            setPopupSelectedProject={dialogProps.setPopupSelectedProject}
+          />
+        )
     }
   }
-  return <>{renderSwitch(showDialog)}</>
+  return <>{renderSwitch()}</>
 }

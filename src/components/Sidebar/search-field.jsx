@@ -5,15 +5,15 @@ import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
 import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
+import { handleCheckTask } from '../../backend/handleUserTasks'
+import { useAuth } from 'hooks'
 import moment from 'moment'
 import { Taskbar } from './task-bar'
-
 
 // Global Const
 const date = new Date()
 const todayMoment = moment(date).startOf('day')
 const tomorrowMoment = moment(date).startOf('day').add(1, 'day')
-
 
 // Search Field: Important sections of the Side-bar contents are here
 //               with Search & Filter of the unscheduled tasks
@@ -23,8 +23,6 @@ export const SearchField = ({
   filterValue,
   setFilterValue,
 }) => {
-
-
   // Local Const
   const [searchText, setSearchText] = useState('')
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -32,11 +30,11 @@ export const SearchField = ({
   const { projects } = useProjects()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
+  const { currentUser } = useAuth()
   const [filter, setFilter] = useState('None')
   const [filterSelect, setFilterSelect] = useState('None')
   const [AddTasks, setAddTasks] = useState(false)
   const [FilterTasks, setFilterTasks] = useState(false)
-
 
   // Use Effect
   useEffect(() => {
@@ -61,75 +59,67 @@ export const SearchField = ({
     }
   }, [loading, scheduledTasks, tasks])
 
-
   // getProjectColourHex: Gets the colour hex of each project
   const getProjectColourHex = (projectId) => {
     const project = projects.find((project) => project.projectId === projectId)
     return project?.projectColour?.hex || GoogleEventColours[6].hex
   }
 
-
   // filterTasks: Fuction filters tasks based on  (Due Date, Projects, Priority)
   //              It loops through the unscheduled tasks list to collect
-  //              tasks that meets the requirement. 
+  //              tasks that meets the requirement.
   const filterTasks = (filter, filterSelect, tasks) => {
-
-    if (!filter && !filterSelect)  {
+    if (!filter && !filterSelect) {
       return tasks
     }
 
-    if (filter === "Due Date" && filterSelect.day === 'Past Deadline') {
+    if (filter === 'Due Date' && filterSelect.day === 'Past Deadline') {
       return warningTasks(filter, filterSelect, tasks)[1]
     }
 
     const result = []
     for (let i = 0; i < tasks.length; i++) {
-
-      if (filter === "Due Date" && tasks[i].date === filterSelect.date) {
-          result.push(tasks[i])
-
-        } else if (filter === "Projects" && tasks[i].projectId === filterSelect.projectId) {
-          result.push(tasks[i])
-
-        } else if (filter === "Priority" &&  tasks[i].priority === filterSelect) {
-          result.push(tasks[i])
+      if (filter === 'Due Date' && tasks[i].date === filterSelect.date) {
+        result.push(tasks[i])
+      } else if (
+        filter === 'Projects' &&
+        tasks[i].projectId === filterSelect.projectId
+      ) {
+        result.push(tasks[i])
+      } else if (filter === 'Priority' && tasks[i].priority === filterSelect) {
+        result.push(tasks[i])
       }
-    } 
+    }
 
     return result
   }
 
-
   // warningTasks: Creates a warning bars (past deadline & due today)
   //               It loops through the unscheduled tasks list to collect
-  //               tasks that meets the requirement. 
+  //               tasks that meets the requirement.
   const warningTasks = (filter, filterSelect, tasks) => {
-
     const pastDeadline = []
     const warningDeadline = []
     for (let i = 0; i < tasks.length; i++) {
-
-      if  (tasks[i].date !== '') {
+      if (tasks[i].date !== '') {
         const momentDate = moment(tasks[i].date, 'DD-MM-YYYY').toDate()
         const momentString = moment(momentDate).startOf('day')
-  
-        if ( momentString.format('DD-MM-YYYY') === todayMoment.format('DD-MM-YYYY')) {
-            warningDeadline.push(tasks[i])
-          } else if ( momentString < todayMoment) {
-            pastDeadline.push(tasks[i])
-        }
 
+        if (
+          momentString.format('DD-MM-YYYY') === todayMoment.format('DD-MM-YYYY')
+        ) {
+          warningDeadline.push(tasks[i])
+        } else if (momentString < todayMoment) {
+          pastDeadline.push(tasks[i])
+        }
       }
-  
-    } 
+    }
     return [warningDeadline, pastDeadline]
   }
-  
-
 
   // searchTasks: Allows for user to search through the tasks
   //              As user types each word, only the tasks with matching
-  //              characters will appear 
+  //              characters will appear
   const searchTasks = (searchText, tasks) => {
     if (!searchText) {
       return tasks
@@ -166,47 +156,52 @@ export const SearchField = ({
 
   return (
     <div>
-     
       {/* Warning bar task */}
       <div>
-        
         {/* Display Due Today Warning bar */}
-        { warningTasks(filter, filterSelect, unscheduledTasks)[0].length ? 
-          <button className='set-Warningbar'
-          onClick={() =>  {
-            setFilterValue(true)
-            setFilter("Due Date")
-            setFilterSelect({
-              day: 'Today',
-              date: moment().format('DD-MM-YYYY'),
-            })
-          }}
-        > 
-        {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} Due Today
-        </button>  : ''
-        }
+        {warningTasks(filter, filterSelect, unscheduledTasks)[0].length ? (
+          <button
+            className='set-Warningbar'
+            onClick={() => {
+              setFilterValue(true)
+              setFilter('Due Date')
+              setFilterSelect({
+                day: 'Today',
+                date: moment().format('DD-MM-YYYY'),
+              })
+            }}
+          >
+            {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} Due
+            Today
+          </button>
+        ) : (
+          ''
+        )}
 
         {/* Display Due Today Warning bar */}
-        { warningTasks(filter, filterSelect, unscheduledTasks)[1].length ? 
-          <button className='set-Warningbar'
-          onClick={() =>  {
-            setFilterValue(true)
-            setFilter("Due Date")
-            setFilterSelect({
-              day: 'Past Deadline',
-              date: moment().format('DD-MM-YYYY'),
-            })
-          }}
-          > 
-        {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} Past Deadline
-        </button>  : ''
-        }
+        {warningTasks(filter, filterSelect, unscheduledTasks)[1].length ? (
+          <button
+            className='set-Warningbar'
+            onClick={() => {
+              setFilterValue(true)
+              setFilter('Due Date')
+              setFilterSelect({
+                day: 'Past Deadline',
+                date: moment().format('DD-MM-YYYY'),
+              })
+            }}
+          >
+            {warningTasks(filter, filterSelect, unscheduledTasks)[1].length}{' '}
+            Past Deadline
+          </button>
+        ) : (
+          ''
+        )}
       </div>
 
-
       {/* Search bar task */}
-      <div 
-      className='set-Searchbar'
+      <div
+        className='set-Searchbar'
         style={{
           // display: 'inline-block',
           // flexdirection: 'row',
@@ -216,7 +211,7 @@ export const SearchField = ({
           alignItems: 'center',
         }}
       >
-        <div > 
+        <div>
           {/* style={{ paddingLeft: '5px' }} */}
           <LookupIcon
             style={{
@@ -259,39 +254,47 @@ export const SearchField = ({
           onChange={(e) => setSearchText(e.target.value)}
           value={searchText}
         />
-        
-        <button style={{ 
-              display: 'flex',
-              alignitems: 'center',
-              textalign: 'center',
-              justifycontent: 'center',
-              padding: '1px 1px 1px 1px',
-              borderRadius: '5px',
-              border: 'none',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-              fontSize: '5px',
-              outline: 'none',
-              //width: '10%',
-              width: '15px',
-              height: '38px',
-              boxSizing: 'border-box',
-              marginTop: '10px',
-              marginBottom: '10px',
-              }}>
+
+        <button
+          style={{
+            display: 'flex',
+            alignitems: 'center',
+            textalign: 'center',
+            justifycontent: 'center',
+            padding: '1px 1px 1px 1px',
+            borderRadius: '5px',
+            border: 'none',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            fontSize: '5px',
+            outline: 'none',
+            //width: '10%',
+            width: '15px',
+            height: '38px',
+            boxSizing: 'border-box',
+            marginTop: '10px',
+            marginBottom: '10px',
+          }}
+        >
           <Taskbar
-              type='FILTER_TASKS'
-              onOff={filterValue}
-              value={filterValue}
-              setValue={setFilterValue}
-            />
+            type='FILTER_TASKS'
+            onOff={filterValue}
+            value={filterValue}
+            setValue={setFilterValue}
+          />
         </button>
       </div>
 
       {/* Filter bar task */}
       <div>
-        {filterValue  && 
-          <FilterTaskbar filter={filter} setFilter={setFilter} filterSelect={filterSelect} setFilterSelect={setFilterSelect} setFilterValue={setFilterValue} />
-        }
+        {filterValue && (
+          <FilterTaskbar
+            filter={filter}
+            setFilter={setFilter}
+            filterSelect={filterSelect}
+            setFilterSelect={setFilterSelect}
+            setFilterValue={setFilterValue}
+          />
+        )}
       </div>
 
       <div
@@ -300,7 +303,7 @@ export const SearchField = ({
         style={{
           //height: '40vh',
           //height: '60vh',
-          height:  filterValue? "calc(60vh - 15vh)" : "60vh",
+          height: filterValue ? 'calc(60vh - 15vh)' : '60vh',
           width: '101%',
           padding: '2px',
           overflowY: 'scroll',
@@ -308,7 +311,12 @@ export const SearchField = ({
           // borderRadius: '25px'
         }}
       >
-        {searchTasks(searchText, (filterSelect!=='None' && filterValue) ? filterTasks(filter, filterSelect, unscheduledTasks) : unscheduledTasks).map((task) => {
+        {searchTasks(
+          searchText,
+          filterSelect !== 'None' && filterValue
+            ? filterTasks(filter, filterSelect, unscheduledTasks)
+            : unscheduledTasks,
+        ).map((task) => {
           return (
             <div
               className='fc-event fc-h-event fc-daygrid-event fc-daygrid-block-event'

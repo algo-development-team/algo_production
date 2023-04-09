@@ -3,6 +3,7 @@ import { HamburgerButton } from './hamburger'
 import { HomeButton } from './home'
 import { CalendarButton } from './calendar'
 import { ProjectsButton } from './projects'
+import { SettingButton } from './setting'
 import './light.scss'
 import './main.scss'
 import { GoogleAuthButton } from './google-auth-button'
@@ -14,7 +15,7 @@ import { useParams } from 'react-router-dom'
 export const Header = (props) => {
   const { sizes } = useResponsiveSizes()
   const [windowWidth, setWindowWidth] = useState(window.innerWidth)
-  const params = useParams()
+  const { defaultGroup, scheduleId } = useParams()
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
@@ -25,14 +26,16 @@ export const Header = (props) => {
   return (
     <div className='header'>
       <div className='header__left'>
-        {!(params?.defaultGroup === 'Calendar' && windowWidth >= 900) && (
-          <HamburgerButton onClick={props.onClick} />
-        )}
+        {!(
+          (defaultGroup === 'Calendar' || scheduleId) &&
+          windowWidth >= 900
+        ) && <HamburgerButton onClick={props.onClick} />}
         <HomeButton />
         {!sizes.phone ? (
           <>
             <CalendarButton />
             <ProjectsButton />
+            <SettingButton />
           </>
         ) : (
           <CalendarOrProjectsButton />

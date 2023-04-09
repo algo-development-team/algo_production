@@ -125,27 +125,26 @@
 
 .set-filterbar {
   padding: 5px 10px 5px 10px;
-  border-Radius: 5px;
+  border-radius: 5px;
   border: none;
-  box-Shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  font-Size: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 15px;
   outline: none;
   //width: 100%;
   width: 265px - 60px;
   //height: 30px;
-  box-Sizing: border-box;
-  margin-Bottom: 10px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
   display: flex;
 }
 
 .set-searchbox {
-  max-height:60vh;
+  max-height: 60vh;
   //height: 60vh;
   width: 101%;
   padding: 2px;
   //overflow-Y: scroll;
-  overflow-X: hidden;
-
+  overflow-x: hidden;
 }
 
 .logo {
@@ -267,13 +266,113 @@
       background-color: #58a9eb;
       color: #feffff;
       width: 60px;
-      margin-Right: 5px;
+      margin-right: 5px;
     }
     &--cancel {
       background-color: #f5f5f5;
       border: 1px solid #555;
       width: 60px;
-      margin-Bottom: 10px;
+      margin-bottom: 10px;
+    }
+  }
+}
+
+.custom-project {
+  display: flex;
+  flex-direction: row;
+  margin-left: 0px;
+  padding: 5px 12px 5px 7px;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+
+  &.active {
+    background-color: #363636;
+    border-radius: 5px;
+  }
+
+  &__info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  &__icon {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 0.6rem;
+  }
+  &__info {
+    display: flex;
+    align-items: center;
+  }
+  &__dot {
+    width: 10px;
+    height: 10px;
+    background-color: #fefbfb;
+    border-radius: 50%;
+  }
+
+  &__name {
+    margin: 0.4rem 0;
+  }
+
+  &-group {
+    &__title-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 1rem;
+      margin-bottom: 0.4rem;
+      padding: 5px 12px 5px 7px;
+      cursor: pointer;
+      &:hover {
+        .custom-project-group__add-project {
+          opacity: 1;
+        }
+      }
+      @include respond(tab-port) {
+        .custom-project-group__add-project {
+          opacity: 1;
+        }
+      }
+    }
+
+    &__icon {
+      margin-right: 12px;
+      display: flex;
+      align-items: center;
+    }
+    &__name {
+      font-weight: 700;
+    }
+
+    &__wrapper {
+      margin-bottom: 1rem;
+    }
+    &__add-project {
+      margin-left: auto;
+      cursor: pointer;
+      opacity: 0;
+      display: flex;
+      place-items: center;
+      padding: 0.2rem;
+      background-color: unset;
+      svg {
+        stroke: #ddd;
+      }
+      &:hover {
+        background-color: #363636;
+      }
+      &--icon {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-content: center;
+        border-radius: 2px;
+      }
     }
   }
 }

@@ -17,8 +17,8 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
   }
 
   const handleProjectTasksDelete = async () => {
-   // Project Task Delete 
-   await projectTasksDelete(currentUser && currentUser.id, projectId)
+    // Project Task Delete
+    await projectTasksDelete(currentUser && currentUser.id, projectId)
   }
 
   const deleteHandler = async (e) => {
@@ -26,7 +26,7 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
     e.preventDefault()
     await handleProjectDelete()
     await handleProjectTasksDelete()
-    navigate('/app/Checklist')
+    navigate('/app/Overview')
 
     closeOverlay()
   }

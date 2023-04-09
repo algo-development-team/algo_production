@@ -1,64 +1,70 @@
+import { useState, useEffect } from 'react'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
-import { useChecklist, useCalendarInfo } from 'hooks'
-import { updateUserInfo } from '../../backend/handleUserInfo'
 import { updateProjectColumns } from '../../backend/handleUserProjects'
 import {
   useOverlayContextValue,
   useTaskEditorContextValue,
   useColumnEditorContextValue,
 } from 'context'
-import { useAuth } from 'hooks'
-import {
-  columnTaskDelete,
-  taskDelete,
-  getTask,
-} from '../../backend/handleUserTasks'
+import { useAuth, useProjects } from 'hooks'
+import { columnTaskDelete, taskDelete } from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
-import { useParams } from 'react-router-dom'
-import { insertEvent } from 'googleCalendar'
-import moment from 'moment'
-import { roundUp15Min } from 'handleMoment'
-import { getTaskColorId } from 'handleColorId'
-import { timeZone } from 'handleCalendars'
-import { updateTask } from 'handleUserTasks'
 
 export const MenuList = ({
   closeOverlay,
+  scheduleId,
   projectId,
   columnId,
   taskId,
   taskIndex,
+  schedule,
+  project,
   columns,
   xPosition,
   yPosition,
+  targetIsSchedule,
   targetIsProject,
   targetIsColumn,
   targetIsTask,
-  taskIsImportant,
   targetIsBoardTask,
 }) => {
   const { currentUser } = useAuth()
   const { setTaskEditorToShow } = useTaskEditorContextValue()
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
-  const { defaultGroup } = useParams()
-  const { calendarId, loading } = useCalendarInfo()
-  const { checklist } = useChecklist()
+  const { projects, loading: projectsLoading } = useProjects()
+  const [showDeleteOption, setShowDeleteOption] = useState(
+    targetIsSchedule ? false : true,
+  )
+
+  useEffect(() => {
+    if (scheduleId === 'WORK_SCHEDULE' || scheduleId === 'PERSONAL_SCHEDULE') {
+      setShowDeleteOption(false)
+    } else if (targetIsSchedule && !projectsLoading) {
+      const schedule = projects.find(
+        (project) => project.projectScheduleId === scheduleId,
+      )
+      if (schedule) {
+        setShowDeleteOption(false)
+      } else {
+        setShowDeleteOption(true)
+      }
+    }
+  }, [targetIsSchedule, scheduleId, projects, projectsLoading])
+
+  const handleScheduleDeleteConfirmation = () => {
+    setDialogProps({ scheduleId: scheduleId })
+    setShowDialog('CONFIRM_DELETE_SCHEDULE')
+  }
 
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
-    setShowDialog('CONFIRM_DELETE')
-  }
-
-  const handleColumnDelete = async () => {
-    const newColumns = columns.filter((column) => column.id !== columnId)
-    await updateProjectColumns(currentUser.id, projectId, newColumns)
+    setShowDialog('CONFIRM_DELETE_PROJECT')
   }
 
   const handleColumnTasksDelete = async () => {
-    // column task delete
     await columnTaskDelete(currentUser && currentUser.id, projectId, columnId)
   }
 
@@ -75,7 +81,9 @@ export const MenuList = ({
   const deleteHandler = async (e) => {
     e.stopPropagation()
     closeOverlay()
-    if (targetIsProject) {
+    if (targetIsSchedule) {
+      handleScheduleDeleteConfirmation()
+    } else if (targetIsProject) {
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
       const newColumns = columns.filter((column) => column.id !== columnId)
@@ -85,7 +93,7 @@ export const MenuList = ({
         newColumns,
       )
       await handleColumnTasksDelete()
-    } else {
+    } else if (targetIsTask || targetIsBoardTask) {
       await handleTaskDelete()
     }
   }
@@ -93,74 +101,19 @@ export const MenuList = ({
   const editHandler = (e) => {
     e.preventDefault()
     e.stopPropagation()
-    if (targetIsTask) {
-      setTaskEditorToShow(taskId)
-      closeOverlay(e)
+    if (targetIsSchedule) {
+      setDialogProps({ schedule: schedule })
+      setShowDialog('EDIT_SCHEDULE')
+    } else if (targetIsProject) {
+      setDialogProps({ project: project })
+      setShowDialog('EDIT_PROJECT')
     } else if (targetIsColumn) {
       setColumnEditorToShow({ projectId, columnId })
       closeOverlay(e)
-    } else if (targetIsProject) {
-      setShowDialog('EDIT_PROJECT')
+    } else if (targetIsTask || targetIsBoardTask) {
+      setTaskEditorToShow(taskId)
+      closeOverlay(e)
     }
-  }
-
-  const addtochecklistHandler = async (e) => {
-    if (checklist.includes(taskId)) {
-      return
-    }
-    try {
-      const newChecklist = Array.from(checklist)
-      newChecklist.push(taskId)
-      await updateUserInfo(currentUser && currentUser.id, {
-        checklist: newChecklist,
-      })
-
-      //inputExpandTasks(currentUser.id, "ADD_CHECKLIST")
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const removefromchecklistHandler = async (e) => {
-    try {
-      const newChecklist = checklist.filter(
-        (existingtaskId) => existingtaskId !== taskId,
-      )
-      await updateUserInfo(currentUser && currentUser.id, {
-        checklist: newChecklist,
-      })
-
-      //inputExpandTasks(currentUser.id, "REMOVE_CHECKLIST")
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  /* inserts the task as time block at current time in Google Calendar */
-  const doNowAtCalendar = async (e) => {
-    const task = await getTask(currentUser && currentUser.id, taskId)
-    const duration = Math.min(task.timeLength, 120) // duration set to 2 hours max
-    const now = moment.now()
-    const startTime = roundUp15Min(now)
-    const endTime = moment(startTime).add(duration, 'minutes')
-    if (!loading) {
-      const newEvent = await insertEvent(
-        calendarId,
-        startTime.toISOString(),
-        endTime.toISOString(),
-        timeZone,
-        task.name,
-        task.description,
-        getTaskColorId(task.priority),
-      )
-      // update task's eventId
-      const updatedEventIds = Array.from(task.eventIds)
-      updatedEventIds.push(newEvent.id)
-      await updateTask(currentUser && currentUser.id, taskId, {
-        eventIds: updatedEventIds,
-      })
-    }
-    //inputExpandTasks(currentUser.id, "DO_NOW_CALENDAR")
   }
 
   const computeXPosition = () => {
@@ -177,10 +130,23 @@ export const MenuList = ({
       }
     } else {
       computedXPosition = xPosition
-      console.log('BOARDDD', targetIsBoardTask)
     }
 
     return computedXPosition
+  }
+
+  const getOptionLabelType = () => {
+    if (targetIsSchedule) {
+      return 'Schedule'
+    } else if (targetIsProject) {
+      return 'Project'
+    } else if (targetIsColumn) {
+      return 'Column'
+    } else if (targetIsTask || targetIsBoardTask) {
+      return 'Task'
+    } else {
+      return ''
+    }
   }
 
   return (
@@ -201,54 +167,18 @@ export const MenuList = ({
               <EditIcon />
             </div>
             <span className='menu__list--content'>
-              Edit{' '}
-              {targetIsProject ? 'Project' : targetIsColumn ? 'Column' : 'Task'}
+              Edit {getOptionLabelType()}
             </span>
           </li>
-
-          <li className='menu__list--item' onClick={(e) => deleteHandler(e)}>
-            <div className='menu__list--icon'>
-              <DeleteIcon />
-            </div>
-
-            <span className='menu__list--content'>
-              Delete{' '}
-              {targetIsProject ? 'Project' : targetIsColumn ? 'Column' : 'Task'}
-            </span>
-          </li>
-
-          {targetIsTask && (
-            <li
-              className='menu__list--item'
-              onClick={(e) => {
-                defaultGroup === 'Checklist'
-                  ? removefromchecklistHandler(e)
-                  : addtochecklistHandler(e)
-              }}
-            >
+          {showDeleteOption && (
+            <li className='menu__list--item' onClick={(e) => deleteHandler(e)}>
               <div className='menu__list--icon'>
                 <DeleteIcon />
               </div>
 
               <span className='menu__list--content'>
-                {defaultGroup === 'Checklist'
-                  ? 'Remove Task From Checklist'
-                  : 'Add Task To Checklist'}
+                Delete {getOptionLabelType()}
               </span>
-            </li>
-          )}
-          {targetIsTask && (
-            <li
-              className='menu__list--item'
-              onClick={(e) => {
-                doNowAtCalendar(e)
-              }}
-            >
-              <div className='menu__list--icon'>
-                <EditIcon />
-              </div>
-
-              <span className='menu__list--content'>Do Now (Calendar)</span>
             </li>
           )}
         </ul>

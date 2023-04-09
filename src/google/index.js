@@ -1,5 +1,61 @@
 import axios from 'axios'
 import { v4 as uuidv4 } from 'uuid'
+import { generatePushId } from 'utils'
+import { timeZone } from 'handleCalendars'
+
+export const getFormattedGoogleCalendarEvent = ({
+  id,
+  summary,
+  description,
+  colorId,
+  location,
+  attendees,
+  recurrence,
+  startTime,
+  endTime,
+  allDay,
+  taskId,
+}) => {
+  const formattedGoogleCalendarEvent = {}
+  if (id) formattedGoogleCalendarEvent.id = id
+  if (summary) formattedGoogleCalendarEvent.summary = summary
+  if (description) formattedGoogleCalendarEvent.description = description
+  if (colorId) formattedGoogleCalendarEvent.colorId = colorId
+  if (location) formattedGoogleCalendarEvent.location = location
+  if (attendees) formattedGoogleCalendarEvent.attendees = attendees
+  if (recurrence) formattedGoogleCalendarEvent.recurrence = recurrence
+  if (startTime) {
+    if (allDay) {
+      formattedGoogleCalendarEvent.start = {
+        date: startTime,
+      }
+    } else {
+      formattedGoogleCalendarEvent.start = {
+        dateTime: startTime,
+        timeZone: timeZone,
+      }
+    }
+  }
+  if (endTime) {
+    if (allDay) {
+      formattedGoogleCalendarEvent.end = {
+        date: endTime,
+      }
+    } else {
+      formattedGoogleCalendarEvent.end = {
+        dateTime: endTime,
+        timeZone: timeZone,
+      }
+    }
+  }
+  if (taskId) {
+    formattedGoogleCalendarEvent.extendedProperties = {
+      private: { taskId: taskId },
+    }
+  }
+
+  return formattedGoogleCalendarEvent
+}
 
 export const getValidToken = async (userId) => {
   try {
@@ -122,7 +178,6 @@ export const getUserGoogleCalendarEventsIncSync = async (
   }
 }
 
-// write a function that adds a new calendar to a user's Google Calendar list
 export const addCalendarToUserGoogleCalendarList = async (
   userId,
   calendarName,
@@ -155,7 +210,6 @@ export const addCalendarToUserGoogleCalendarList = async (
   }
 }
 
-// write a function that adds a new event to a calendar
 export const addEventToUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -187,7 +241,6 @@ export const addEventToUserGoogleCalendar = async (
   }
 }
 
-// write a function that deletes an event from a calendar
 export const deleteEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -215,7 +268,6 @@ export const deleteEventFromUserGoogleCalendar = async (
   }
 }
 
-// write a function that partially updates an event from a calendar
 export const updateEventFromUserGoogleCalendar = async (
   userId,
   calendarId,
@@ -274,5 +326,111 @@ export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
     return data
   } catch (error) {
     console.log(error)
+  }
+}
+
+export const createGoogleMeet = async (userId, calendarId, eventId) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    // Send a PATCH request to update the event with the new conferenceData
+    const updateResponse = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}?conferenceDataVersion=1`,
+      {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conferenceData: {
+            createRequest: {
+              requestId: generatePushId(),
+            },
+          },
+        }),
+      },
+    )
+
+    if (!updateResponse.ok) {
+      throw new Error('Failed to generate Google Meet link')
+    }
+
+    // Extract the Meet link from the updated event data
+    const updatedEventData = await updateResponse.json()
+    console.log('updatedEventData', updatedEventData) // DEBUGGING
+    const meetLink = updatedEventData.hangoutLink
+
+    return meetLink
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const deleteGoogleMeet = async (userId, calendarId, eventId) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}?conferenceDataVersion=1`
+    const response = await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        conferenceData: null,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to delete Google Meet: ${response.status} - ${response.statusText}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+export const fetchDeletedEventInstances = async (
+  userId,
+  calendarId,
+  eventId,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+    const apiUrl = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}/instances?showDeleted=true`
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to fetch event instances: ${response.status} ${response.statusText}`,
+      )
+    }
+
+    const data = await response.json()
+
+    // Filter the instances to only include deleted occurrences
+    const deletedInstances = data.items.filter(
+      (instance) => instance.status === 'cancelled',
+    )
+
+    return deletedInstances
+  } catch (error) {
+    console.error(error)
   }
 }

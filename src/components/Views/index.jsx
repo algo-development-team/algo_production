@@ -32,6 +32,10 @@ export const Views = () => {
           <Route path={'/project/*'} element={<Layout />}>
             <Route path={':projectId'} element={<Content />} />
           </Route>
+
+          <Route path={'/schedule/*'} element={<Layout />}>
+            <Route path={':scheduleId'} element={<Content />} />
+          </Route>
         </Route>
 
         {/* Routes specified here will not be redirected */}

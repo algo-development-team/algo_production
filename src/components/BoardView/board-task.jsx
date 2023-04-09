@@ -2,18 +2,13 @@ import { TaskCheckbox } from 'components/Checkbox'
 import { OptionsButton } from 'components/MenuButton'
 import { TaskDate } from 'components/task-date'
 import { TaskScheduleTime } from 'components/task-timelength'
-import { TaskProject } from 'components/TaskProject'
 import { useProjects } from 'hooks'
 import { Draggable } from 'react-beautiful-dnd'
-import { useParams } from 'react-router-dom'
-import { getProjectInfo } from 'utils'
 import { useOverlayContextValue } from 'context'
 import { cropLabel } from 'handleLabel'
 
 export const BoardTask = ({ task, index }) => {
-  const { defaultGroup } = useParams()
   const { projects } = useProjects()
-  const taskProject = getProjectInfo(projects, task.projectId)
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
   return (
@@ -65,8 +60,7 @@ export const BoardTask = ({ task, index }) => {
             columnId={task.boardStatus}
             taskId={task.taskId}
             taskIndex={task.index}
-            taskIsImportant={task.important}
-            targetIsTask
+            targetIsBoardTask
           />
         </div>
       )}

@@ -89,7 +89,6 @@ export const Task = ({ name, task, index, projects }) => {
             columnId={task.boardStatus}
             taskId={task.taskId}
             taskIndex={task.index}
-            taskIsImportant={task.important}
             targetIsTask
           />
         </div>

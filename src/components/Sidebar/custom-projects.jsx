@@ -3,11 +3,11 @@ import { useOverlayContextValue } from 'context/overlay-context'
 import { useProjects } from 'hooks'
 import { useState } from 'react'
 import { CustomProject } from './custom-project'
+
 export const CustomProjects = () => {
   const { projects } = useProjects()
   const [showProjects, setShowProjects] = useState(true)
-  const { showDialog, setShowDialog, dialogProps, setDialogProps } =
-    useOverlayContextValue()
+  const { setShowDialog } = useOverlayContextValue()
 
   /* purpose: sorts project names at sidebar alphabetically */
   const sortProjectsByName = (projects) => {
@@ -73,7 +73,6 @@ export const CustomProjects = () => {
           {sortProjectsByName(projects).map((project) => (
             <CustomProject key={project.projectId} project={project} />
           ))}
-          <div className='add-project__container'></div>
         </div>
       )}
     </div>
