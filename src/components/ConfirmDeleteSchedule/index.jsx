@@ -25,7 +25,12 @@ export const ConfrimDeleteSchedule = ({ scheduleId, closeOverlay }) => {
   }
 
   const handleScheduleDelete = async () => {
-    if (getScheduleUsed()) return
+    if (
+      scheduleId === 'WORK_SCHEDULE' ||
+      scheduleId === 'PERSONAL_SCHEDULE' ||
+      getScheduleUsed()
+    )
+      return
 
     const updatedSchedules = schedules.filter(
       (schedule) => schedule.id !== scheduleId,

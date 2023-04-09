@@ -40,7 +40,9 @@ export const MenuList = ({
   )
 
   useEffect(() => {
-    if (targetIsSchedule && !projectsLoading) {
+    if (scheduleId === 'WORK_SCHEDULE' || scheduleId === 'PERSONAL_SCHEDULE') {
+      setShowDeleteOption(false)
+    } else if (targetIsSchedule && !projectsLoading) {
       const schedule = projects.find(
         (project) => project.projectScheduleId === scheduleId,
       )
