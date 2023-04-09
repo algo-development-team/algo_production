@@ -25,13 +25,14 @@ export const Layout = () => {
   }, [])
 
   const toggleSidebar = useCallback(() => {
-    const { defaultGroup: group } = params
-    if (group === 'Calendar' && windowWidth >= 900) return
+    const { defaultGroup, scheduleId } = params
+    if ((defaultGroup === 'Calendar' || scheduleId) && windowWidth >= 900)
+      return
     setShowSidebar((value) => !value)
   })
   useEffect(() => {
-    const { defaultGroup: group } = params
-    if (group === 'Calendar' && windowWidth >= 900) {
+    const { defaultGroup, scheduleId } = params
+    if ((defaultGroup === 'Calendar' || scheduleId) && windowWidth >= 900) {
       setShowSidebar(true)
     } else if (windowWidth < 900) {
       setShowSidebar(false)
