@@ -12,9 +12,13 @@ import './styles/light.scss'
 import './styles/main.scss'
 
 export const Sidebar = (props) => {
-  const { defaultGroup } = useParams()
+  const { defaultGroup, projectId, scheduleId } = useParams()
   const [AddTasks, setAddTasks] = useState(false)
   const [FilterTasks, setFilterTasks] = useState(false)
+
+  useEffect(() => {
+    console.log('scheduleId', scheduleId) // DEBUGGING
+  }, [scheduleId])
 
   useEffect(() => {
     if (FilterTasks) {
@@ -28,7 +32,31 @@ export const Sidebar = (props) => {
     }
   }, [AddTasks])
 
-  if (defaultGroup === 'Calendar') {
+  if (defaultGroup === 'Setting' || scheduleId) {
+    return (
+      <>
+        <div className='sidebar__overlay' onClick={props.onClick}></div>
+        <aside className='sidebar'>
+          <div className='sidebar-clickables'>
+            <Setting />
+          </div>
+          <Schedules />
+        </aside>
+      </>
+    )
+  } else if (defaultGroup === 'Overview' || projectId) {
+    return (
+      <>
+        <div className='sidebar__overlay' onClick={props.onClick}></div>
+        <aside className='sidebar'>
+          <div className='sidebar-clickables'>
+            <DefaultProjects />
+          </div>
+          <CustomProjects />
+        </aside>
+      </>
+    )
+  } else {
     return (
       <>
         <div className='sidebar__overlay' onClick={props.onClick}></div>
@@ -63,30 +91,4 @@ export const Sidebar = (props) => {
       </>
     )
   }
-
-  if (defaultGroup === 'Setting') {
-    return (
-      <>
-        <div className='sidebar__overlay' onClick={props.onClick}></div>
-        <aside className='sidebar'>
-          <div className='sidebar-clickables'>
-            <Setting />
-          </div>
-          <Schedules />
-        </aside>
-      </>
-    )
-  }
-
-  return (
-    <>
-      <div className='sidebar__overlay' onClick={props.onClick}></div>
-      <aside className='sidebar'>
-        <div className='sidebar-clickables'>
-          <DefaultProjects />
-        </div>
-        <CustomProjects />
-      </aside>
-    </>
-  )
 }

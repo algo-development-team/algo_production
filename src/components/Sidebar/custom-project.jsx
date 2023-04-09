@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { ProjectTasksCounts } from './project-tasks-count'
 import { cropLabel } from 'handleLabel'
+
 export const CustomProject = ({ project }) => {
   const [currentTaskProp, setCurrentTaskProp] = useState([])
   useEffect(() => {
@@ -28,11 +29,7 @@ export const CustomProject = ({ project }) => {
         </p>
       </div>
 
-      <OptionsButton
-        projectId={project.projectId}
-        targetIsProject
-        project={project}
-      />
+      <OptionsButton projectId={project.projectId} targetIsProject />
       <ProjectTasksCounts projectId={project.projectId} />
     </NavLink>
   )

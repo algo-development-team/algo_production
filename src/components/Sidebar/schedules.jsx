@@ -1,11 +1,26 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
 import { useState } from 'react'
+import { useSchedules } from 'hooks'
+import { Schedule } from './schedule'
 
 export const Schedules = () => {
   const [showSchedules, setShowSchedules] = useState(true)
-  const { showDialog, setShowDialog, dialogProps, setDialogProps } =
-    useOverlayContextValue()
+  const { setShowDialog } = useOverlayContextValue()
+  const { schedules } = useSchedules()
+
+  /* purpose: sorts project names at sidebar alphabetically */
+  const sortSchedulesByName = (schedules) => {
+    return schedules.sort((a, b) => {
+      if (a.name.toLowerCase() < b.name.toLowerCase()) {
+        return -1
+      }
+      if (a.name.toLowerCase() > b.name.toLowerCase()) {
+        return 1
+      }
+      return 0
+    })
+  }
 
   return (
     <div className='custom-project-group__wrapper'>
@@ -54,7 +69,11 @@ export const Schedules = () => {
         <div
           className='custom-projects'
           style={{ height: `${showSchedules ? '100%' : '0%'}` }}
-        ></div>
+        >
+          {sortSchedulesByName(schedules).map((schedule) => (
+            <Schedule key={schedule.id} schedule={schedule} />
+          ))}
+        </div>
       )}
     </div>
   )

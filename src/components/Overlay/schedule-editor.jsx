@@ -1,17 +1,24 @@
-import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
-import { useAuth } from 'hooks'
+import { useAuth, useSchedules } from 'hooks'
 import { useEffect, useState } from 'react'
 import { generatePushId } from 'utils/index'
 import './ProjectEditor/styles/add-project.scss'
 import './ProjectEditor/styles/light.scss'
+import { updateUserInfo } from '../../backend/handleUserInfo'
 
-export const ScheduleEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
+export const ScheduleEditor = ({ closeOverlay, isEdit, scheduleToEdit }) => {
   const { currentUser } = useAuth()
-  const [scheduleName, setScheduleName] = useState(isEdit && projectToEdit.name)
+  const [scheduleName, setScheduleName] = useState(
+    isEdit && scheduleToEdit.name,
+  )
   const scheduleId = generatePushId()
   const { setShowDialog } = useOverlayContextValue()
   const [disableSubmit, setDisableSubmit] = useState(isEdit ? false : true)
+  const { schedules, setSchedules } = useSchedules()
+
+  useEffect(() => {
+    console.log('schedules', schedules)
+  }, [schedules])
 
   const updateScheduleHandler = async (e) => {
     e.preventDefault()
@@ -21,10 +28,18 @@ export const ScheduleEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const addScheduleHandler = async (e) => {
     e.preventDefault()
 
+    const newSchedule = { name: scheduleName, id: scheduleId, events: [] }
+    const updatedSchedules = [...schedules, newSchedule]
+
     setShowDialog('')
 
     // add schedule here
+    await updateUserInfo(currentUser && currentUser.id, {
+      schedules: updatedSchedules,
+    })
+
     // update schedule hook
+    setSchedules(updatedSchedules)
   }
 
   const handleChange = (e) => {

@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { ReactComponent as TooltipIcon } from 'assets/svg/tooltip-trigger.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
 import './styles/light.scss'
@@ -8,14 +7,15 @@ export const OptionsButton = ({
   taskId,
   projectId,
   columnId,
+  scheduleId,
   taskIndex,
   targetIsProject,
   targetIsColumn,
+  targetIsBoardTask,
   targetIsTask,
-  project,
+  targetIsSchedule,
   columns,
   isHeaderButton,
-  taskIsImportant,
 }) => {
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
@@ -25,13 +25,20 @@ export const OptionsButton = ({
 
     setDialogProps(
       Object.assign(
-        { elementPosition, taskIsImportant },
+        { elementPosition },
         targetIsTask && {
           projectId: projectId,
           columnId: columnId,
           taskId: taskId,
           taskIndex: taskIndex,
           targetIsTask: targetIsTask,
+        },
+        targetIsBoardTask && {
+          projectId: projectId,
+          columnId: columnId,
+          taskId: taskId,
+          taskIndex: taskIndex,
+          targetIsBoardTask: targetIsBoardTask,
         },
         targetIsColumn && {
           projectId: projectId,
@@ -42,7 +49,10 @@ export const OptionsButton = ({
         targetIsProject && {
           projectId: projectId,
           targetIsProject: targetIsProject,
-          project: project,
+        },
+        targetIsSchedule && {
+          scheduleId: scheduleId,
+          targetIsSchedule: targetIsSchedule,
         },
       ),
     )

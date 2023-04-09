@@ -51,17 +51,6 @@ export const UserOptions = ({ closeOverlay, xPosition, yPosition }) => {
           </li>
           <li
             className='user-options__item'
-            onClick={() => setShowDialog('SETTING')}
-          >
-            <div
-              className='user-options__item--content'
-              style={{ paddingLeft: '24px' }}
-            >
-              Personal Settings
-            </div>
-          </li>
-          <li
-            className='user-options__item'
             onClick={(event) => themeToggleHandler(event)}
           >
             <svg

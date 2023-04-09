@@ -102,17 +102,19 @@ export const Overlay = () => {
         return (
           <MenuList
             closeOverlay={closeOverlay}
-            taskId={dialogProps.taskId}
-            columnId={dialogProps.columnId}
+            scheduleId={dialogProps.scheduleId}
             projectId={dialogProps.projectId}
+            columnId={dialogProps.columnId}
+            taskId={dialogProps.taskId}
             taskIndex={dialogProps.taskIndex}
             columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
+            targetIsSchedule={dialogProps.targetIsSchedule}
             targetIsProject={dialogProps.targetIsProject}
             targetIsColumn={dialogProps.targetIsColumn}
+            targetIsBoardTask={dialogProps.targetIsBoardTask}
             targetIsTask={dialogProps.targetIsTask}
-            taskIsImportant={dialogProps.taskIsImportant}
           />
         )
       case 'SET_SCHEDULE':

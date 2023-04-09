@@ -29,7 +29,7 @@ export const CalendarOrProjectsButton = () => {
   } else {
     return (
       <Link
-        to='/project/Overview'
+        to='/app/Overview'
         className='home_button header-clickable'
         onClick={() =>
           setSelectedProject({

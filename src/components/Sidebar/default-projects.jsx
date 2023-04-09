@@ -9,7 +9,7 @@ export const DefaultProjects = () => {
   return (
     <div className='project-group__wrapper'>
       <NavLink
-        to={'/project/Overview'}
+        to={'/app/Overview'}
         className={({ isActive }) =>
           isActive ? 'active project-group' : 'project-group'
         }

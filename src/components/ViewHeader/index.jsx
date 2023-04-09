@@ -29,12 +29,7 @@ export const ViewHeader = () => {
       {projectId && (
         <div className='view-header__actions--right'>
           <SelectViewType />
-          <OptionsButton
-            projectId={projectId}
-            isHeaderButton
-            targetIsProject
-            project={project}
-          />
+          <OptionsButton projectId={projectId} isHeaderButton targetIsProject />
         </div>
       )}
     </div>
