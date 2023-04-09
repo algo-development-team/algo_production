@@ -4,6 +4,8 @@ import { useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
 import { FullCalendar } from 'components/FullCalendar'
 import { ScheduleCalendar } from 'components/FullCalendar/schedule-calendar'
+import { Overview } from 'components/Overview'
+import { Setting } from 'components/Setting'
 import './styles/content.scss'
 import './styles/light.scss'
 import React from 'react'
@@ -18,11 +20,9 @@ export const Content = () => {
       if (defaultGroup === 'Calendar') {
         return <FullCalendar />
       } else if (defaultGroup === 'Overview') {
-        // return <Overview />
-        return null
+        return <Overview />
       } else if (defaultGroup === 'Setting') {
-        // return <Setting />
-        return null
+        return <Setting />
       } else {
         return null
       }
