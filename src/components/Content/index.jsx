@@ -29,7 +29,7 @@ export const Content = () => {
     } else if (projectId) {
       return currentView ? <TaskList /> : <Board />
     } else if (scheduleId) {
-      return <ScheduleCalendar />
+      return <ScheduleCalendar scheduleId={scheduleId} />
     } else {
       return null
     }

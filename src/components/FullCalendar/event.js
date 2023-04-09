@@ -1,3 +1,11 @@
+export class ShortEvent {
+  constructor(id, title, start, end) {
+    this.id = id
+    this.title = title
+    this.start = start
+    this.end = end
+  }
+}
 class Event {
   constructor(
     id,
