@@ -7,7 +7,7 @@ import './light.scss'
 import './main.scss'
 
 export const ConfrimDeleteSchedule = ({ scheduleId, closeOverlay }) => {
-  const { projects, loading: projectsLoading } = useProjects()
+  const { projects } = useProjects()
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const { schedules, setSchedules } = useSchedules()
