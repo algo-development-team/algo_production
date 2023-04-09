@@ -24,12 +24,15 @@ export const CustomProject = ({ project }) => {
           <Dot color={`${project?.projectColour?.hex}`} />
         </div>
         <p className='project-group__name'>
-          {cropLabel(currentTaskProp.name ? currentTaskProp.name : '', 12)} (
-          {currentTaskProp.projectIsWork ? 'work' : 'personal'})
+          {cropLabel(currentTaskProp.name ? currentTaskProp.name : '', 12)}
         </p>
       </div>
 
-      <OptionsButton projectId={project.projectId} targetIsProject project={project} />
+      <OptionsButton
+        projectId={project.projectId}
+        targetIsProject
+        project={project}
+      />
       <ProjectTasksCounts projectId={project.projectId} />
     </NavLink>
   )

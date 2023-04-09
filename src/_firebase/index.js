@@ -40,7 +40,7 @@ export const batchWriteIcebreakerTasks = async (userId) => {
         hex: '#039be5',
       },
       projectIsList: false,
-      projectIsWork: true,
+      projectScheduleId: 'WORK_SCHEDULE',
       columns: [
         {
           id: 'NOSECTION',

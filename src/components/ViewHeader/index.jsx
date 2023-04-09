@@ -3,7 +3,6 @@ import { useProjects, useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
 import { getProjectInfo } from 'utils'
 import { OptionsButton } from '../MenuButton'
-import { SelectViewType } from '../SelectViewTypeButton'
 import './styles/light.scss'
 import './styles/main.scss'
 

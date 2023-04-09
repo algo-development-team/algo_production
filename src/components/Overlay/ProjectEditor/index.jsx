@@ -1,9 +1,9 @@
-import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
-import { useAuth, useProjects } from 'hooks'
+import { useAuth, useProjects, useSchedules } from 'hooks'
 import { useEffect, useState } from 'react'
 import { generatePushId } from 'utils/index'
 import { SetProjectColourDropdown } from './set-project-colour'
+import { SetProjectScheduleIdDropdown } from './set-project-schedule-id'
 import './styles/add-project.scss'
 import './styles/light.scss'
 import { updatedProject, addProject } from '../../../backend/handleUserProjects'
@@ -22,16 +22,42 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const [projectIsList, setProjectIsList] = useState(
     isEdit ? projectToEdit.projectIsList : false,
   )
-  const [projectIsWork, setProjectIsWork] = useState(
-    isEdit ? projectToEdit.projectIsWork : true,
+  const [projectScheduleId, setProjectScheduleId] = useState(
+    isEdit ? projectToEdit.projectScheduleId : 'WORK_SCHEDULE',
   )
   const [showSelectColourDropdown, setShowSelectColourDropdown] =
     useState(false)
+  const [showSelectScheduleDropdown, setShowSelectScheduleDropdown] =
+    useState(false)
   const { setProjects } = useProjects()
   const [selectedColour, setSelectedColour] = useState(projectColour)
+  const [selectedScheduleId, setSelectedScheduleId] =
+    useState(projectScheduleId)
+  const [selectedScheduleName, setSelectedScheduleName] = useState(
+    'No Schedule Selected',
+  )
   const projectId = generatePushId()
   const { setShowDialog } = useOverlayContextValue()
   const [disableSubmit, setDisableSubmit] = useState(isEdit ? false : true)
+  const { schedules, loading: schedulesLoading } = useSchedules()
+
+  const getScheduleName = () => {
+    const schedule = schedules.find(
+      (schedule) => schedule.id === selectedScheduleId,
+    )
+
+    if (schedule) {
+      return schedule.name
+    } else {
+      return 'No Schedule Selected'
+    }
+  }
+
+  useEffect(() => {
+    if (!schedulesLoading) {
+      setSelectedScheduleName(getScheduleName())
+    }
+  }, [schedules, selectedScheduleId, schedulesLoading])
 
   useEffect(() => {
     setSelectedColour(projectColour)
@@ -40,6 +66,14 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       setSelectedColour(null)
     }
   }, [projectColour])
+
+  useEffect(() => {
+    setSelectedScheduleId(projectScheduleId)
+
+    return () => {
+      setSelectedScheduleId(null)
+    }
+  }, [projectScheduleId])
 
   const updateProjectHandler = async (e) => {
     e.preventDefault()
@@ -50,7 +84,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectName,
       projectColour,
       projectIsList,
-      projectIsWork,
+      projectScheduleId,
     )
   }
 
@@ -61,7 +95,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectId: projectId,
       projectColour: projectColour,
       projectIsList: projectIsList,
-      projectIsWork: projectIsWork,
+      projectScheduleId: projectScheduleId,
       columns: [
         {
           id: 'NOSECTION',
@@ -146,15 +180,27 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
                 {showSelectColourDropdown && (
                   <SetProjectColourDropdown
                     setProjectColour={setProjectColour}
-                    projectColour={projectColour}
-                    showSelectColourDropdown={showSelectColourDropdown}
-                    setShowSelectColourDropdown={setShowSelectColourDropdown}
                   />
                 )}
               </div>
             </div>
-            <div className='add-project__form-group'>
+            <div className='add-project__form-group' role='button'>
               <label>Schedule</label>
+              <div
+                className='add-project__select-color'
+                onClick={() =>
+                  setShowSelectScheduleDropdown(!showSelectScheduleDropdown)
+                }
+              >
+                <span className='add-project__selected-color-name'>
+                  {selectedScheduleName}
+                </span>
+                {showSelectScheduleDropdown && (
+                  <SetProjectScheduleIdDropdown
+                    setProjectScheduleId={setProjectScheduleId}
+                  />
+                )}
+              </div>
             </div>
           </form>
         </div>

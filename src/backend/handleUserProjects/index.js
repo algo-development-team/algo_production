@@ -1,4 +1,12 @@
-import { collection, getDocs, query, updateDoc, where, deleteDoc, addDoc} from 'firebase/firestore'
+import {
+  collection,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+  deleteDoc,
+  addDoc,
+} from 'firebase/firestore'
 import { db } from '_firebase'
 import { getTaskDocsInProjectColumnNotCompleted } from '../handleUserTasks'
 
@@ -12,7 +20,11 @@ export const getAllUserProjects = async (userId) => {
   return projects
 }
 
-export const updateProjectColumns = async (userId, selectedProjectId, newSelectedProjectColumns) => {
+export const updateProjectColumns = async (
+  userId,
+  selectedProjectId,
+  newSelectedProjectColumns,
+) => {
   try {
     const projectQuery = await query(
       collection(db, 'user', `${userId}/projects`),
@@ -26,11 +38,11 @@ export const updateProjectColumns = async (userId, selectedProjectId, newSelecte
     })
   } catch (error) {
     console.log(error)
-  } 
+  }
 }
 
 export const projectDelete = async (userId, projectId) => {
-try {
+  try {
     const q = await query(
       collection(db, 'user', `${userId}/projects`),
       where('projectId', '==', projectId),
@@ -44,25 +56,31 @@ try {
   }
 }
 
-export const updatedProject = async (userId, projectId, projectName, projectColour, projectIsList, projectIsWork) => {
-    try{
-      const projectQuery = await query(
-        collection(db, 'user', `${userId}/projects`),
-        where('projectId', '==', projectId),
-      )
-      const projectDocs = await getDocs(projectQuery)
-      projectDocs.forEach(async (projectDoc) => {
-        await updateDoc(projectDoc.ref, {
-          name: projectName,
-          projectColour: projectColour,
-          projectIsList: projectIsList,
-          projectIsWork: projectIsWork,
-        })
+export const updatedProject = async (
+  userId,
+  projectId,
+  projectName,
+  projectColour,
+  projectIsList,
+  projectScheduleId,
+) => {
+  try {
+    const projectQuery = await query(
+      collection(db, 'user', `${userId}/projects`),
+      where('projectId', '==', projectId),
+    )
+    const projectDocs = await getDocs(projectQuery)
+    projectDocs.forEach(async (projectDoc) => {
+      await updateDoc(projectDoc.ref, {
+        name: projectName,
+        projectColour: projectColour,
+        projectIsList: projectIsList,
+        projectScheduleId: projectScheduleId,
       })
-    }
-   catch(error) {
+    })
+  } catch (error) {
     console.log(error)
-   }
+  }
 }
 
 const getNewColumns = (columnOrder, columns) => {
@@ -78,7 +96,7 @@ const getNewColumns = (columnOrder, columns) => {
   return newColumns
 }
 
-export const dragEnd = async(userId, selectedProjectId, newColumnOrder) => {
+export const dragEnd = async (userId, selectedProjectId, newColumnOrder) => {
   try {
     const projectQuery = await query(
       collection(db, 'user', `${userId}/projects`),
@@ -99,7 +117,13 @@ export const dragEnd = async(userId, selectedProjectId, newColumnOrder) => {
   }
 }
 
-export const getTaskDocInColumnNotCompleted = async (userId, selectedProjectId, droppableId, sourceIndex, destinationIndex) => {
+export const getTaskDocInColumnNotCompleted = async (
+  userId,
+  selectedProjectId,
+  droppableId,
+  sourceIndex,
+  destinationIndex,
+) => {
   const columnTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
     userId,
     selectedProjectId,
@@ -143,8 +167,13 @@ export const getTaskDocInColumnNotCompleted = async (userId, selectedProjectId, 
   }
 }
 
-export const dragEnds = async(defaultGroup, userId, sourceIndex, destinationIndex ) => {
-  try{
+export const dragEnds = async (
+  defaultGroup,
+  userId,
+  sourceIndex,
+  destinationIndex,
+) => {
+  try {
     if (defaultGroup === 'Inbox') {
       const inboxTaskDocs = await getTaskDocsInProjectColumnNotCompleted(
         userId,
@@ -184,14 +213,11 @@ export const dragEnds = async(defaultGroup, userId, sourceIndex, destinationInde
         })
       }
     }
-  } catch(error) {
-  console.log(error);
+  } catch (error) {
+    console.log(error)
   }
 }
 
-export const addProject = async(userId, newProject) => {
-  await addDoc(
-    collection(db, 'user', `${userId}/projects`),
-    newProject,
-  )
+export const addProject = async (userId, newProject) => {
+  await addDoc(collection(db, 'user', `${userId}/projects`), newProject)
 }
