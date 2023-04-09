@@ -14,6 +14,8 @@ export const OptionsButton = ({
   targetIsBoardTask,
   targetIsTask,
   targetIsSchedule,
+  schedule,
+  project,
   columns,
   isHeaderButton,
 }) => {
@@ -49,10 +51,12 @@ export const OptionsButton = ({
         targetIsProject && {
           projectId: projectId,
           targetIsProject: targetIsProject,
+          project: project,
         },
         targetIsSchedule && {
           scheduleId: scheduleId,
           targetIsSchedule: targetIsSchedule,
+          schedule: schedule,
         },
       ),
     )

@@ -22,7 +22,19 @@ export const ScheduleEditor = ({ closeOverlay, isEdit, scheduleToEdit }) => {
 
   const updateScheduleHandler = async (e) => {
     e.preventDefault()
-    // update schedule here
+
+    const updatedSchedules = schedules.map((schedule) => {
+      if (schedule.id === scheduleToEdit.id) {
+        return { ...schedule, name: scheduleName }
+      }
+      return schedule
+    })
+
+    await updateUserInfo(currentUser && currentUser.id, {
+      schedules: updatedSchedules,
+    })
+
+    closeOverlay()
   }
 
   const addScheduleHandler = async (e) => {

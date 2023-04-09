@@ -1,5 +1,6 @@
 /* eslint-disable default-case */
 import { ConfrimDeleteProject } from 'components/ConfirmDeleteProject'
+import { ConfrimDeleteSchedule } from 'components/ConfirmDeleteSchedule'
 import { SetNewTaskProjectPopper } from 'components/dropdowns/set-new-task-project-popper'
 import { SetNewTaskSchedulePopper } from 'components/dropdowns/set-new-task-schedule-popper'
 import { SetNewTaskPriorityPopper } from 'components/dropdowns/set-new-task-priority-popper'
@@ -107,6 +108,8 @@ export const Overlay = () => {
             columnId={dialogProps.columnId}
             taskId={dialogProps.taskId}
             taskIndex={dialogProps.taskIndex}
+            schedule={dialogProps.schedule}
+            project={dialogProps.project}
             columns={dialogProps.columns}
             xPosition={dialogProps.elementPosition.x}
             yPosition={dialogProps.elementPosition.y}
@@ -189,11 +192,26 @@ export const Overlay = () => {
             closeOverlay={closeOverlay}
           />
         )
-      case 'CONFIRM_DELETE':
+      case 'EDIT_SCHEDULE':
+        return (
+          <ScheduleEditor
+            isEdit
+            scheduleToEdit={dialogProps.schedule}
+            closeOverlay={closeOverlay}
+          />
+        )
+      case 'CONFIRM_DELETE_PROJECT':
         return (
           <ConfrimDeleteProject
             closeOverlay={closeOverlay}
             projectId={dialogProps.projectId}
+          />
+        )
+      case 'CONFIRM_DELETE_SCHEDULE':
+        return (
+          <ConfrimDeleteSchedule
+            closeOverlay={closeOverlay}
+            scheduleId={dialogProps.scheduleId}
           />
         )
     }

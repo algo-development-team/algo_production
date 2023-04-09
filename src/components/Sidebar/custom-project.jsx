@@ -29,7 +29,7 @@ export const CustomProject = ({ project }) => {
         </p>
       </div>
 
-      <OptionsButton projectId={project.projectId} targetIsProject />
+      <OptionsButton projectId={project.projectId} targetIsProject project={project} />
       <ProjectTasksCounts projectId={project.projectId} />
     </NavLink>
   )

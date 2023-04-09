@@ -15,7 +15,11 @@ export const Schedule = ({ schedule }) => {
         <p className='project-group__name'>{cropLabel(schedule.name, 12)}</p>
       </div>
 
-      <OptionsButton scheduleId={schedule.id} targetIsSchedule />
+      <OptionsButton
+        scheduleId={schedule.id}
+        targetIsSchedule
+        schedule={schedule}
+      />
     </NavLink>
   )
 }

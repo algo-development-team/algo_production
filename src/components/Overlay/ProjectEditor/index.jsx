@@ -33,8 +33,17 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
   const { setShowDialog } = useOverlayContextValue()
   const [disableSubmit, setDisableSubmit] = useState(isEdit ? false : true)
 
+  useEffect(() => {
+    setSelectedColour(projectColour)
+
+    return () => {
+      setSelectedColour(null)
+    }
+  }, [projectColour])
+
   const updateProjectHandler = async (e) => {
     e.preventDefault()
+
     await updatedProject(
       currentUser && currentUser.id,
       projectToEdit.projectId,
@@ -44,14 +53,6 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectIsWork,
     )
   }
-
-  useEffect(() => {
-    setSelectedColour(projectColour)
-
-    return () => {
-      setSelectedColour(null)
-    }
-  }, [projectColour])
 
   const addProjectHandler = async (e) => {
     e.preventDefault()
@@ -96,6 +97,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
     }
     setprojectName(e.target.value)
   }
+
   return (
     <div className='overlay' onClick={(event) => closeOverlay(event)}>
       <div

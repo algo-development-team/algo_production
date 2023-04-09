@@ -18,6 +18,8 @@ export const MenuList = ({
   columnId,
   taskId,
   taskIndex,
+  schedule,
+  project,
   columns,
   xPosition,
   yPosition,
@@ -32,9 +34,14 @@ export const MenuList = ({
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
 
+  const handleScheduleDeleteConfirmation = () => {
+    setDialogProps({ scheduleId: scheduleId })
+    setShowDialog('CONFIRM_DELETE_SCHEDULE')
+  }
+
   const handleProjectDeleteConfirmation = () => {
     setDialogProps({ projectId: projectId })
-    setShowDialog('CONFIRM_DELETE')
+    setShowDialog('CONFIRM_DELETE_PROJECT')
   }
 
   const handleColumnTasksDelete = async () => {
@@ -55,7 +62,7 @@ export const MenuList = ({
     e.stopPropagation()
     closeOverlay()
     if (targetIsSchedule) {
-      // HANDLE SCHEDULE DELETE
+      handleScheduleDeleteConfirmation()
     } else if (targetIsProject) {
       handleProjectDeleteConfirmation()
     } else if (targetIsColumn) {
@@ -75,8 +82,10 @@ export const MenuList = ({
     e.preventDefault()
     e.stopPropagation()
     if (targetIsSchedule) {
-      // HANDLE SCHEDULE EDIT
+      setDialogProps({ schedule: schedule })
+      setShowDialog('EDIT_SCHEDULE')
     } else if (targetIsProject) {
+      setDialogProps({ project: project })
       setShowDialog('EDIT_PROJECT')
     } else if (targetIsColumn) {
       setColumnEditorToShow({ projectId, columnId })

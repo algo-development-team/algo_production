@@ -1,38 +1,42 @@
 import { ReactComponent as InfoIcon } from 'assets/svg/info.svg'
 import { ReactComponent as CancelIcon } from 'assets/svg/plus.svg'
-import { useAuth, useProjects } from 'hooks'
+import { useAuth, useSchedules } from 'hooks'
 import { useNavigate } from 'react-router-dom'
-import { getProjectTitle } from 'utils'
+import { updateUserInfo } from 'backend/handleUserInfo'
 import './light.scss'
 import './main.scss'
-import { projectDelete } from '../../backend/handleUserProjects'
-import { projectTasksDelete } from '../../backend/handleUserInfo'
 
-export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
-  const { currentUser } = useAuth()
+export const ConfrimDeleteSchedule = ({ scheduleId, closeOverlay }) => {
   const navigate = useNavigate()
+  const { currentUser } = useAuth()
+  const { schedules, setSchedules } = useSchedules()
 
-  const handleProjectDelete = async () => {
-    await projectDelete(currentUser && currentUser.id, projectId)
+  const getScheduleName = () => {
+    const schedule = schedules.find((schedule) => schedule.id === scheduleId)
+    return schedule && schedule.name
   }
 
-  const handleProjectTasksDelete = async () => {
-    // Project Task Delete
-    await projectTasksDelete(currentUser && currentUser.id, projectId)
+  const handleScheduleDelete = async () => {
+    const updatedSchedules = schedules.filter(
+      (schedule) => schedule.id !== scheduleId,
+    )
+
+    await updateUserInfo(currentUser && currentUser.id, {
+      schedules: updatedSchedules,
+    })
+
+    setSchedules(updatedSchedules)
   }
 
   const deleteHandler = async (e) => {
     e.stopPropagation()
     e.preventDefault()
-    await handleProjectDelete()
-    await handleProjectTasksDelete()
-    navigate('/app/Overview')
+    await handleScheduleDelete()
+    navigate('/app/Setting')
 
     closeOverlay()
   }
 
-  const { projects } = useProjects()
-  const projectName = getProjectTitle(projects, projectId)
   return (
     <div className='overlay' onClick={(event) => closeOverlay(event)}>
       <div className='confirm-delete'>
@@ -52,7 +56,7 @@ export const ConfrimDeleteProject = ({ projectId, closeOverlay }) => {
           </header>
 
           <div className='confirm-delete__content'>
-            Are you sure you want to delete {projectName}?
+            Are you sure you want to delete {getScheduleName()}?
           </div>
           <footer>
             <button className='action action__cancel--dark'>Cancel</button>

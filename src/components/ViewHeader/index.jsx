@@ -1,4 +1,3 @@
-import { Date } from 'components/date'
 import { ProjectName } from 'components/ProjectName'
 import { useProjects, useSelectedProjectInfo } from 'hooks'
 import { useParams } from 'react-router-dom'
@@ -23,13 +22,17 @@ export const ViewHeader = () => {
     >
       <div className='view-header__actions--left'>
         <ProjectName />
-        {defaultGroup == 'Checklist' && <Date />}
       </div>
 
       {projectId && (
         <div className='view-header__actions--right'>
           <SelectViewType />
-          <OptionsButton projectId={projectId} isHeaderButton targetIsProject />
+          <OptionsButton
+            projectId={projectId}
+            isHeaderButton
+            targetIsProject
+            project={project}
+          />
         </div>
       )}
     </div>
