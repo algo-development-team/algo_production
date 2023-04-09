@@ -1,15 +1,23 @@
 import { ReactComponent as InfoIcon } from 'assets/svg/info.svg'
 import { ReactComponent as CancelIcon } from 'assets/svg/plus.svg'
-import { useAuth, useSchedules } from 'hooks'
+import { useAuth, useSchedules, useProjects } from 'hooks'
 import { useNavigate } from 'react-router-dom'
 import { updateUserInfo } from 'backend/handleUserInfo'
 import './light.scss'
 import './main.scss'
 
 export const ConfrimDeleteSchedule = ({ scheduleId, closeOverlay }) => {
+  const { projects, loading: projectsLoading } = useProjects()
   const navigate = useNavigate()
   const { currentUser } = useAuth()
   const { schedules, setSchedules } = useSchedules()
+
+  const getScheduleUsed = () => {
+    const project = projects.find(
+      (project) => project.projectScheduleId === scheduleId,
+    )
+    return project ? true : false
+  }
 
   const getScheduleName = () => {
     const schedule = schedules.find((schedule) => schedule.id === scheduleId)
@@ -17,6 +25,8 @@ export const ConfrimDeleteSchedule = ({ scheduleId, closeOverlay }) => {
   }
 
   const handleScheduleDelete = async () => {
+    if (getScheduleUsed()) return
+
     const updatedSchedules = schedules.filter(
       (schedule) => schedule.id !== scheduleId,
     )
