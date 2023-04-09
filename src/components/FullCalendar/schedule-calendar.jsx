@@ -16,6 +16,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
   const { isLight } = useThemeContextValue()
   const { schedules } = useSchedules()
   const [events, setEvents] = useState([])
+  const [scheduleName, setScheduleName] = useState('')
 
   const getUpdatedSchedules = (events) => {
     const convertedEvents = events.map((event) => {
@@ -35,6 +36,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
       const schedule = schedules.find((schedule) => schedule.id === scheduleId)
       if (schedule) {
         setEvents(schedule.events)
+        setScheduleName(schedule.name)
       }
     }
   }, [schedules, scheduleId])
@@ -43,7 +45,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
     if (!currentUser) return null
 
     const calendar = new Calendar(calendarRef.current, {
-      height: 'calc(100vh - 64px)',
+      height: 'calc(100vh - 100px)',
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       headerToolbar: {
         start: '',
@@ -130,5 +132,21 @@ export const ScheduleCalendar = ({ scheduleId }) => {
     }
   }, [isLight, currentUser, events])
 
-  return <div ref={calendarRef}></div>
+  return (
+    <>
+      <div
+        style={{
+          height: '36px',
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginTop: 0,
+        }}
+      >
+        <h1>{scheduleName}</h1>
+      </div>
+      <div ref={calendarRef}></div>
+    </>
+  )
 }
