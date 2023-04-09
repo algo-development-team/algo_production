@@ -35,7 +35,8 @@ export const Sidebar = (props) => {
         <div className='sidebar__overlay' onClick={props.onClick}></div>
         <aside
           className='sidebar'
-          style={{ paddingLeft: '18px', paddingRight: '18px' }}
+          // style={{ paddingLeft: '18px', paddingRight: '18px' }}
+          style={{ paddingLeft: '5px', paddingRight: '5px' }}
         >
         <div className='sidebar__overlay'>
 
@@ -43,7 +44,9 @@ export const Sidebar = (props) => {
           <button className='set-Taskbar' 
                   style={{ display: 'flex',
                            fontSize: '20px',
-                           width: '248px' }}>
+                           width: '100%'
+                           //width: '248px' 
+                          }}>
               <Taskbar
                   type='AUTO_SCHEDULE'
                   onOff={true}
@@ -56,7 +59,7 @@ export const Sidebar = (props) => {
           <button className='set-Taskbar'
                   style={{ display: 'flex',
                            fontSize: '15px',
-                           width: '248px' }}>
+                           width: '100%' }}>
               <Taskbar
                   type='ADD_TASKS'
                   value={AddTasks}

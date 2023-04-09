@@ -57,38 +57,48 @@ export const FilterTaskbar = ({filter, setFilter, filterSelect, setFilterSelect,
         </div>
         <div style = {{display:'inline-flex', width: '100%',}}>
             <label
+            className={'set-filterbar'}
             style={{
-                padding: '5px 10px 5px 10px',
-                borderRadius: '5px',
-                border: 'none',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                fontSize: '16px',
-                outline: 'none',
-                width: '35%',
-                //height: '30px',
-                //lineHeight:'6em',
-                boxSizing: 'border-box',
-                marginBottom: '10px',
-                display: 'inline-flex',
+                //width: '30%',
+                width: '60px',
             }}
+            // style={{
+            //     padding: '5px 10px 5px 10px',
+            //     borderRadius: '5px',
+            //     border: 'none',
+            //     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            //     fontSize: '16px',
+            //     outline: 'none',
+            //     width: '35%',
+            //     //height: '30px',
+            //     //lineHeight:'6em',
+            //     boxSizing: 'border-box',
+            //     marginBottom: '10px',
+            //     display: 'inline-flex',
+            // }}
             >Filter</label>
             <SetNewFilterTask isQuickAdd={false} isPoppup={false} filter={filter} setFilter={setFilter} />
         </div>
         <div style = {{display:'inline-flex', width: '100%', }}>
             <label
+            className={'set-filterbar'}
             style={{
-                padding: '5px 10px 5px 10px',
-                borderRadius: '5px',
-                border: 'none',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-                fontSize: '16px',
-                outline: 'none',
-                width: '35%',
-                //height: '30px',
-                boxSizing: 'border-box',
-                marginBottom: '15px',
-                display: 'inline-flex',
+               //width: '30%',
+               width: '60px',
             }}
+            // style={{
+            //     padding: '5px 10px 5px 10px',
+            //     borderRadius: '5px',
+            //     border: 'none',
+            //     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+            //     fontSize: '16px',
+            //     outline: 'none',
+            //     width: '35%',
+            //     //height: '30px',
+            //     boxSizing: 'border-box',
+            //     marginBottom: '15px',
+            //     display: 'inline-flex',
+            // }}
             >Value</label>
 
             {getButtonByFilter()}

@@ -124,6 +124,7 @@ export const SearchField = ({
     } 
     return [warningDeadline, pastDeadline]
   }
+  
 
 
   // searchTasks: Allows for user to search through the tasks
@@ -167,52 +168,70 @@ export const SearchField = ({
     <div>
      
       {/* Warning bar task */}
-      <button className='set-Warningbar'
-        onClick={() =>  {
-          setFilterValue(true)
-          setFilter("Due Date")
-          setFilterSelect({
-            day: 'Today',
-            date: moment().format('DD-MM-YYYY'),
-          })
-        }}
-      > 
-      {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} Due Today
-      </button>
-      <button className='set-Warningbar'
-        onClick={() =>  {
-          setFilterValue(true)
-          setFilter("Due Date")
-          setFilterSelect({
-            day: 'Past Deadline',
-            date: moment().format('DD-MM-YYYY'),
-          })
-        }}
+      <div>
+        
+        {/* Display Due Today Warning bar */}
+        { warningTasks(filter, filterSelect, unscheduledTasks)[0].length ? 
+          <button className='set-Warningbar'
+          onClick={() =>  {
+            setFilterValue(true)
+            setFilter("Due Date")
+            setFilterSelect({
+              day: 'Today',
+              date: moment().format('DD-MM-YYYY'),
+            })
+          }}
         > 
-      {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} Past Deadline
-      </button>
+        {warningTasks(filter, filterSelect, unscheduledTasks)[0].length} Due Today
+        </button>  : ''
+        }
+
+        {/* Display Due Today Warning bar */}
+        { warningTasks(filter, filterSelect, unscheduledTasks)[1].length ? 
+          <button className='set-Warningbar'
+          onClick={() =>  {
+            setFilterValue(true)
+            setFilter("Due Date")
+            setFilterSelect({
+              day: 'Past Deadline',
+              date: moment().format('DD-MM-YYYY'),
+            })
+          }}
+          > 
+        {warningTasks(filter, filterSelect, unscheduledTasks)[1].length} Past Deadline
+        </button>  : ''
+        }
+      </div>
 
 
       {/* Search bar task */}
-      <div className='set-Searchbar'
+      <div 
+      className='set-Searchbar'
         style={{
+          // display: 'inline-block',
+          // flexdirection: 'row',
+          // alignitems: 'center',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
         }}
       >
-        <div style={{ paddingLeft: '5px' }}>
+        <div > 
+          {/* style={{ paddingLeft: '5px' }} */}
           <LookupIcon
             style={{
-              padding: '1px 0px 1px 1px',
+              padding: '1px 0px 1px 0px',
               borderRadius: '5px',
               border: 'none',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
               fontSize: '16px',
               outline: 'none',
-              width: '100%',
+              //width: '100%',
+              //width: '15px',
+              width: '15px',
               height: '38px',
               boxSizing: 'border-box',
+              marginTop: '10px',
               marginBottom: '10px',
               display: 'flex',
             }}
@@ -227,8 +246,12 @@ export const SearchField = ({
             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
             fontSize: '16px',
             outline: 'none',
-            width: '150%',
+            //width: '150%',
+            //width: '235px',
+            width: '87%',
+            height: '38px',
             boxSizing: 'border-box',
+            marginTop: '10px',
             marginBottom: '10px',
             display: 'flex',
           }}
@@ -239,22 +262,21 @@ export const SearchField = ({
         
         <button style={{ 
               display: 'flex',
-              flexdirection: 'row',
               alignitems: 'center',
               textalign: 'center',
               justifycontent: 'center',
-              display: 'flex',
               padding: '1px 1px 1px 1px',
               borderRadius: '5px',
               border: 'none',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-              fontSize: '10px',
+              fontSize: '5px',
               outline: 'none',
-              width: '10%',
+              //width: '10%',
+              width: '15px',
               height: '38px',
               boxSizing: 'border-box',
+              marginTop: '10px',
               marginBottom: '10px',
-              display: 'flex',
               }}>
           <Taskbar
               type='FILTER_TASKS'
@@ -274,10 +296,16 @@ export const SearchField = ({
 
       <div
         ref={externalEventsRef}
+        //className='set-searchbox'
         style={{
-          height: '40vh',
+          //height: '40vh',
+          //height: '60vh',
+          height:  filterValue? "calc(60vh - 15vh)" : "60vh",
+          width: '101%',
+          padding: '2px',
           overflowY: 'scroll',
           overflowX: 'hidden',
+          // borderRadius: '25px'
         }}
       >
         {searchTasks(searchText, (filterSelect!=='None' && filterValue) ? filterTasks(filter, filterSelect, unscheduledTasks) : unscheduledTasks).map((task) => {
@@ -289,9 +317,10 @@ export const SearchField = ({
                 backgroundColor: getProjectColourHex(task.projectId),
               })}
               style={{
+                //width: '100%',
                 width: '100%',
                 height: `${task.timeLength}px`,
-                marginBottom: '10px',
+                marginBottom: '3px',
                 backgroundColor: getProjectColourHex(task.projectId),
               }}
             >

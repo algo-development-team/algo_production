@@ -29,20 +29,20 @@ export const PriorityFilter = ({
   return (
     <>
       <div
-        //className={'set-new-task__schedule'}
-        style={{
-            padding: '5px 10px 5px 10px',
-            borderRadius: '5px',
-            border: 'none',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-            fontSize: '12px',
-            outline: 'none',
-            width: '65%',
-            //height: '30px',
-            boxSizing: 'border-box',
-            marginBottom: '10px',
-            display: 'flex',
-        }}
+        className={'set-filterbar'}
+        // style={{
+        //     padding: '5px 10px 5px 10px',
+        //     borderRadius: '5px',
+        //     border: 'none',
+        //     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+        //     fontSize: '12px',
+        //     outline: 'none',
+        //     width: '65%',
+        //     //height: '30px',
+        //     boxSizing: 'border-box',
+        //     marginBottom: '15px',
+        //     display: 'flex',
+        // }}
         onClick={(e) => {
           setDialogProps(
             Object.assign(

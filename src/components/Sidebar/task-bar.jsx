@@ -1,16 +1,21 @@
 import { ReactComponent as AddIcon } from 'assets/svg/addnew.svg'
 import { ReactComponent as FilterIcon } from 'assets/svg/filternew.svg'
 
+
+// Taskbar: This is where the Hhndler (On & Off) of the 
+//          [Add Task, Fiter Task, AutoSchedule] is located in. 
 export const Taskbar = ({ type, onOff, value, setValue }) => {
 
+    // TaskbarIcon: Get the Icons of the tasks action
     const getTaskbarIcon = (type) => {
         if (type === 'ADD_TASKS') {
             return <AddIcon width={'30px'} height={'18px'} />
         } else if (type === 'FILTER_TASKS') {
-            return <FilterIcon width={'30px'} height={'18px'}/>
+            return <FilterIcon width={'15px'} height={'38px'}/>
         }
     }
 
+    // getTaskbarText: Get the type of the tasks action to match
     const getTaskbarText = (type) => {
         if (type === 'ADD_TASKS') {
         return 'Add'
@@ -33,6 +38,7 @@ export const Taskbar = ({ type, onOff, value, setValue }) => {
         setValue(true)
     }
 
+    // callTaskbarHandlerFunction: Handler of the each action tasks
     const callTaskbarHandlerFunction = (type, onOff) => {
         {console.log(onOff)}
         if (type === 'ADD_TASKS') {
