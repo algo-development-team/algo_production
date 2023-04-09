@@ -2,7 +2,6 @@ import { ReactComponent as Dot } from 'assets/svg/dot.svg'
 import { OptionsButton } from 'components/MenuButton'
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { ProjectTasksCounts } from './project-tasks-count'
 import { cropLabel } from 'handleLabel'
 
 export const CustomProject = ({ project }) => {
@@ -33,7 +32,6 @@ export const CustomProject = ({ project }) => {
         targetIsProject
         project={project}
       />
-      <ProjectTasksCounts projectId={project.projectId} />
     </NavLink>
   )
 }

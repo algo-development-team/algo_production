@@ -1,7 +1,6 @@
 import { ReactComponent as ScheduledIcon } from 'assets/svg/scheduled.svg'
 import { useThemeContextValue } from 'context'
 import { NavLink } from 'react-router-dom'
-import { ProjectTasksCounts } from './project-tasks-count'
 
 export const DefaultProjects = () => {
   const { isLight } = useThemeContextValue()
@@ -21,7 +20,6 @@ export const DefaultProjects = () => {
 
           <div className='project-group__name'>Overview</div>
         </div>
-        <ProjectTasksCounts isDefaultGroup name={'Overview'} />
       </NavLink>
     </div>
   )

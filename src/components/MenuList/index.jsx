@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { ReactComponent as DeleteIcon } from 'assets/svg/delete.svg'
 import { ReactComponent as EditIcon } from 'assets/svg/edit.svg'
 import { updateProjectColumns } from '../../backend/handleUserProjects'
@@ -6,7 +7,7 @@ import {
   useTaskEditorContextValue,
   useColumnEditorContextValue,
 } from 'context'
-import { useAuth } from 'hooks'
+import { useAuth, useProjects } from 'hooks'
 import { columnTaskDelete, taskDelete } from '../../backend/handleUserTasks'
 import './styles/light.scss'
 import './styles/menu-list.scss'
@@ -33,6 +34,23 @@ export const MenuList = ({
   const { setTaskEditorToShow } = useTaskEditorContextValue()
   const { setColumnEditorToShow } = useColumnEditorContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
+  const { projects, loading: projectsLoading } = useProjects()
+  const [showDeleteOption, setShowDeleteOption] = useState(
+    targetIsSchedule ? false : true,
+  )
+
+  useEffect(() => {
+    if (targetIsSchedule && !projectsLoading) {
+      const schedule = projects.find(
+        (project) => project.projectScheduleId === scheduleId,
+      )
+      if (schedule) {
+        setShowDeleteOption(false)
+      } else {
+        setShowDeleteOption(true)
+      }
+    }
+  }, [targetIsSchedule, scheduleId, projects, projectsLoading])
 
   const handleScheduleDeleteConfirmation = () => {
     setDialogProps({ scheduleId: scheduleId })
@@ -150,16 +168,17 @@ export const MenuList = ({
               Edit {getOptionLabelType()}
             </span>
           </li>
+          {showDeleteOption && (
+            <li className='menu__list--item' onClick={(e) => deleteHandler(e)}>
+              <div className='menu__list--icon'>
+                <DeleteIcon />
+              </div>
 
-          <li className='menu__list--item' onClick={(e) => deleteHandler(e)}>
-            <div className='menu__list--icon'>
-              <DeleteIcon />
-            </div>
-
-            <span className='menu__list--content'>
-              Delete {getOptionLabelType()}
-            </span>
-          </li>
+              <span className='menu__list--content'>
+                Delete {getOptionLabelType()}
+              </span>
+            </li>
+          )}
         </ul>
       </div>
     </div>

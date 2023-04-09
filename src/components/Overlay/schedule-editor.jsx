@@ -16,10 +16,6 @@ export const ScheduleEditor = ({ closeOverlay, isEdit, scheduleToEdit }) => {
   const [disableSubmit, setDisableSubmit] = useState(isEdit ? false : true)
   const { schedules, setSchedules } = useSchedules()
 
-  useEffect(() => {
-    console.log('schedules', schedules)
-  }, [schedules])
-
   const updateScheduleHandler = async (e) => {
     e.preventDefault()
 
