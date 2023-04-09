@@ -13,6 +13,7 @@ import { useOverlayContextValue } from 'context/overlay-context'
 import { useEffect } from 'react'
 import './main.scss'
 import './light.scss'
+import { ScheduleEditor } from './schedule-editor'
 import { ProjectEditor } from './ProjectEditor'
 import { QuickAddTaskDialog } from './quick-add-task-dialog'
 import { TaskPopup } from './task-popup'
@@ -57,6 +58,8 @@ export const Overlay = () => {
         )
       case 'ADD_PROJECT':
         return <ProjectEditor closeOverlay={closeOverlay} />
+      case 'ADD_SCHEDULE':
+        return <ScheduleEditor closeOverlay={closeOverlay} />
       case 'QUICK_ADD_TASK':
         return <QuickAddTaskDialog closeOverlay={closeOverlay} />
       case 'TASK_POPUP':

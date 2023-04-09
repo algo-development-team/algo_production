@@ -1,36 +1,21 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
 import { useOverlayContextValue } from 'context/overlay-context'
-import { useProjects } from 'hooks'
 import { useState } from 'react'
-import { CustomProject } from './custom-project'
 
-export const CustomProjects = () => {
-  const { projects } = useProjects()
-  const [showProjects, setShowProjects] = useState(true)
-  const { setShowDialog } = useOverlayContextValue()
-
-  /* purpose: sorts project names at sidebar alphabetically */
-  const sortProjectsByName = (projects) => {
-    return projects.sort((a, b) => {
-      if (a.name.toLowerCase() < b.name.toLowerCase()) {
-        return -1
-      }
-      if (a.name.toLowerCase() > b.name.toLowerCase()) {
-        return 1
-      }
-      return 0
-    })
-  }
+export const Schedules = () => {
+  const [showSchedules, setShowSchedules] = useState(true)
+  const { showDialog, setShowDialog, dialogProps, setDialogProps } =
+    useOverlayContextValue()
 
   return (
     <div className='custom-project-group__wrapper'>
       <div
         className='custom-project-group__title-group'
-        onClick={() => setShowProjects(!showProjects)}
+        onClick={() => setShowSchedules(!showSchedules)}
       >
         <div
           className='custom-project-group__icon'
-          style={{ transform: `rotate(${showProjects ? 0 : -90}deg)` }}
+          style={{ transform: `rotate(${showSchedules ? 0 : -90}deg)` }}
         >
           <svg
             width='24'
@@ -43,13 +28,13 @@ export const CustomProjects = () => {
           </svg>
         </div>
 
-        <div className='custom-project-group__name'>Projects</div>
+        <div className='custom-project-group__name'>Schedules</div>
 
         <button
           className='custom-project-group__add-project'
           onClick={(event) => {
             event.stopPropagation()
-            setShowDialog('ADD_PROJECT')
+            setShowDialog('ADD_SCHEDULE')
           }}
         >
           <svg
@@ -65,15 +50,11 @@ export const CustomProjects = () => {
           </svg>
         </button>
       </div>
-      {showProjects && (
+      {showSchedules && (
         <div
           className='custom-projects'
-          style={{ height: `${showProjects ? '100%' : '0%'}` }}
-        >
-          {sortProjectsByName(projects).map((project) => (
-            <CustomProject key={project.projectId} project={project} />
-          ))}
-        </div>
+          style={{ height: `${showSchedules ? '100%' : '0%'}` }}
+        ></div>
       )}
     </div>
   )

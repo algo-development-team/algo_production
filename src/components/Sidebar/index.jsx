@@ -1,8 +1,10 @@
 import { CustomProjects } from './custom-projects'
+import { Schedules } from './schedules'
 import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
 import { CalendarList } from './calendar-list'
 import { SearchField } from './search-field'
+import { Setting } from './setting'
 import { useState, useEffect } from 'react'
 import { Taskbar } from './task-bar'
 import { TestButton } from './test-button'
@@ -68,8 +70,9 @@ export const Sidebar = (props) => {
         <div className='sidebar__overlay' onClick={props.onClick}></div>
         <aside className='sidebar'>
           <div className='sidebar-clickables'>
-            <DefaultProjects />
+            <Setting />
           </div>
+          <Schedules />
         </aside>
       </>
     )

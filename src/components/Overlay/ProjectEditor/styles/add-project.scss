@@ -28,6 +28,13 @@
       overflow-y: scroll;
     }
 
+    &--short-content {
+      padding: 20px 24px;
+      background-color: #282828;
+      height: 60px;
+      overflow-y: scroll;
+    }
+
     &--footer {
       padding: 20px 24px;
       border-bottom-left-radius: 5px;

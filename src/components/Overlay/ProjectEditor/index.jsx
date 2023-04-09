@@ -44,6 +44,7 @@ export const ProjectEditor = ({ closeOverlay, isEdit, projectToEdit }) => {
       projectIsWork,
     )
   }
+
   useEffect(() => {
     setSelectedColour(projectColour)
 
