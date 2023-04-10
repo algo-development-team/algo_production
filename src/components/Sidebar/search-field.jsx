@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useExternalEventsContextValue } from 'context'
-import { useTasks, useScheduledTasks, useProjects, useTasksCount } from 'hooks'
+import { useTasks, useScheduledTasks, useProjects } from 'hooks'
 import { ReactComponent as LookupIcon } from 'assets/svg/lookup.svg'
-import { AddTaskbar } from './add-task'
 import { FilterTaskbar } from './filter-task'
 import { GoogleEventColours } from '../../handleColorPalette'
-import { handleCheckTask } from '../../backend/handleUserTasks'
 import { useAuth } from 'hooks'
 import moment from 'moment'
 import { Taskbar } from './task-bar'
@@ -13,16 +11,10 @@ import { Taskbar } from './task-bar'
 // Global Const
 const date = new Date()
 const todayMoment = moment(date).startOf('day')
-const tomorrowMoment = moment(date).startOf('day').add(1, 'day')
 
 // Search Field: Important sections of the Side-bar contents are here
 //               with Search & Filter of the unscheduled tasks
-export const SearchField = ({
-  addValue,
-  setAddValue,
-  filterValue,
-  setFilterValue,
-}) => {
+export const SearchField = ({ filterValue, setFilterValue }) => {
   // Local Const
   const [searchText, setSearchText] = useState('')
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -30,13 +22,9 @@ export const SearchField = ({
   const { projects } = useProjects()
   const [unscheduledTasks, setUnscheduledTasks] = useState([])
   const { scheduledTasks, loading } = useScheduledTasks()
-  const { currentUser } = useAuth()
   const [filter, setFilter] = useState('None')
   const [filterSelect, setFilterSelect] = useState('None')
-  const [AddTasks, setAddTasks] = useState(false)
-  const [FilterTasks, setFilterTasks] = useState(false)
 
-  // Use Effect
   useEffect(() => {
     setFilterSelect('None')
   }, [filter])

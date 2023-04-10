@@ -4,7 +4,7 @@ import { DefaultProjects } from './default-projects'
 import { useParams } from 'react-router-dom'
 import { CalendarList } from './calendar-list'
 import { Setting } from './setting'
-import { SearchField, WarningTask } from './search-field'
+import { SearchField } from './search-field'
 import { useState, useEffect } from 'react'
 import { Taskbar } from './task-bar'
 import { TestButton } from './test-button'
@@ -98,8 +98,6 @@ export const Sidebar = (props) => {
             {/* Search Bar Button */}
             <div className='set-Searchbar' style={{ display: 'flex' }}>
               <SearchField
-                addValue={AddTasks}
-                setAddValue={setAddTasks}
                 filterValue={FilterTasks}
                 setFilterValue={setFilterTasks}
               />
