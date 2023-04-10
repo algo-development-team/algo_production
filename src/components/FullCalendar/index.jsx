@@ -752,6 +752,9 @@ export const FullCalendar = () => {
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
+      datesSet: function (info) {
+        setView(info.view.type)
+      },
       drop: async function (info) {
         const draggedEvent = JSON.parse(info.draggedEl.dataset.event)
 
@@ -922,6 +925,8 @@ export const FullCalendar = () => {
       handleWindowResize: true,
       eventBorderColor: isLight ? '#fff' : '#1f1f1f',
     })
+
+    /* AUTO-SCHEDULE CODE STARTS */
     const avtimes = AvailableTimes
     const tlist = TaskList
 
@@ -929,12 +934,17 @@ export const FullCalendar = () => {
       if (AvailableTimes != null && TaskList != null) {
         const newCustomEvents = [...calendarsEvents.custom]
         let m = 0
-        let y = null
         let t = avtimes[m].start
         let buffer = 0
         let smalltasknumber = 0
-
+        let y = 0
         for (let i = 0; i < tlist.length; i++) {
+          if (
+            moment(avtimes[avtimes.length - 1].end).diff(moment(t), 'minutes') <
+            tlist[i].timeLength
+          ) {
+            break
+          }
           if (tlist[i].timeLength >= 0) {
             if (tlist[i].timeLength < 120) {
               smalltasknumber = smalltasknumber + 1
@@ -959,30 +969,29 @@ export const FullCalendar = () => {
             'minutes',
           )
           if (diff < 0) {
-            console.log(y)
+            let a = null
             for (let p = m + 1; p < avtimes.length; p++) {
               if (
                 moment(avtimes[p].end).diff(
                   moment(avtimes[p].start),
                   'minutes',
-                ) > tlist[i].timeLength
+                ) >= tlist[i].timeLength
               ) {
                 m = p
                 t = avtimes[p].start
-                console.log(
-                  'avtimes[m]',
-                  avtimes[m],
-                  tlist[i].name,
-                  'timelength',
-                  tlist[i].timeLength,
-                  moment(avtimes[p].end).diff(
-                    moment(avtimes[p].start),
-                    'minutes',
-                  ) > tlist[i].timeLength,
-                )
+                a = 1
                 break
               }
             }
+            if (a !== null) {
+              y = 2
+              // for nothing
+            } else {
+              y = 1
+            }
+          }
+          if (y === 1) {
+            break
           }
           const newEvent1 = {
             id: tlist[i].id,
@@ -1004,9 +1013,13 @@ export const FullCalendar = () => {
           custom: newCustomEvents,
         })
       } else {
-        console.log(
-          'cannot schedule - please write code to do something about it later',
-        )
+        if (AvailableTimes === null) {
+          console.log('no available times')
+        }
+        if (TaskList === null) {
+          console.log('tasklist empty')
+        }
+        console.log('cannot schedule')
       }
     }
     if (AutoScheduleButtonClicked === true) {
@@ -1015,6 +1028,8 @@ export const FullCalendar = () => {
       setAvailableTimes(null)
       setTaskList(null)
     }
+    /* AUTO-SCHEDULE CODE ENDS */
+
     calendar.render()
 
     // Update the current time every 5 minutes
