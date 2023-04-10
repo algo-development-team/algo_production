@@ -1,4 +1,40 @@
 import { getFormattedEventTime } from './eventTimeHelpers'
+import { timeZone } from '../../handleCalendars'
+
+export const getRRuleDeleteThisEvent = (rruleStr, recurrenceId) => {
+  return rruleStr + '\nEXDATE:' + recurrenceId
+}
+
+export const getRecurrenceDeleteThisEvent = (recurrence, recurrenceId) => {
+  const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
+  const newRecurrence = [...recurrence, exdate]
+  return newRecurrence
+}
+
+export const getRecurrenceOnSave = (oldecurrence, newRRuleStr, allDay) => {
+  const rruleAndExdates = getRRuleAndExdates(oldecurrence, allDay)
+  const formattedExdates = rruleAndExdates.exdates.map((exdate) => {
+    return `EXDATE;TZID=${timeZone}:${exdate}`
+  })
+  const newRecurrence = [...formattedExdates, newRRuleStr]
+  return newRecurrence
+}
+
+export const extractValuesFromNameValuePairs = (nameValuePairs) => {
+  return nameValuePairs.map((nameValuePair) => {
+    return nameValuePair.split(':')[1]
+  })
+}
+
+export const destructRRuleStr = (rruleStr) => {
+  const rruleStrArr = rruleStr.split('\n')
+  const rruleStrObj = {
+    dtstart: rruleStrArr[0],
+    rrule: rruleStrArr[1],
+    exdates: rruleStrArr.slice(2),
+  }
+  return rruleStrObj
+}
 
 export const getFormattedRRule = (dtStart, rruleString, exdates) => {
   for (const exdate of exdates) {

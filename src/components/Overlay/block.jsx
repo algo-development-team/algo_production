@@ -24,6 +24,7 @@ import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
 import { SetNewTaskSchedule } from '../TaskEditor/set-new-task-schedule'
 import { SetNewTaskPriority } from '../TaskEditor/set-new-task-priority'
+import { destructRRuleStr } from '../FullCalendar/rruleHelpers'
 
 export const Block = ({
   closeOverlay,
@@ -76,16 +77,6 @@ export const Block = ({
   const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
   const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
-
-  const destructRRuleStr = (rruleStr) => {
-    const rruleStrArr = rruleStr.split('\n')
-    const rruleStrObj = {
-      dtstart: rruleStrArr[0],
-      rrule: rruleStrArr[1],
-      exdates: rruleStrArr.slice(2),
-    }
-    return rruleStrObj
-  }
 
   useEffect(() => {
     if (isRecurring) {
