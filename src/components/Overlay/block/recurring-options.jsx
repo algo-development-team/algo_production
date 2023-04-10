@@ -18,12 +18,14 @@ export const RecurringOptions = ({
   rrule, // RRule object
   setRRule,
 }) => {
+  const [isRecurringTemp, setIsRecurringTemp] = useState(isRecurring)
+
   const getRepeatEvery = () => {
     return rrule?.origOptions?.interval || 1
   }
 
   const [repeatEvery, setRepeatEvery] = useState(
-    isRecurring ? getRepeatEvery() : 1,
+    isRecurringTemp ? getRepeatEvery() : 1,
   )
 
   const getRepeatEveryType = () => {
@@ -31,7 +33,7 @@ export const RecurringOptions = ({
   }
 
   const [repeatEveryType, setRepeatEveryType] = useState(
-    isRecurring ? getRepeatEveryType() : 2,
+    isRecurringTemp ? getRepeatEveryType() : 2,
   )
 
   const getRepeatsOnFromByweekday = () => {
@@ -50,7 +52,7 @@ export const RecurringOptions = ({
   }
 
   const [repeatsOn, setRepeatsOn] = useState(
-    isRecurring ? getRepeatsOnFromByweekday() : Array(7).fill(false),
+    isRecurringTemp ? getRepeatsOnFromByweekday() : Array(7).fill(false),
   )
 
   const getMonthlyRepeatType = () => {
@@ -65,7 +67,7 @@ export const RecurringOptions = ({
   }
 
   const [monthlyRepeatType, setMonthlyRepeatType] = useState(
-    isRecurring ? getMonthlyRepeatType() : 'BY_MONTHDAY',
+    isRecurringTemp ? getMonthlyRepeatType() : 'BY_MONTHDAY',
   )
 
   const getEndsType = () => {
@@ -82,7 +84,7 @@ export const RecurringOptions = ({
   }
 
   const [endsType, setEndsType] = useState(
-    isRecurring ? getEndsType() : 'NEVER',
+    isRecurringTemp ? getEndsType() : 'NEVER',
   )
 
   const getEndsOn = () => {
@@ -93,23 +95,21 @@ export const RecurringOptions = ({
   }
 
   const [endsOn, setEndsOn] = useState(
-    isRecurring ? getEndsOn() : moment().add(2, 'months').format('YYYY-MM-DD'),
+    isRecurringTemp
+      ? getEndsOn()
+      : moment().add(2, 'months').format('YYYY-MM-DD'),
   )
 
   const getEndsAfter = () => {
     return rrule?.origOptions?.count || 10
   }
 
-  const [endsAfter, setEndsAfter] = useState(isRecurring ? getEndsAfter() : 10)
+  const [endsAfter, setEndsAfter] = useState(
+    isRecurringTemp ? getEndsAfter() : 10,
+  )
 
   useEffect(() => {
-    if (isRecurring && !dtstart) {
-      setDtstart(new Date()) // set it to the correct value here
-    }
-  }, [isRecurring, dtstart])
-
-  useEffect(() => {
-    if (isRecurring && dtstart) {
+    if (isRecurringTemp) {
       const newRepeatsOn = Array(7).fill(false)
       if (repeatEveryType === 0) {
         setRepeatsOn(newRepeatsOn)
@@ -128,7 +128,7 @@ export const RecurringOptions = ({
         setRepeatsOn(newRepeatsOn)
       }
     }
-  }, [isRecurring, dtstart, repeatEveryType, monthlyRepeatType])
+  }, [isRecurringTemp, repeatEveryType, monthlyRepeatType])
 
   const getRepeatOnLabel = (index) => {
     switch (index) {
@@ -184,16 +184,16 @@ export const RecurringOptions = ({
         <div>
           <input
             type='radio'
-            checked={!isRecurring}
-            onChange={() => setIsRecurring(false)}
+            checked={!isRecurringTemp}
+            onChange={() => setIsRecurringTemp(false)}
           />
           <label htmlFor='not-recurring'>Not recurring</label>
         </div>
         <div>
           <input
             type='radio'
-            checked={isRecurring}
-            onChange={() => setIsRecurring(true)}
+            checked={isRecurringTemp}
+            onChange={() => setIsRecurringTemp(true)}
           />
           <label htmlFor='recurring'>Recurring</label>
         </div>
@@ -332,7 +332,7 @@ export const RecurringOptions = ({
             <div className={`add-task__container`}>
               <h3>Custom Recurrence</h3>
               {selectRecurringOrNot()}
-              {isRecurring && recurringOptions()}
+              {isRecurringTemp && recurringOptions()}
 
               <div
                 style={{

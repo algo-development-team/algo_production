@@ -439,6 +439,7 @@ export const FullCalendar = () => {
       meetLink: meetLink,
       attendees: attendees,
       recurring: recurring,
+      start: start,
       rruleStr: rruleStr,
       eventId: id,
       calendarId: calendarId,

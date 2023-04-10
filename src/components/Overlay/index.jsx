@@ -50,6 +50,7 @@ export const Overlay = () => {
             meetLink={dialogProps.meetLink}
             attendees={dialogProps.attendees}
             recurring={dialogProps.recurring}
+            start={dialogProps.start}
             rruleStr={dialogProps.rruleStr}
             eventId={dialogProps.eventId}
             calendarId={dialogProps.calendarId}
