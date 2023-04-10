@@ -94,7 +94,7 @@ export const Block = ({
       setDtstart(dtstart)
       setRRule(rrule)
     }
-  }, [isRecurring, rruleStr])
+  }, [])
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {

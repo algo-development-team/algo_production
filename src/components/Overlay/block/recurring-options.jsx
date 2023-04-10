@@ -152,6 +152,10 @@ export const RecurringOptions = ({
   }
 
   const handleRecurringEventOptionsSubmit = () => {
+    setIsRecurring(isRecurringTemp)
+
+    if (!isRecurringTemp) return
+
     const newRRule = formatRRule(
       repeatEvery,
       repeatEveryType,
