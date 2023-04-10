@@ -397,6 +397,21 @@ export const FullCalendar = () => {
     }
   }
 
+  const updateCalendarsEvents = (calendarKey, eventId, newEvent) => {
+    setCalendarsEvents((prevCalendarsEvents) => {
+      const newCalendarsEvents = { ...prevCalendarsEvents }
+      const events = newCalendarsEvents[calendarKey]
+      const newEvents = events.map((prevEvent) => {
+        if (prevEvent.id === eventId) {
+          return newEvent
+        }
+        return prevEvent
+      })
+      newCalendarsEvents[calendarKey] = newEvents
+      return newCalendarsEvents
+    })
+  }
+
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
@@ -625,12 +640,12 @@ export const FullCalendar = () => {
         newRRule, // RRule object
       ) => {
         let formattedNewRRule = null
-        let newRRuleStr = null
         let newRecurrence = null
+        let newDtstartTime = null
 
         if (isRecurring) {
-          const newDtStartTime = getFormattedEventTime(newDtstart, allDay)
-          newRRuleStr = newRRule.toString()
+          newDtstartTime = getFormattedEventTime(newDtstart, allDay)
+          const newRRuleStr = newRRule.toString()
           let existingExdates = []
           if (recurring) {
             const destructedRRuleStr = destructRRuleStr(rruleStr)
@@ -639,19 +654,19 @@ export const FullCalendar = () => {
             )
           }
           formattedNewRRule = getFormattedRRule(
-            newDtStartTime,
+            newDtstartTime,
             newRRuleStr,
             existingExdates,
           )
           newRecurrence = getRecurrenceOnSave(recurrence, newRRuleStr, allDay)
         }
 
+        console.log('newDtstartTime', newDtstartTime) // DEBUGGING
         console.log('rruleStr', rruleStr) // DEBUGGING
         console.log('formattedNewRRule', formattedNewRRule) // DEBUGGING
         console.log('newRecurrence', newRecurrence) // DEBUGGING
         console.log('recurrence', recurrence) // DEBUGGING
 
-        // get event from calendarsEvents
         const selectedEvent = calendarsEvents[calendarKey].find(
           (event) => event.id === id,
         )
@@ -664,46 +679,41 @@ export const FullCalendar = () => {
         }
 
         info.event.remove()
-        // if (updatedEvent) {
-        //   calendar.addEvent(updatedEvent)
-        // }
 
-        if (recurring && isRecurring) {
-          // Recurring -> Recurring
-          // update all event properties
-          selectedEvent.updateEventFields(
+        let newEvent = null
+
+        if (!isRecurring) {
+          newEvent = new NonRecurringEvent(
+            id,
             updatedTitle,
             updatedBackgroundColor,
             updatedDescription,
             updatedLocation,
             updatedMeetLink,
             updatedAttendees,
+            taskId,
+            start,
+            end,
           )
-          // update all recurrence properties
-          calendar.addEvent(selectedEvent)
-        } else if (recurring && !isRecurring) {
-          // Recurring -> Not Recurring
-          info.event.setExtendedProp('')
-          // add start and end properties
-          // delete all recurrence properties
-        } else if (!recurring && isRecurring) {
-          // Not Recurring -> Recurring
-          // create a new recurring event
-          // add all recurrence properties
-          // delete start and end properties
-        } else if (!recurring && !isRecurring) {
-          // Not Recurring -> Not Recurring
-          // update all event properties
-          selectedEvent.updateEventFields(
+        } else if (isRecurring) {
+          newEvent = new RecurringEvent(
+            id,
             updatedTitle,
             updatedBackgroundColor,
             updatedDescription,
             updatedLocation,
             updatedMeetLink,
             updatedAttendees,
+            taskId,
+            formattedNewRRule,
+            formattedDuration,
+            newDtstartTime,
+            newRecurrence,
           )
-          calendar.addEvent(selectedEvent)
         }
+
+        calendar.addEvent(newEvent)
+        updateCalendarsEvents(calendarKey, id, newEvent)
       },
     })
     setShowDialog('BLOCK')
