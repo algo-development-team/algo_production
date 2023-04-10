@@ -829,9 +829,6 @@ export const FullCalendar = () => {
           scheduledTasks: newScheduledTasks,
         })
       },
-      datesSet: function (info) {
-        setView(info.view.type)
-      },
       eventClick: function (info) {
         showEventPopup(info, calendar)
       },
