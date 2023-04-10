@@ -398,6 +398,7 @@ export const FullCalendar = () => {
     }
   }
 
+  /* TESTED */
   const updateCalendarsEvents = (calendarKey, eventId, newEvent) => {
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
@@ -627,6 +628,7 @@ export const FullCalendar = () => {
           )
         }
       },
+      /* TESTED */
       save: (
         updatedTitle,
         updatedBackgroundColor,
