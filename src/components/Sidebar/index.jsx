@@ -8,6 +8,7 @@ import { SearchField, WarningTask } from './search-field'
 import { useState, useEffect } from 'react'
 import { Taskbar } from './task-bar'
 import { TestButton } from './test-button'
+import { AutoScheduleButton } from './auto-schedule-button'
 import './styles/light.scss'
 import './styles/main.scss'
 
@@ -105,9 +106,9 @@ export const Sidebar = (props) => {
             </div>
           </div>
           {/* Calendar List */}
+          <AutoScheduleButton />
           <CalendarList />
           <TestButton />
-          {/* <AutoScheduleButton /> */}
         </aside>
       </>
     )
