@@ -45,9 +45,10 @@ export const GoogleAuthButton = () => {
         marginRight: sizes.phone ? '10px' : '15px',
       }}
       className='google-auth-button'
+      onClick={() => handleGoogleAuth()}
     >
       <GoogleCalendarIcon strokeWidth='.1' />
-      <span onClick={() => handleGoogleAuth()}>{getButtonText()}</span>
+      <span>{getButtonText()}</span>
     </div>
   )
 }
