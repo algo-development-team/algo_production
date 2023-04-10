@@ -17,8 +17,8 @@ Recurring Event:
   // default event extended properties
   description: string, (extendedProps)
   location: string, (extendedProps)
-  meetLink: string, (extendedProps)
-  attendees: string[], (extendedProps)
+  meetLink: string (URL), (extendedProps)
+  attendees: string[] (email[]), (extendedProps)
   taskId: string | null, (extendedProps)
 
   // recurring identifier
@@ -44,11 +44,42 @@ Non-Recurring Event:
   // default event extended properties
   description: string, (extendedProps)
   location: string, (extendedProps)
-  meetLink: string, (extendedProps)
+  meetLink: string (URL), (extendedProps)
   attendees: string[] (email[]), (extendedProps)
   taskId: string | null, (extendedProps)
 
   // recurring identifier
   recurring: boolean (false), (extendedProps)
+}
+```
+
+---
+
+Recurring Event Extended Props (info.event object schema):
+
+```ts
+{
+  attendees: string[] (email[])
+  description: string
+  dtStart: string (ISO8601)
+  location: string
+  meetLink: string (URL)
+  recurrence: string[] (RRule.toString()[])
+  recurring: boolean
+  rruleStr: string (RRule.toString())
+  taskId: string | null
+}
+```
+
+Non-Recurring Event Extended Props (info.event object schema):
+
+```ts
+{
+  attendees: string[] (email[])
+  description: string
+  location: string
+  meetLink: string (URL)
+  recurring: boolean
+  taskId: string | null
 }
 ```

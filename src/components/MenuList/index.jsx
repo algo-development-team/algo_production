@@ -73,8 +73,8 @@ export const MenuList = ({
       currentUser && currentUser.id,
       projectId,
       columnId,
-      taskIndex,
       taskId,
+      taskIndex,
     )
   }
 

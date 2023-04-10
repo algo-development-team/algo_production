@@ -28,6 +28,22 @@ class Event {
     this.taskId = taskId
     this.recurring = recurring
   }
+
+  updateEventFields(
+    title,
+    backgroundColor,
+    description,
+    location,
+    meetLink,
+    attendees,
+  ) {
+    this.title = title
+    this.backgroundColor = backgroundColor
+    this.description = description
+    this.location = location
+    this.meetLink = meetLink
+    this.attendees = attendees
+  }
 }
 
 export class NonRecurringEvent extends Event {

@@ -23,7 +23,6 @@ import {
 import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
 import './calendar.scss'
-import { timeZone } from 'handleCalendars'
 import {
   getEventsInfo,
   updateEventsInfo,
@@ -45,11 +44,16 @@ import {
   getFormattedRRule,
   getRRuleAndExdates,
   updateDtStartInRRuleStr,
+  destructRRuleStr,
+  extractValuesFromNameValuePairs,
+  getRRuleDeleteThisEvent,
+  getRecurrenceDeleteThisEvent,
+  getRecurrenceFromPrevNonRecurringEvent,
+  getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
 import {
   useAutoScheduleButtonClickedValue,
-  useScheduleValue,
   useAvailableTimesValue,
   useTaskListValue,
 } from 'context'
@@ -63,7 +67,6 @@ export const FullCalendar = () => {
   const { TaskList, setTaskList } = useTaskListValue()
   // const { Schedule, setSchedule} = useScheduleValue()
   const [view, setView] = useState(`dayGridWeek`)
-  const [infoEvent, setInfoEvent] = useState(null)
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -395,10 +398,24 @@ export const FullCalendar = () => {
     }
   }
 
+  /* TESTED */
+  const updateCalendarsEvents = (calendarKey, eventId, newEvent) => {
+    setCalendarsEvents((prevCalendarsEvents) => {
+      const newCalendarsEvents = { ...prevCalendarsEvents }
+      const events = newCalendarsEvents[calendarKey]
+      const newEvents = events.map((prevEvent) => {
+        if (prevEvent.id === eventId) {
+          return newEvent
+        }
+        return prevEvent
+      })
+      newCalendarsEvents[calendarKey] = newEvents
+      return newCalendarsEvents
+    })
+  }
+
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
-
-    console.log('info.event', info.event) // DEBUGGING
 
     const {
       allDay,
@@ -439,6 +456,7 @@ export const FullCalendar = () => {
       meetLink: meetLink,
       attendees: attendees,
       recurring: recurring,
+      start: start,
       rruleStr: rruleStr,
       eventId: id,
       calendarId: calendarId,
@@ -446,9 +464,11 @@ export const FullCalendar = () => {
       /* TESTED */
       remove: (recurringEventEditOption) => {
         if (recurring && recurringEventEditOption === 'THIS_EVENT') {
-          const newRRule = rruleStr + '\nEXDATE:' + recurrenceId
-          const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
-          const newRecurrence = [...recurrence, exdate]
+          const newRRule = getRRuleDeleteThisEvent(rruleStr, recurrenceId)
+          const newRecurrence = getRecurrenceDeleteThisEvent(
+            recurrence,
+            recurrenceId,
+          )
 
           // update at calendarsEvents
           let updatedEvent = null
@@ -608,91 +628,141 @@ export const FullCalendar = () => {
           )
         }
       },
+      /* TESTED */
       save: (
-        taskName,
-        backgroundColor,
-        taskDescription,
-        location,
-        meetLink,
-        attendees,
+        updatedTitle,
+        updatedBackgroundColor,
+        updatedDescription,
+        updatedLocation,
+        updatedMeetLink,
+        updatedAttendees,
         isRecurring,
-        dtstart, // JS Date object
-        rrule, // RRule object
+        newDtstart, // JS Date object
+        newRRule, // RRule object
       ) => {
-        console.log('taskName', taskName) // DEBUGGING
-        console.log('backgroundColor', backgroundColor) // DEBUGGING
-        console.log('taskDescription', taskDescription) // DEBUGGING
-        console.log('location', location) // DEBUGGING
-        console.log('meetLink', meetLink) // DEBUGGING
-        console.log('attendees', attendees) // DEBUGGING
-        console.log('isRecurring', isRecurring) // DEBUGGING
-        console.log('dtstart', dtstart) // DEBUGGING
-        console.log('rrule', rrule) // DEBUGGING
+        let formattedNewRRule = null
+        let newRecurrence = null
+        let newDtstartTime = null
 
-        /***
-         * Steps:
-         * 1. Update info.event
-         * 2. Update calendarsEvents, convert between NonRecurringEvent and RecurringEvent if the recurring option has been selected/unselected
-         * 3. Update Google Calendar
-         * ***/
+        if (isRecurring) {
+          newDtstartTime = getFormattedEventTime(newDtstart, allDay)
 
-        // update info.event
-        info.event.setProp('title', taskName)
-        info.event.setProp('backgroundColor', backgroundColor)
-        info.event.setExtendedProp('description', taskDescription)
-        info.event.setExtendedProp('location', location)
-        info.event.setExtendedProp('meetLink', meetLink)
-        info.event.setExtendedProp('attendees', attendees)
+          const newRRuleStr = newRRule.toString()
 
-        /*
-        const newRRuleStr = rrule.toString()
-        const dtstartStrFullCalendar = getFormattedEventTime(dtstart)
-        const dtstartStrGoogleCalendar = allDay
-          ? dtstart.toISOString().slice(0, 10)
-          : dtstart.toISOString()
+          let existingExdates = []
+          if (recurring) {
+            const destructedRRuleStr = destructRRuleStr(rruleStr)
+            existingExdates = extractValuesFromNameValuePairs(
+              destructedRRuleStr.exdates,
+            )
+          }
 
-        const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
-        const newRecurrence = [...rruleAndExdates.exdates, rruleStr]
+          formattedNewRRule = getFormattedRRule(
+            newDtstartTime,
+            newRRuleStr,
+            existingExdates,
+          )
 
-        // update the event in FullCalendar
-        
-        info.event.setExtendedProp('rruleStr', newRRuleStr)
-        info.event.setExtendedProp('dtStart', dtstartStrFullCalendar)
-        info.event.setExtendedProp('recurrence', newRecurrence)
+          if (recurring) {
+            newRecurrence = getRecurrenceFromPrevRecurringEvent(
+              recurrence,
+              newRRuleStr,
+              allDay,
+            )
+          } else {
+            newRecurrence = getRecurrenceFromPrevNonRecurringEvent(newRRuleStr)
+          }
+        }
 
-        // update the event in calendarsEvents
-        const newCalendarsEvents = { ...calendarsEvents }
-        newCalendarsEvents[calendarKey] = newCalendarsEvents[calendarKey].map(
-          (event) => {
-            if (event.id === id) {
-              const updatedEvent = {
-                ...event,
-                title: taskName,
-                backgroundColor: backgroundColor,
-                description: taskDescription,
-              }
-              if (attendees.length > 0) {
-                updatedEvent.attendees = attendees
-              }
-              return updatedEvent
-            } else {
-              return event
-            }
-          },
+        const selectedEvent = calendarsEvents[calendarKey].find(
+          (event) => event.id === id,
         )
 
-        setCalendarsEvents(newCalendarsEvents)
+        if (!selectedEvent) {
+          alert(
+            'Cannot save the event. Please try again later or refresh the page.',
+          )
+          return
+        }
 
-        const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-          summary: taskName,
-          description: taskDescription,
-          colorId: colorId,
-          location: location,
-          attendees: attendees,
-          recurrence: newRecurrence,
-          startTime: dtstartStrGoogleCalendar,
-          allDay: allDay,
-        })
+        info.event.remove()
+
+        let newEvent = null
+
+        if (!isRecurring) {
+          newEvent = new NonRecurringEvent(
+            id,
+            updatedTitle,
+            updatedBackgroundColor,
+            updatedDescription,
+            updatedLocation,
+            updatedMeetLink,
+            updatedAttendees,
+            taskId,
+            start,
+            end,
+          )
+        } else if (isRecurring) {
+          newEvent = new RecurringEvent(
+            id,
+            updatedTitle,
+            updatedBackgroundColor,
+            updatedDescription,
+            updatedLocation,
+            updatedMeetLink,
+            updatedAttendees,
+            taskId,
+            formattedNewRRule,
+            formattedDuration,
+            newDtstartTime,
+            newRecurrence,
+          )
+        }
+
+        calendar.addEvent(newEvent)
+        updateCalendarsEvents(calendarKey, id, newEvent)
+
+        let formattedGoogleCalendarEvent = null
+
+        const newColorId =
+          GoogleEventColours.findIndex(
+            (colour) => colour.hex === updatedBackgroundColor,
+          ) + 1
+
+        if (isRecurring) {
+          const newDtstartStr = moment(newDtstart).toISOString()
+          const newDtendStr = moment(newDtstart)
+            .add(duration, 'minutes')
+            .toISOString()
+
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+            id: id,
+            summary: updatedTitle,
+            description: updatedDescription,
+            colorId: newColorId,
+            location: updatedLocation,
+            attendees: updatedAttendees,
+            recurrence: newRecurrence,
+            startTime: newDtstartStr, // change this to ISOString of newDtstart
+            endTime: newDtendStr, // change this to ISOString of newDtend
+            allDay: allDay,
+            taskId: taskId,
+          })
+        } else {
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+            id: id,
+            summary: updatedTitle,
+            description: updatedDescription,
+            colorId: newColorId,
+            location: updatedLocation,
+            attendees: updatedAttendees,
+            recurrence: [],
+            startTime: startStr,
+            endTime: endStr,
+            allDay: allDay,
+            taskId: taskId,
+          })
+        }
 
         updateEventFromUserGoogleCalendar(
           currentUser.id,
@@ -700,7 +770,6 @@ export const FullCalendar = () => {
           id,
           formattedGoogleCalendarEvent,
         )
-        */
       },
     })
     setShowDialog('BLOCK')
@@ -828,9 +897,6 @@ export const FullCalendar = () => {
         updateEventsInfo(currentUser.id, {
           scheduledTasks: newScheduledTasks,
         })
-      },
-      datesSet: function (info) {
-        setView(info.view.type)
       },
       eventClick: function (info) {
         showEventPopup(info, calendar)
@@ -1055,46 +1121,3 @@ export const FullCalendar = () => {
 
   return <div ref={calendarRef}></div>
 }
-
-// if(AvailableTimes != null && TaskList != null){
-//   let m = 0
-//   let t = avtimes[m].start
-//   let buffer = 0
-//   const newCustomEvents = [...calendarsEvents.custom]
-//   for(let i = 0; i < tlist.length; i++){
-//     if(tlist[i].timeLength > moment(avtimes[m].end).diff(moment(t).add(buffer, 'minutes'), 'minutes') && m < avtimes.length) {
-//       t = avtimes[m].start
-//       m = m + 1
-//     }
-//     const newEvent1 = {
-//       id: tlist[i].id,
-//       title: tlist[i].name,
-//       // start: moment(t).add(buffer, 'minutes').format('YYYY-MM-DD HH:mm'),
-//       // end: moment(t).add(tlist[i].timeLength, 'minutes').format('YYYY-MM-DD HH:mm'),
-//       start: moment(t).add(buffer, 'minutes').format('YYYY-MM-DD HH:mm'),
-//       end: moment(t).add(tlist[i].timeLength, 'minutes').format('YYYY-MM-DD HH:mm'),
-//       taskId: tlist[i].id,
-//       description: tlist[i].description,
-//     }
-//     if(tlist[i].timeLength >= 0){
-//       buffer = 0
-//     }
-//     if(tlist[i].timeLength >= 120){
-//       buffer = 15
-//     }
-//     if(tlist[i].timeLength >= 240){
-//       buffer = 30
-//     }
-//     if(tlist[i].timeLength >= 480){
-//       buffer = 60
-//     }
-//     t = moment(t).add(tlist[i].timeLength, 'minutes')
-
-//      calendar.addEvent(newEvent1)
-//      newCustomEvents.push(newEvent1)
-//   }
-//    setCalendarsEvents({
-//     ...calendarsEvents,
-//     custom: newCustomEvents,
-//    })
-//   }

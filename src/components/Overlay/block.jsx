@@ -24,6 +24,7 @@ import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
 import { SetNewTaskSchedule } from '../TaskEditor/set-new-task-schedule'
 import { SetNewTaskPriority } from '../TaskEditor/set-new-task-priority'
+import { destructRRuleStr } from '../FullCalendar/rruleHelpers'
 
 export const Block = ({
   closeOverlay,
@@ -34,6 +35,7 @@ export const Block = ({
   meetLink,
   attendees,
   recurring,
+  start,
   rruleStr,
   eventId,
   calendarId,
@@ -71,52 +73,10 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
+  // TASK FIELDS: UPDATE THESE LATER
   const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
   const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
-
-  /* DEBUGGING SECTION */
-  useEffect(() => {
-    console.log('taskname', taskname) // DEBUGGING
-  }, [taskname])
-  useEffect(() => {
-    console.log('taskdescription', taskdescription) // DEBUGGING
-  }, [taskdescription])
-  useEffect(() => {
-    console.log('taskbackgroundcolor', taskbackgroundcolor) // DEBUGGING
-  }, [taskbackgroundcolor])
-  useEffect(() => {
-    console.log('location', location) // DEBUGGING
-  }, [location])
-  useEffect(() => {
-    console.log('meetLink', meetLink) // DEBUGGING
-  }, [meetLink])
-  useEffect(() => {
-    console.log('attendees', attendees) // DEBUGGING
-  }, [attendees])
-  useEffect(() => {
-    console.log('recurring', recurring) // DEBUGGING
-  }, [recurring])
-  useEffect(() => {
-    console.log('rruleStr', rruleStr) // DEBUGGING
-  }, [rruleStr])
-  useEffect(() => {
-    console.log('dtstart', dtstart) // DEBUGGING
-  }, [dtstart])
-  useEffect(() => {
-    console.log('rrule', rrule) // DEBUGGING
-  }, [rrule])
-  /* DEBUGGING SECTION */
-
-  const destructRRuleStr = (rruleStr) => {
-    const rruleStrArr = rruleStr.split('\n')
-    const rruleStrObj = {
-      dtstart: rruleStrArr[0],
-      rrule: rruleStrArr[1],
-      exdates: rruleStrArr.slice(2),
-    }
-    return rruleStrObj
-  }
 
   useEffect(() => {
     if (isRecurring) {
@@ -126,7 +86,7 @@ export const Block = ({
       setDtstart(dtstart)
       setRRule(rrule)
     }
-  }, [isRecurring, rruleStr])
+  }, [])
 
   useEffect(() => {
     for (const eventAttendee of eventAttendees) {
@@ -604,7 +564,7 @@ export const Block = ({
         setShowRecurringEventOptions={setShowRecurringEventOptions}
         isRecurring={isRecurring}
         setIsRecurring={setIsRecurring}
-        dtstart={dtstart}
+        dtstart={recurring ? dtstart : start}
         setDtstart={setDtstart}
         rrule={rrule}
         setRRule={setRRule}
