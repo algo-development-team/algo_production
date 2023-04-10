@@ -49,7 +49,6 @@ import {
 import { NonRecurringEvent, RecurringEvent } from './event'
 import {
   useAutoScheduleButtonClickedValue,
-  useScheduleValue,
   useAvailableTimesValue,
   useTaskListValue,
 } from 'context'
@@ -63,7 +62,6 @@ export const FullCalendar = () => {
   const { TaskList, setTaskList } = useTaskListValue()
   // const { Schedule, setSchedule} = useScheduleValue()
   const [view, setView] = useState(`dayGridWeek`)
-  const [infoEvent, setInfoEvent] = useState(null)
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
   const [currentTime, setCurrentTime] = useState(new Date())
