@@ -72,6 +72,7 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
+  // TASK FIELDS: UPDATE THESE LATER
   const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
   const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
