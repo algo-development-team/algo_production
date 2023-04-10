@@ -416,8 +416,6 @@ export const FullCalendar = () => {
   const showEventPopup = (info, calendar) => {
     info.jsEvent.preventDefault()
 
-    console.log('info.event', info.event) // DEBUGGING
-
     const {
       allDay,
       id,
@@ -674,12 +672,6 @@ export const FullCalendar = () => {
           }
         }
 
-        console.log('newDtstartTime', newDtstartTime) // DEBUGGING
-        console.log('rruleStr', rruleStr) // DEBUGGING
-        console.log('formattedNewRRule', formattedNewRRule) // DEBUGGING
-        console.log('newRecurrence', newRecurrence) // DEBUGGING
-        console.log('recurrence', recurrence) // DEBUGGING
-
         const selectedEvent = calendarsEvents[calendarKey].find(
           (event) => event.id === id,
         )
@@ -727,6 +719,55 @@ export const FullCalendar = () => {
 
         calendar.addEvent(newEvent)
         updateCalendarsEvents(calendarKey, id, newEvent)
+
+        let formattedGoogleCalendarEvent = null
+
+        const newColorId =
+          GoogleEventColours.findIndex(
+            (colour) => colour.hex === updatedBackgroundColor,
+          ) + 1
+
+        if (isRecurring) {
+          const newDtstartStr = moment(newDtstart).toISOString()
+          const newDtendStr = moment(newDtstart)
+            .add(duration, 'minutes')
+            .toISOString()
+
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+            id: id,
+            summary: updatedTitle,
+            description: updatedDescription,
+            colorId: newColorId,
+            location: updatedLocation,
+            attendees: updatedAttendees,
+            recurrence: newRecurrence,
+            startTime: newDtstartStr, // change this to ISOString of newDtstart
+            endTime: newDtendStr, // change this to ISOString of newDtend
+            allDay: allDay,
+            taskId: taskId,
+          })
+        } else {
+          formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+            id: id,
+            summary: updatedTitle,
+            description: updatedDescription,
+            colorId: newColorId,
+            location: updatedLocation,
+            attendees: updatedAttendees,
+            recurrence: [],
+            startTime: startStr,
+            endTime: endStr,
+            allDay: allDay,
+            taskId: taskId,
+          })
+        }
+
+        updateEventFromUserGoogleCalendar(
+          currentUser.id,
+          calendarId,
+          id,
+          formattedGoogleCalendarEvent,
+        )
       },
     })
     setShowDialog('BLOCK')
