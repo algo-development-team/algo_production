@@ -48,7 +48,8 @@ import {
   extractValuesFromNameValuePairs,
   getRRuleDeleteThisEvent,
   getRecurrenceDeleteThisEvent,
-  getRecurrenceOnSave,
+  getRecurrenceFromPrevNonRecurringEvent,
+  getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
 import {
@@ -645,7 +646,9 @@ export const FullCalendar = () => {
 
         if (isRecurring) {
           newDtstartTime = getFormattedEventTime(newDtstart, allDay)
+
           const newRRuleStr = newRRule.toString()
+
           let existingExdates = []
           if (recurring) {
             const destructedRRuleStr = destructRRuleStr(rruleStr)
@@ -653,12 +656,22 @@ export const FullCalendar = () => {
               destructedRRuleStr.exdates,
             )
           }
+
           formattedNewRRule = getFormattedRRule(
             newDtstartTime,
             newRRuleStr,
             existingExdates,
           )
-          newRecurrence = getRecurrenceOnSave(recurrence, newRRuleStr, allDay)
+
+          if (recurring) {
+            newRecurrence = getRecurrenceFromPrevRecurringEvent(
+              recurrence,
+              newRRuleStr,
+              allDay,
+            )
+          } else {
+            newRecurrence = getRecurrenceFromPrevNonRecurringEvent(newRRuleStr)
+          }
         }
 
         console.log('newDtstartTime', newDtstartTime) // DEBUGGING

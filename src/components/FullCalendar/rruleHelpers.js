@@ -7,12 +7,20 @@ export const getRRuleDeleteThisEvent = (rruleStr, recurrenceId) => {
 
 export const getRecurrenceDeleteThisEvent = (recurrence, recurrenceId) => {
   const exdate = `EXDATE;TZID=${timeZone}:${recurrenceId}`
-  const newRecurrence = [...recurrence, exdate]
+  const newRecurrence = [exdate, ...recurrence]
   return newRecurrence
 }
 
-export const getRecurrenceOnSave = (oldecurrence, newRRuleStr, allDay) => {
-  const rruleAndExdates = getRRuleAndExdates(oldecurrence, allDay)
+export const getRecurrenceFromPrevNonRecurringEvent = (newRRuleStr) => {
+  return [newRRuleStr]
+}
+
+export const getRecurrenceFromPrevRecurringEvent = (
+  oldRecurrence,
+  newRRuleStr,
+  allDay,
+) => {
+  const rruleAndExdates = getRRuleAndExdates(oldRecurrence, allDay)
   const formattedExdates = rruleAndExdates.exdates.map((exdate) => {
     return `EXDATE;TZID=${timeZone}:${exdate}`
   })
