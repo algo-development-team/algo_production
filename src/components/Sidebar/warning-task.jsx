@@ -49,37 +49,28 @@ export const WarningTask = ({
   }
 
   const warningTasks = (filter, filterSelect, tasks) => {
-    // console.log('filter', filter) // DEBUGGING
-    // console.log('filterSelect', filterSelect) // DEBUGGING
-    // console.log('tasks', tasks) // DEBUGGING
-
     const pastDeadline = []
     const warningDeadline = []
     for (let i = 0; i < tasks.length; i++) {
       if (tasks[i].date === filterSelect.date) {
-          warningDeadline.push(tasks[i])
-          // console.log('date not same...') // DEBUGGING 
-        } else if (tasks[i].date < filterSelect.date) {
-          pastDeadline.push(tasks[i])
-          // console.log('project not same...') // DEBUGGING 
+        warningDeadline.push(tasks[i])
+      } else if (tasks[i].date < filterSelect.date) {
+        pastDeadline.push(tasks[i])
       }
-    } 
+    }
 
-    // console.log('result', result) // DEBUGGING
     return pastDeadline, warningDeadline
   }
 
-    return (
-        <>
-          <div
-             className='set-Warningbar'
-            // onClick={() => callTaskbarHandlerFunction(type, onOff)}
-            > 
-                <div style={{color:'white'}}>
-                    {getTaskbarIcon(type)}
-                </div>
-                {getTaskbarText(type)}
-            </div>
-        </>
-      )
-    }
+  return (
+    <>
+      <div
+        className='set-Warningbar'
+        // onClick={() => callTaskbarHandlerFunction(type, onOff)}
+      >
+        <div style={{ color: 'white' }}>{getTaskbarIcon(type)}</div>
+        {getTaskbarText(type)}
+      </div>
+    </>
+  )
+}

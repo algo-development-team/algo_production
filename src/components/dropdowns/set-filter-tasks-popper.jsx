@@ -15,7 +15,6 @@ export const SetNewTaskFilterPopper = ({
 }) => {
   const setFilterSelection = (selection) => {
     setFilter(selection)
-    // console.log('selection', selection) // DEBUGGING
     isQuickAdd || isPopup ? setShowPopup(false) : closeOverlay()
   }
 

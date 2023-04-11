@@ -21,10 +21,6 @@ export const ViewHeader = () => {
   const [scheduleName, setScheduleName] = useState(null)
 
   useEffect(() => {
-    console.log('scheduleName', scheduleName) // DEBUGGING
-  }, [scheduleName])
-
-  useEffect(() => {
     if (project && !schedulesLoading) {
       const schedule = schedules.find(
         (schedule) => schedule.id === project.projectScheduleId,

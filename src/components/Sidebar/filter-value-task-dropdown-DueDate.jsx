@@ -38,18 +38,16 @@ export const DueDateFilter = ({
           setDialogProps(
             Object.assign(
               { elementPosition: e.currentTarget.getBoundingClientRect() },
-              { setFilterSelect }
+              { setFilterSelect },
             ),
           )
           if (isPopup) {
-            // console.log('isPopup...') // DEBUGGING
             setDialogProps({ setFilterSelect }) // Match the name 'task' with the 'setTaskTimeLength'
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else if (isQuickAdd) {
-            // console.log('isQuickAdd...') // DEBUGGING
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else {
-              setShowDialog('SET_TASK_FILTER_SCHEDULE')
+            setShowDialog('SET_TASK_FILTER_SCHEDULE')
           }
         }}
       >

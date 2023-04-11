@@ -78,7 +78,37 @@ export const FullCalendar = () => {
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
-  const { tasks } = useTasks()
+  const { tasks, loading: tasksLoading } = useTasks()
+  const [tasksMap, setTasksMap] = useState({})
+
+  useEffect(() => {
+    const newTasksMap = {}
+    for (const task of tasks) {
+      newTasksMap[task.taskId] = task
+    }
+    setTasksMap(newTasksMap)
+  }, [tasks])
+
+  const tasksMapLoaded = () => {
+    if (tasksLoading) {
+      // If the tasks are still loading, then return false
+      return false
+    } else {
+      // If the tasks are not loading, then return false if there are tasks but the tasksMap is empty. Otherwise, return true
+      if (tasks.length === 0) {
+        return true
+      } else if (Object.keys(tasksMap).length === 0) {
+        return false
+      } else {
+        return true
+      }
+    }
+  }
+
+  const googleCalendarsEventsFetched = () => {
+    // If calendarsEvents is not default value, then it has been fetched
+    return JSON.stringify(calendarsEvents) !== JSON.stringify({ custom: [] })
+  }
 
   const getEventCalendarIdAndKey = (eventId) => {
     let calendarId = null // Google Calendar ID
@@ -101,6 +131,10 @@ export const FullCalendar = () => {
     return { calendarId: calendarId, calendarKey: calendarKey }
   }
 
+  const getEventIdFromEventInstance = (eventInstance) => {
+    return eventInstance.split('_')[0]
+  }
+
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
     for (const key in mixedCalendarsEvents) {
@@ -110,10 +144,6 @@ export const FullCalendar = () => {
     }
 
     return events
-  }
-
-  const getTask = (taskId) => {
-    return tasks.find((task) => task.taskId === taskId)
   }
 
   const getEventProperties = (event) => {
@@ -158,6 +188,9 @@ export const FullCalendar = () => {
 
   /* TESTED */
   useEffect(() => {
+    if (googleCalendarsEventsFetched()) return
+    if (!tasksMapLoaded()) return
+
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
@@ -181,14 +214,14 @@ export const FullCalendar = () => {
             )
             if (
               !Object.keys(deletedEventInstances).includes(
-                event.id.split('_')[0],
+                getEventIdFromEventInstance(event.id),
               )
             ) {
-              deletedEventInstances[event.id.split('_')[0]] = [
+              deletedEventInstances[getEventIdFromEventInstance(event.id)] = [
                 formattedEventTime,
               ]
             } else {
-              deletedEventInstances[event.id.split('_')[0]].push(
+              deletedEventInstances[getEventIdFromEventInstance(event.id)].push(
                 formattedEventTime,
               )
             }
@@ -199,17 +232,30 @@ export const FullCalendar = () => {
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           const id = event.id
-          const title = event.summary
+          let title = event.summary
           const backgroundColor = isValidGoogleEventColorId(event.colorId)
             ? GoogleEventColours[event.colorId - 1].hex
             : GoogleEventColours[6].hex
-          const description = stripTags(event?.description || '')
+          let description = stripTags(event?.description || '')
           const location = event?.location || ''
           const meetLink = event.conferenceData?.entryPoints[0].uri || ''
           const attendees = event?.attendees || []
-          const taskId = event?.extendedProperties?.private?.taskId || null
 
           const start = event.start?.dateTime || event.start?.date
+
+          let taskId = event?.extendedProperties?.private?.taskId || null
+
+          if (taskId) {
+            const task = tasksMap[taskId]
+            if (task) {
+              // task exists, update title and description
+              title = task.name
+              description = task.description
+            } else {
+              // task no longer exists, remove taskId
+              taskId = null
+            }
+          }
 
           if (event.recurrence) {
             const allDay = event.start?.dateTime ? false : true
@@ -282,7 +328,7 @@ export const FullCalendar = () => {
       })
       setResourceIds(fetchedResourceIds)
     }
-  }, [currentUser, googleCalendars])
+  }, [currentUser, googleCalendars, tasks, tasksMap])
 
   /* TESTED */
   const handleRecurringEventAdjustment = (info) => {
@@ -437,7 +483,7 @@ export const FullCalendar = () => {
       taskId,
     } = getEventProperties(info.event)
 
-    const task = getTask(taskId)
+    const task = tasksMap[taskId]
 
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
@@ -790,6 +836,7 @@ export const FullCalendar = () => {
     })
 
     if (!currentUser) return null
+    if (!tasksMapLoaded()) return null
 
     const calendar = new Calendar(calendarRef.current, {
       height: 'calc(100vh - 64px)',
@@ -1110,6 +1157,8 @@ export const FullCalendar = () => {
   }, [
     isLight,
     calendarsEvents,
+    tasks,
+    tasksMap,
     unselectedCalendarIds,
     externalEventsRef,
     currentTime,
