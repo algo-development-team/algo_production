@@ -79,36 +79,44 @@ export const FullCalendar = () => {
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks, loading: tasksLoading } = useTasks()
-  const [tasksMap, setTasksMap] = useState({})
 
-  useEffect(() => {
-    const newTasksMap = {}
-    for (const task of tasks) {
-      newTasksMap[task.taskId] = task
-    }
-    setTasksMap(newTasksMap)
-  }, [tasks])
-
-  const tasksMapLoaded = () => {
-    if (tasksLoading) {
-      // If the tasks are still loading, then return false
-      return false
-    } else {
-      // If the tasks are not loading, then return false if there are tasks but the tasksMap is empty. Otherwise, return true
-      if (tasks.length === 0) {
-        return true
-      } else if (Object.keys(tasksMap).length === 0) {
-        return false
-      } else {
-        return true
-      }
-    }
+  const getTask = (taskId) => {
+    return tasks.find((task) => task.taskId === taskId)
   }
 
   const googleCalendarsEventsFetched = () => {
     // If calendarsEvents is not default value, then it has been fetched
     return JSON.stringify(calendarsEvents) !== JSON.stringify({ custom: [] })
   }
+
+  /* CODE FOR DEBUGGING START */ 
+  const matchTasksAndEvents = () => {
+    const t1 = new Date()
+    for (const task of tasks) {
+      for (const key in calendarsEvents) {
+        for (const event of calendarsEvents[key]) {
+          if (event.taskId === task.taskId) {
+            console.log(task, event)
+          }
+        }
+      }
+    }
+    const t2 = new Date()
+    console.log(`Time taken: ${t2 - t1}ms`)
+  }
+
+  useEffect(() => {
+    if (googleCalendarsEventsFetched() && !tasksLoading) {
+      console.log('tasks.length', tasks.length)
+      let totalEvents = 0
+      for (const key in calendarsEvents) {
+        totalEvents += calendarsEvents[key].length
+      }
+      console.log('totalEvents', totalEvents)
+      matchTasksAndEvents()
+    }
+  }, [calendarsEvents, tasks])
+  /* CODE FOR DEBUGGING END */ 
 
   const getEventCalendarIdAndKey = (eventId) => {
     let calendarId = null // Google Calendar ID
@@ -188,10 +196,6 @@ export const FullCalendar = () => {
 
   /* TESTED */
   useEffect(() => {
-    if (!currentUser) return
-    if (googleCalendarsEventsFetched()) return
-    if (!tasksMapLoaded()) return
-
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
@@ -244,14 +248,16 @@ export const FullCalendar = () => {
           let taskId = event?.extendedProperties?.private?.taskId || null
 
           if (taskId) {
-            const task = tasksMap[taskId]
+            const task = getTask(taskId)
             if (task) {
               // task exists, update title and description
               title = task.name
               description = task.description
+              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK IS UPDATED
             } else {
               // task no longer exists, remove taskId
               taskId = null
+              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK IS DELETED
             }
           }
 
@@ -314,8 +320,12 @@ export const FullCalendar = () => {
       setCalendarsEvents(newCalendarsEvents)
     }
 
-    // move this to a separate function, make sure this runs only once
-    if (googleCalendars.length > 0) {
+    if (
+      currentUser &&
+      !tasksLoading &&
+      googleCalendars.length > 0 &&
+      !googleCalendarsEventsFetched()
+    ) {
       fetchGoogleCalendarEvents()
       const fetchedResourceIds = {}
       googleCalendars.forEach(async (googleCalendar) => {
@@ -327,7 +337,7 @@ export const FullCalendar = () => {
       })
       setResourceIds(fetchedResourceIds)
     }
-  }, [currentUser, googleCalendars, tasks, tasksMap])
+  }, [currentUser, tasksLoading, googleCalendars, calendarsEvents])
 
   /* TESTED */
   const handleRecurringEventAdjustment = (info) => {
@@ -482,7 +492,7 @@ export const FullCalendar = () => {
       taskId,
     } = getEventProperties(info.event)
 
-    const task = tasksMap[taskId]
+    const task = getTask(taskId)
 
     const duration = moment(end).diff(moment(start), 'minutes')
     const formattedDuration = formatEventTimeLength(duration)
@@ -835,7 +845,7 @@ export const FullCalendar = () => {
     })
 
     if (!currentUser) return null
-    if (!tasksMapLoaded()) return null
+    if (tasksLoading) return null
 
     const calendar = new Calendar(calendarRef.current, {
       height: 'calc(100vh - 64px)',
@@ -1012,7 +1022,7 @@ export const FullCalendar = () => {
           const checkmarkInput = document.createElement('input')
           checkmarkInput.type = 'checkbox'
           checkmarkInput.classList.add('checkmark-input')
-          const task = tasks.find((task) => task.taskId === taskId)
+          const task = getTask(taskId)
           if (task?.boardStatus === 'COMPLETE') {
             checkmarkInput.checked = true
           }
@@ -1156,8 +1166,7 @@ export const FullCalendar = () => {
   }, [
     isLight,
     calendarsEvents,
-    tasks,
-    tasksMap,
+    tasksLoading,
     unselectedCalendarIds,
     externalEventsRef,
     currentTime,
