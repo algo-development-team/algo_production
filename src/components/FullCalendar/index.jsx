@@ -188,6 +188,7 @@ export const FullCalendar = () => {
 
   /* TESTED */
   useEffect(() => {
+    if (!currentUser) return
     if (googleCalendarsEventsFetched()) return
     if (!tasksMapLoaded()) return
 
@@ -196,10 +197,7 @@ export const FullCalendar = () => {
         (googleCalendar) => googleCalendar.id,
       )
       const { fetchedCalendarsEvents, nextSyncTokens } =
-        await getUserGoogleCalendarsEvents(
-          currentUser && currentUser.id,
-          googleCalendarIds,
-        )
+        await getUserGoogleCalendarsEvents(currentUser.id, googleCalendarIds)
       setNextSyncTokens(nextSyncTokens)
       const newCalendarsEvents = { ...calendarsEvents }
 
@@ -316,7 +314,8 @@ export const FullCalendar = () => {
       setCalendarsEvents(newCalendarsEvents)
     }
 
-    if (currentUser && googleCalendars.length > 0) {
+    // move this to a separate function, make sure this runs only once
+    if (googleCalendars.length > 0) {
       fetchGoogleCalendarEvents()
       const fetchedResourceIds = {}
       googleCalendars.forEach(async (googleCalendar) => {
