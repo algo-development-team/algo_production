@@ -29,20 +29,12 @@ class Event {
     this.recurring = recurring
   }
 
-  updateEventFields(
-    title,
-    backgroundColor,
-    description,
-    location,
-    meetLink,
-    attendees,
-  ) {
+  setTitle(title) {
     this.title = title
-    this.backgroundColor = backgroundColor
+  }
+
+  setDescription(description) {
     this.description = description
-    this.location = location
-    this.meetLink = meetLink
-    this.attendees = attendees
   }
 }
 

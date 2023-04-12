@@ -10,6 +10,7 @@ export const GoogleContextProvider = ({ children }) => {
   const [googleCalendars, setGoogleCalendars] = useState([])
   const [googleCalendarsListChanged, setGoogleCalendarsListChanged] =
     useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchGoogleCalendars = async () => {
@@ -20,6 +21,7 @@ export const GoogleContextProvider = ({ children }) => {
     }
     if (currentUser && isUserGoogleAuthenticated) {
       fetchGoogleCalendars()
+      setLoading(false)
     }
   }, [currentUser, isUserGoogleAuthenticated, googleCalendarsListChanged])
 
@@ -29,6 +31,7 @@ export const GoogleContextProvider = ({ children }) => {
         googleCalendars,
         googleCalendarsListChanged,
         setGoogleCalendarsListChanged,
+        loading,
       }}
     >
       {children}

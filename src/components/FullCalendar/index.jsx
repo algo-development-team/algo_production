@@ -14,12 +14,15 @@ import {
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
   getFormattedGoogleCalendarEvent,
-  updateEventFromUserGoogleCalendarRemoveFields,
+  updateGoogleCalendarEvents,
 } from '../../google'
 import {
   useGoogleValue,
   useCalendarsEventsValue,
   useThemeContextValue,
+  useAutoScheduleButtonClickedValue,
+  useAvailableTimesValue,
+  useTaskListValue,
 } from 'context'
 import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
@@ -53,11 +56,6 @@ import {
   getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
-import {
-  useAutoScheduleButtonClickedValue,
-  useAvailableTimesValue,
-  useTaskListValue,
-} from 'context'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -66,7 +64,6 @@ export const FullCalendar = () => {
     useAutoScheduleButtonClickedValue()
   const { AvailableTimes, setAvailableTimes } = useAvailableTimesValue()
   const { TaskList, setTaskList } = useTaskListValue()
-  // const { Schedule, setSchedule} = useScheduleValue()
   const [view, setView] = useState(`dayGridWeek`)
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -74,20 +71,20 @@ export const FullCalendar = () => {
   const { googleCalendars } = useGoogleValue()
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
-  const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
+  const { calendarsEvents, setCalendarsEvents, calendarsEventsFetched } =
+    useCalendarsEventsValue()
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks, loading: tasksLoading } = useTasks()
 
-  const getTask = (taskId) => {
-    return tasks.find((task) => task.taskId === taskId)
+  const googleCalendarsLoaded = () => {
+    return googleCalendars.length > 0
   }
 
-  const googleCalendarsEventsFetched = () => {
-    // If calendarsEvents is not default value, then it has been fetched
-    return JSON.stringify(calendarsEvents) !== JSON.stringify({ custom: [] })
+  const getTask = (taskId) => {
+    return tasks.find((task) => task.taskId === taskId)
   }
 
   const getEventCalendarIdAndKey = (eventId) => {
@@ -168,40 +165,6 @@ export const FullCalendar = () => {
 
   /* TESTED */
   useEffect(() => {
-    const updateGoogleCalendarEvents = (googleCalendarEventsUpdateDetails) => {
-      for (const googleCalendarEventUpdateDetails of googleCalendarEventsUpdateDetails) {
-        const eventId = googleCalendarEventUpdateDetails.id
-        const calendarId = googleCalendarEventUpdateDetails.calendarId
-        const updatedSummary = googleCalendarEventUpdateDetails?.summary
-        const updatedDescription = googleCalendarEventUpdateDetails?.description
-        const removeTaskId = googleCalendarEventUpdateDetails?.removeTaskId
-
-        if (updatedSummary || updatedDescription) {
-          const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
-            summary: updatedSummary,
-            description: updatedDescription,
-          })
-
-          // update the event in the calendar
-          updateEventFromUserGoogleCalendar(
-            currentUser.id,
-            calendarId,
-            eventId,
-            formattedGoogleCalendarEvent,
-          )
-        }
-
-        if (removeTaskId) {
-          updateEventFromUserGoogleCalendarRemoveFields(
-            currentUser.id,
-            calendarId,
-            eventId,
-            ['REMOVE_TASK_ID'],
-          )
-        }
-      }
-    }
-
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
@@ -256,33 +219,30 @@ export const FullCalendar = () => {
           let taskId = event?.extendedProperties?.private?.taskId || null
 
           if (taskId) {
-            const googleCalendarEventUpdateDetails = { id: id, calendarId: key }
+            const googleCalendarEventUpdateDetails = {
+              id: id,
+              calendarId: key,
+              summary: title,
+              description: description,
+            }
 
             const task = getTask(taskId)
 
             if (task) {
               // task exists, update title and description
               // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK TITLE IS UPDATED
-              if (title !== task.name) {
+              if (title !== task.name || description !== task.description) {
                 title = task.name
-                googleCalendarEventUpdateDetails.summary = title
-              }
-              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK DESCRIPTION IS UPDATED
-              if (description !== task.description) {
                 description = task.description
+                googleCalendarEventUpdateDetails.summary = title
                 googleCalendarEventUpdateDetails.description = description
+                googleCalendarEventsUpdateDetails.push(
+                  googleCalendarEventUpdateDetails,
+                )
               }
             } else {
               // task no longer exists, remove taskId
-              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK IS DELETED
               taskId = null
-              googleCalendarEventUpdateDetails.removeTaskId = true
-            }
-
-            if (Object.keys(googleCalendarEventUpdateDetails).length > 2) {
-              googleCalendarEventsUpdateDetails.push(
-                googleCalendarEventUpdateDetails,
-              )
             }
           }
 
@@ -344,14 +304,17 @@ export const FullCalendar = () => {
 
       setCalendarsEvents(newCalendarsEvents)
 
-      updateGoogleCalendarEvents(googleCalendarEventsUpdateDetails)
+      updateGoogleCalendarEvents(
+        currentUser.id,
+        googleCalendarEventsUpdateDetails,
+      )
     }
 
     if (
       currentUser &&
       !tasksLoading &&
-      googleCalendars.length > 0 &&
-      !googleCalendarsEventsFetched()
+      googleCalendarsLoaded() &&
+      !calendarsEventsFetched
     ) {
       fetchGoogleCalendarEvents()
       const fetchedResourceIds = {}
@@ -364,7 +327,7 @@ export const FullCalendar = () => {
       })
       setResourceIds(fetchedResourceIds)
     }
-  }, [currentUser, tasksLoading, googleCalendars, calendarsEvents])
+  }, [currentUser, tasksLoading, googleCalendars, calendarsEventsFetched])
 
   /* TESTED */
   const handleRecurringEventAdjustment = (info) => {
@@ -982,7 +945,6 @@ export const FullCalendar = () => {
         })
       },
       eventClick: function (info) {
-        console.log('info.event', info.event) // DEBUGGING
         showEventPopup(info, calendar)
       },
       select: function (info) {

@@ -300,62 +300,6 @@ export const updateEventFromUserGoogleCalendar = async (
   }
 }
 
-export const updateEventFromUserGoogleCalendarRemoveFields = async (
-  userId,
-  calendarId,
-  eventId,
-  removeOptions, // string[] ('REMOVE_TASK_ID')
-) => {
-  try {
-    const accessToken = await getValidToken(userId)
-
-    if (!accessToken) return null
-
-    // Get the current event object from the API
-    const response = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      },
-    )
-
-    const currentEvent = await response.json()
-
-    if (removeOptions.includes('REMOVE_TASK_ID')) {
-      if (
-        currentEvent.extendedProperties &&
-        currentEvent.extendedProperties.private
-      ) {
-        // Remove the taskId value from the private field
-        delete currentEvent.extendedProperties.private.taskId
-      }
-    }
-
-    // Send a PUT request to the API to update the event
-    const request = await fetch(
-      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
-      {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(currentEvent),
-      },
-    )
-
-    const data = await request.json()
-
-    return data
-  } catch (error) {
-    console.log(error)
-    return null
-  }
-}
-
 export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
   try {
     const accessToken = await getValidToken(userId)
@@ -416,7 +360,6 @@ export const createGoogleMeet = async (userId, calendarId, eventId) => {
 
     // Extract the Meet link from the updated event data
     const updatedEventData = await updateResponse.json()
-    console.log('updatedEventData', updatedEventData) // DEBUGGING
     const meetLink = updatedEventData.hangoutLink
 
     return meetLink
@@ -488,5 +431,30 @@ export const fetchDeletedEventInstances = async (
     return deletedInstances
   } catch (error) {
     console.error(error)
+  }
+}
+
+export const updateGoogleCalendarEvents = (
+  userId,
+  googleCalendarEventsUpdateDetails,
+) => {
+  for (const googleCalendarEventUpdateDetails of googleCalendarEventsUpdateDetails) {
+    const eventId = googleCalendarEventUpdateDetails.id
+    const calendarId = googleCalendarEventUpdateDetails.calendarId
+    const updatedSummary = googleCalendarEventUpdateDetails.summary
+    const updatedDescription = googleCalendarEventUpdateDetails.description
+
+    const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+      summary: updatedSummary,
+      description: updatedDescription,
+    })
+
+    // update the event in the calendar
+    updateEventFromUserGoogleCalendar(
+      userId,
+      calendarId,
+      eventId,
+      formattedGoogleCalendarEvent,
+    )
   }
 }
