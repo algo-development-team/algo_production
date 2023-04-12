@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, useContext } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -14,6 +14,7 @@ import {
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
   getFormattedGoogleCalendarEvent,
+  updateEventFromUserGoogleCalendarRemoveFields,
 } from '../../google'
 import {
   useGoogleValue,
@@ -88,35 +89,6 @@ export const FullCalendar = () => {
     // If calendarsEvents is not default value, then it has been fetched
     return JSON.stringify(calendarsEvents) !== JSON.stringify({ custom: [] })
   }
-
-  /* CODE FOR DEBUGGING START */ 
-  const matchTasksAndEvents = () => {
-    const t1 = new Date()
-    for (const task of tasks) {
-      for (const key in calendarsEvents) {
-        for (const event of calendarsEvents[key]) {
-          if (event.taskId === task.taskId) {
-            console.log(task, event)
-          }
-        }
-      }
-    }
-    const t2 = new Date()
-    console.log(`Time taken: ${t2 - t1}ms`)
-  }
-
-  useEffect(() => {
-    if (googleCalendarsEventsFetched() && !tasksLoading) {
-      console.log('tasks.length', tasks.length)
-      let totalEvents = 0
-      for (const key in calendarsEvents) {
-        totalEvents += calendarsEvents[key].length
-      }
-      console.log('totalEvents', totalEvents)
-      matchTasksAndEvents()
-    }
-  }, [calendarsEvents, tasks])
-  /* CODE FOR DEBUGGING END */ 
 
   const getEventCalendarIdAndKey = (eventId) => {
     let calendarId = null // Google Calendar ID
@@ -196,6 +168,40 @@ export const FullCalendar = () => {
 
   /* TESTED */
   useEffect(() => {
+    const updateGoogleCalendarEvents = (googleCalendarEventsUpdateDetails) => {
+      for (const googleCalendarEventUpdateDetails of googleCalendarEventsUpdateDetails) {
+        const eventId = googleCalendarEventUpdateDetails.id
+        const calendarId = googleCalendarEventUpdateDetails.calendarId
+        const updatedSummary = googleCalendarEventUpdateDetails?.summary
+        const updatedDescription = googleCalendarEventUpdateDetails?.description
+        const removeTaskId = googleCalendarEventUpdateDetails?.removeTaskId
+
+        if (updatedSummary || updatedDescription) {
+          const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+            summary: updatedSummary,
+            description: updatedDescription,
+          })
+
+          // update the event in the calendar
+          updateEventFromUserGoogleCalendar(
+            currentUser.id,
+            calendarId,
+            eventId,
+            formattedGoogleCalendarEvent,
+          )
+        }
+
+        if (removeTaskId) {
+          updateEventFromUserGoogleCalendarRemoveFields(
+            currentUser.id,
+            calendarId,
+            eventId,
+            ['REMOVE_TASK_ID'],
+          )
+        }
+      }
+    }
+
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
@@ -231,6 +237,8 @@ export const FullCalendar = () => {
         })
       }
 
+      const googleCalendarEventsUpdateDetails = []
+
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           const id = event.id
@@ -248,16 +256,33 @@ export const FullCalendar = () => {
           let taskId = event?.extendedProperties?.private?.taskId || null
 
           if (taskId) {
+            const googleCalendarEventUpdateDetails = { id: id, calendarId: key }
+
             const task = getTask(taskId)
+
             if (task) {
               // task exists, update title and description
-              title = task.name
-              description = task.description
-              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK IS UPDATED
+              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK TITLE IS UPDATED
+              if (title !== task.name) {
+                title = task.name
+                googleCalendarEventUpdateDetails.summary = title
+              }
+              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK DESCRIPTION IS UPDATED
+              if (description !== task.description) {
+                description = task.description
+                googleCalendarEventUpdateDetails.description = description
+              }
             } else {
               // task no longer exists, remove taskId
-              taskId = null
               // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK IS DELETED
+              taskId = null
+              googleCalendarEventUpdateDetails.removeTaskId = true
+            }
+
+            if (Object.keys(googleCalendarEventUpdateDetails).length > 2) {
+              googleCalendarEventsUpdateDetails.push(
+                googleCalendarEventUpdateDetails,
+              )
             }
           }
 
@@ -318,6 +343,8 @@ export const FullCalendar = () => {
       }
 
       setCalendarsEvents(newCalendarsEvents)
+
+      updateGoogleCalendarEvents(googleCalendarEventsUpdateDetails)
     }
 
     if (
@@ -955,6 +982,7 @@ export const FullCalendar = () => {
         })
       },
       eventClick: function (info) {
+        console.log('info.event', info.event) // DEBUGGING
         showEventPopup(info, calendar)
       },
       select: function (info) {

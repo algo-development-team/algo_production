@@ -251,7 +251,7 @@ export const deleteEventFromUserGoogleCalendar = async (
 
     if (!accessToken) return null
 
-    const request = await fetch(
+    await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
       {
         method: 'DELETE',
@@ -288,6 +288,62 @@ export const updateEventFromUserGoogleCalendar = async (
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(event),
+      },
+    )
+
+    const data = await request.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
+    return null
+  }
+}
+
+export const updateEventFromUserGoogleCalendarRemoveFields = async (
+  userId,
+  calendarId,
+  eventId,
+  removeOptions, // string[] ('REMOVE_TASK_ID')
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    // Get the current event object from the API
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    )
+
+    const currentEvent = await response.json()
+
+    if (removeOptions.includes('REMOVE_TASK_ID')) {
+      if (
+        currentEvent.extendedProperties &&
+        currentEvent.extendedProperties.private
+      ) {
+        // Remove the taskId value from the private field
+        delete currentEvent.extendedProperties.private.taskId
+      }
+    }
+
+    // Send a PUT request to the API to update the event
+    const request = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(currentEvent),
       },
     )
 
