@@ -55,8 +55,21 @@ export const TaskEditor = ({
   const { calendarsEvents, setCalendarsEvents, calendarsEventsFetched } =
     useCalendarsEventsValue()
   const textAreaRef = useRef(null)
+  const [schedulatedEventsData, setSchedulatedEventsData] = useState([])
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
+
+  useEffect(() => {
+    if (calendarsEventsFetched && task) {
+      for (const key in calendarsEvents) {
+        for (const event of calendarsEvents[key]) {
+          if (event.taskId === task.taskId) {
+            console.log('event', event) // DEBUGGING
+          }
+        }
+      }
+    }
+  }, [calendarsEvents, calendarsEventsFetched, task])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {

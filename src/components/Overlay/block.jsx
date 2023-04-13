@@ -74,16 +74,23 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
-  // TASK FIELDS: UPDATE THESE LATER
-  const getSchedule = (dateStr) => {
-    if (!dateStr) return null
+
+  const covertDateStrForwards = (dateStr) => {
+    if (!dateStr || dateStr === '') return ''
     return moment(dateStr, 'DD-MM-YYYY').format('YYYY-MM-DD')
   }
 
+  const covertDateStrBackwards = (dateStr) => {
+    if (!dateStr || dateStr === '') return ''
+    return moment(dateStr, 'YYYY-MM-DD').format('DD-MM-YYYY')
+  }
+
   const [startSchedule, setStartSchedule] = useState(
-    getSchedule(task?.startDate),
+    covertDateStrForwards(task?.startDate),
   )
-  const [endSchedule, setEndSchedule] = useState(getSchedule(task?.date))
+  const [endSchedule, setEndSchedule] = useState(
+    covertDateStrForwards(task?.date),
+  )
   const [projectId, setProjectId] = useState(task?.projectId || '')
   const [priority, setPriority] = useState(task?.priority || 2)
 
@@ -164,8 +171,8 @@ export const Block = ({
       dtstart,
       rrule,
       projectId,
-      startSchedule,
-      endSchedule,
+      covertDateStrBackwards(startSchedule),
+      covertDateStrBackwards(endSchedule),
       priority,
     )
     closeOverlay()

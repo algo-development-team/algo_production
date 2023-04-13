@@ -686,8 +686,8 @@ export const FullCalendar = () => {
         newDtstart, // JS Date object
         newRRule, // RRule object
         updatedTaskProjectId,
-        updatedStartSchedule, // 'YYYY-MM-DD'
-        updatedEndSchedule, // 'YYYY-MM-DD'
+        updatedStartDate, // 'DD-MM-YYYY'
+        updatedEndDate, // 'DD-MM-YYYY'
         updatedPriority,
       ) => {
         let formattedNewRRule = null
@@ -823,16 +823,12 @@ export const FullCalendar = () => {
 
         // update task fields
         if (task) {
-          const covertDateStrBackwards = (dateStr) => {
-            return moment(dateStr, 'YYYY-MM-DD').format('DD-MM-YYYY')
-          }
-
           const updatedTask = {
             name: updatedTitle,
             description: updatedDescription,
             projectId: updatedTaskProjectId,
-            startDate: covertDateStrBackwards(updatedStartSchedule),
-            date: covertDateStrBackwards(updatedEndSchedule),
+            startDate: updatedStartDate,
+            date: updatedEndDate,
             priority: updatedPriority,
           }
 
