@@ -163,6 +163,10 @@ export const Block = ({
       isRecurring,
       dtstart,
       rrule,
+      projectId,
+      startSchedule,
+      endSchedule,
+      priority,
     )
     closeOverlay()
   }

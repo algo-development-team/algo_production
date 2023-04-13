@@ -56,6 +56,7 @@ import {
   getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
+import { updateTask } from '../../backend/handleUserTasks'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -77,7 +78,7 @@ export const FullCalendar = () => {
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
-  const { tasks, loading: tasksLoading } = useTasks()
+  const { tasks, setTasks, loading: tasksLoading } = useTasks()
 
   const googleCalendarsLoaded = () => {
     return googleCalendars.length > 0
@@ -684,6 +685,10 @@ export const FullCalendar = () => {
         isRecurring,
         newDtstart, // JS Date object
         newRRule, // RRule object
+        updatedTaskProjectId,
+        updatedStartSchedule, // 'YYYY-MM-DD'
+        updatedEndSchedule, // 'YYYY-MM-DD'
+        updatedPriority,
       ) => {
         let formattedNewRRule = null
         let newRecurrence = null
@@ -815,6 +820,35 @@ export const FullCalendar = () => {
           id,
           formattedGoogleCalendarEvent,
         )
+
+        // update task fields
+        if (task) {
+          const covertDateStrBackwards = (dateStr) => {
+            return moment(dateStr, 'YYYY-MM-DD').format('DD-MM-YYYY')
+          }
+
+          const updatedTask = {
+            name: updatedTitle,
+            description: updatedDescription,
+            projectId: updatedTaskProjectId,
+            startDate: covertDateStrBackwards(updatedStartSchedule),
+            date: covertDateStrBackwards(updatedEndSchedule),
+            priority: updatedPriority,
+          }
+
+          updateTask(currentUser.id, taskId, updatedTask)
+
+          const updatedTasks = tasks.map((task) => {
+            if (task.taskId === taskId) {
+              return {
+                ...task,
+                ...updatedTask,
+              }
+            }
+            return task
+          })
+          setTasks(updatedTasks)
+        }
       },
     })
     setShowDialog('BLOCK')
