@@ -22,8 +22,9 @@ import { useAuth } from 'hooks'
 import moment from 'moment'
 import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
-import { SetNewTaskSchedule } from '../TaskEditor/set-new-task-schedule'
-import { SetNewTaskPriority } from '../TaskEditor/set-new-task-priority'
+import { PriorityEditor } from './block/priority-editor'
+import { ScheduleEditor } from './block/schedule-editor'
+import { ProjectEditor } from './block/project-editor'
 import { destructRRuleStr } from '../FullCalendar/rruleHelpers'
 
 export const Block = ({
@@ -74,9 +75,17 @@ export const Block = ({
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
   // TASK FIELDS: UPDATE THESE LATER
-  const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
-  const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
-  const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
+  const getSchedule = (dateStr) => {
+    if (!dateStr) return null
+    return moment(dateStr, 'DD-MM-YYYY').format('YYYY-MM-DD')
+  }
+
+  const [startSchedule, setStartSchedule] = useState(
+    getSchedule(task?.startDate),
+  )
+  const [endSchedule, setEndSchedule] = useState(getSchedule(task?.date))
+  const [projectId, setProjectId] = useState(task?.projectId || '')
+  const [priority, setPriority] = useState(task?.priority || 2)
 
   useEffect(() => {
     if (isRecurring) {
@@ -516,29 +525,13 @@ export const Block = ({
   const taskAttributesEditor = () => {
     return (
       <div style={{ marginTop: '20px' }}>
-        <SetNewTaskSchedule
-          isQuickAdd={false}
-          isPopup={true}
+        <ProjectEditor projectId={projectId} setProjectId={setProjectId} />
+        <PriorityEditor priority={priority} setPriority={setPriority} />
+        <ScheduleEditor
           schedule={startSchedule}
           setSchedule={setStartSchedule}
-          task={task}
-          defaultText='Start Date'
         />
-        <SetNewTaskSchedule
-          isQuickAdd={false}
-          isPopup={true}
-          schedule={endSchedule}
-          setSchedule={setEndSchedule}
-          task={task}
-          defaultText='Due Date'
-        />
-        <SetNewTaskPriority
-          isQuickAdd={false}
-          isPopup={true}
-          taskPriority={taskPriority}
-          setTaskPriority={setTaskPriority}
-          task={task}
-        />
+        <ScheduleEditor schedule={endSchedule} setSchedule={setEndSchedule} />
       </div>
     )
   }

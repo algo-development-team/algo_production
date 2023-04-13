@@ -6,8 +6,8 @@ import { useState } from 'react'
 export const SetNewTaskSchedule = ({
   isQuickAdd,
   isPopup,
-  setSchedule,
   schedule,
+  setSchedule,
   task,
   defaultText,
 }) => {

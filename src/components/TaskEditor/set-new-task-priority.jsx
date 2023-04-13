@@ -5,11 +5,11 @@ import { useState } from 'react'
 export const SetNewTaskPriority = ({
   isQuickAdd,
   isPopup,
-  setTaskPriority,
   taskPriority,
+  setTaskPriority,
   task,
 }) => {
-  const { showDialog, setShowDialog, setDialogProps } = useOverlayContextValue()
+  const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const [showPopup, setShowPopup] = useState(false)
   const [parentPosition, setParentPosition] = useState({})
   const showQUickAddDropDown = (parentPosition) => {

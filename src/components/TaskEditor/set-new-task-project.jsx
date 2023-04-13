@@ -26,9 +26,8 @@ export const SetNewTaskProject = ({
   task,
 }) => {
   const params = useParams()
-  // const { selectedProject } = useSelectedProjectValue(params);
   const { projects } = useProjects()
-  const { selectedProject, defaultGroup } = useSelectedProject(params, projects)
+  const { selectedProject } = useSelectedProject(params, projects)
   const [popupSelectedProject, setPopupSelectedProject] =
     useState(selectedProject)
   const { setShowDialog, setDialogProps } = useOverlayContextValue()

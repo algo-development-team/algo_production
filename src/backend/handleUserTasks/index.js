@@ -336,7 +336,6 @@ export const quickAddTask = async (
       priority: 1, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
       index: -1,
-      eventIds: [],
     })
   } catch (error) {
     console.log(error)
@@ -371,7 +370,6 @@ export const addTask = async (
       priority: taskPriority, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
       index: index,
-      eventIds: [],
     })
     // UPDATE TASK INDEX HERE (COMPLETED)
   } catch (error) {
