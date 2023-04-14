@@ -45,6 +45,7 @@ export const Block = ({
   copy,
   backlog,
   save,
+  addEventAsTask,
 }) => {
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
@@ -74,6 +75,7 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
+  const [showAddTaskFields, setShowAddTaskFields] = useState(false)
 
   const covertDateStrForwards = (dateStr) => {
     if (!dateStr || dateStr === '') return ''
@@ -156,6 +158,18 @@ export const Block = ({
   const handleBacklog = () => {
     remove(recurringEventEditOption)
     backlog()
+    closeOverlay()
+  }
+
+  const handleAddEventAsTask = () => {
+    addEventAsTask(
+      projectId,
+      covertDateStrBackwards(startSchedule),
+      covertDateStrBackwards(endSchedule),
+      taskName,
+      taskDescription,
+      priority,
+    )
     closeOverlay()
   }
 
@@ -535,7 +549,7 @@ export const Block = ({
 
   const taskAttributesEditor = () => {
     return (
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: '20px', marginBottom: '20px' }}>
         <ProjectEditor projectId={projectId} setProjectId={setProjectId} />
         <PriorityEditor priority={priority} setPriority={setPriority} />
         <ScheduleEditor
@@ -543,6 +557,63 @@ export const Block = ({
           setSchedule={setStartSchedule}
         />
         <ScheduleEditor schedule={endSchedule} setSchedule={setEndSchedule} />
+      </div>
+    )
+  }
+
+  const addEventAsTaskAfterEdit = () => {
+    return (
+      <>
+        {taskAttributesEditor()}
+        <div
+          style={{
+            display: 'flex',
+            marginTop: '20px',
+            marginBottom: '20px',
+          }}
+        >
+          <button
+            className=' action add-task__actions--cancel'
+            onClick={(e) => {
+              e.preventDefault()
+              setShowAddTaskFields(false)
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className=' action add-task__actions--add-task'
+            disabled={projectId === ''}
+            onClick={(e) => {
+              e.preventDefault()
+              handleAddEventAsTask()
+            }}
+          >
+            Confirm Add
+          </button>
+        </div>
+      </>
+    )
+  }
+
+  const addEventAsTaskBeforeEdit = () => {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          marginTop: '20px',
+          marginBottom: '20px',
+        }}
+      >
+        <button
+          className=' action add-task__actions--cancel'
+          onClick={(e) => {
+            e.preventDefault()
+            setShowAddTaskFields(true)
+          }}
+        >
+          Add Event as Task
+        </button>
       </div>
     )
   }
@@ -593,7 +664,11 @@ export const Block = ({
               {locationEditor()}
               {eventColorSelector()}
               {descriptionEditor()}
-              {task && taskAttributesEditor()}
+              {task
+                ? taskAttributesEditor()
+                : !showAddTaskFields
+                ? addEventAsTaskBeforeEdit()
+                : addEventAsTaskAfterEdit()}
               <div
                 style={{
                   display: 'flex',

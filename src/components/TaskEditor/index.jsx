@@ -128,7 +128,6 @@ export const TaskEditor = ({
       taskName,
       taskId,
       boardStatus,
-      defaultGroup,
       taskDescription,
       taskPriority,
       taskTimeLength,
@@ -471,7 +470,13 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--left'>
                   <ul>
                     {scheduledEvents.map((event, i) => {
-                      return <li key={i}>{`${event.getScheduledEventsInfo().formattedDuration}: ${event.getScheduledEventsInfo().formattedTimeRange}`}</li>
+                      return (
+                        <li key={i}>{`${
+                          event.getScheduledEventsInfo().formattedDuration
+                        }: ${
+                          event.getScheduledEventsInfo().formattedTimeRange
+                        }`}</li>
+                      )
                     })}
                   </ul>
                 </div>

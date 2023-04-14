@@ -9,6 +9,11 @@ export const ProjectEditor = ({ projectId, setProjectId }) => {
 
   return (
     <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
+      {projectId === '' && (
+        <option value='' disabled>
+          No Project Selected
+        </option>
+      )}
       {sortProjectsByName(projects).map((project) => {
         return (
           <option key={project.projectId} value={project.projectId}>

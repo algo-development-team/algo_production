@@ -59,6 +59,7 @@ export const Overlay = () => {
             copy={dialogProps.copy}
             backlog={dialogProps.backlog}
             save={dialogProps.save}
+            addEventAsTask={dialogProps.addEventAsTask}
           />
         )
       case 'ADD_PROJECT':

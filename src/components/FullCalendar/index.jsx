@@ -5,7 +5,7 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import rrulePlugin from '@fullcalendar/rrule'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
-import { generateEventId } from '../../utils'
+import { generatePushId, generateEventId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import {
   getUserGoogleCalendarsEvents,
@@ -36,9 +36,9 @@ import {
   GoogleEventColours,
   isValidGoogleEventColorId,
 } from '../../handleColorPalette'
+import { roundClosestValidTimeLength } from '../../handleMoment'
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
-import { generatePushId } from 'utils'
 import {
   getFormattedEventTime,
   formatEventTimeLength,
@@ -56,7 +56,7 @@ import {
   getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
-import { updateTask } from '../../backend/handleUserTasks'
+import { updateTask, addTask } from '../../backend/handleUserTasks'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -845,6 +845,39 @@ export const FullCalendar = () => {
           })
           setTasks(updatedTasks)
         }
+      },
+      addEventAsTask: async (
+        projectId,
+        startDate,
+        endDate,
+        title,
+        description,
+        priority,
+      ) => {
+        const newTaskId = generatePushId()
+        const roundedTimeLength = roundClosestValidTimeLength(duration)
+
+        addTask(
+          currentUser.id,
+          projectId,
+          startDate,
+          endDate,
+          title,
+          newTaskId,
+          'TODO',
+          description,
+          priority,
+          roundedTimeLength,
+          0, // REPLACE INDEX HERE WITH APPROPRIATE VALUE LATER
+        )
+
+        /* stores the taskId to scheduledTasks array in eventsInfo collection */
+        const eventsInfo = await getEventsInfo(currentUser.id)
+        const scheduledTasks = eventsInfo.scheduledTasks
+        const newScheduledTasks = [...scheduledTasks, newTaskId]
+        updateEventsInfo(currentUser.id, {
+          scheduledTasks: newScheduledTasks,
+        })
       },
     })
     setShowDialog('BLOCK')
