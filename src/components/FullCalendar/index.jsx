@@ -86,7 +86,6 @@ export const FullCalendar = () => {
 
   useEffect(() => {
     const ws = new WebSocket(`ws://${process.env.REACT_APP_NGROK_BODY}`)
-    // const ws = new WebSocket(`ws://localhost:8000`)
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server')
@@ -329,13 +328,7 @@ export const FullCalendar = () => {
       )
     }
 
-    if (
-      currentUser &&
-      !tasksLoading &&
-      googleCalendarsLoaded() &&
-      !calendarsEventsFetched
-    ) {
-      fetchGoogleCalendarEvents()
+    const addWebhooksToGoogleCalendars = async () => {
       const fetchedResourceIds = {}
       googleCalendars.forEach(async (googleCalendar) => {
         const result = await addWebhookToGoogleCalendar(
@@ -345,6 +338,16 @@ export const FullCalendar = () => {
         fetchedResourceIds[googleCalendar.id] = result.resourceId
       })
       setResourceIds(fetchedResourceIds)
+    }
+
+    if (
+      currentUser &&
+      !tasksLoading &&
+      googleCalendarsLoaded() &&
+      !calendarsEventsFetched
+    ) {
+      addWebhooksToGoogleCalendars()
+      fetchGoogleCalendarEvents()
     }
   }, [currentUser, tasksLoading, googleCalendars, calendarsEventsFetched])
 
