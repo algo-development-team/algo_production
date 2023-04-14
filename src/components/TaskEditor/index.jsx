@@ -15,6 +15,9 @@ import './styles/main.scss'
 import './styles/light.scss'
 import { useAutosizeTextArea, useResponsiveSizes } from 'hooks'
 import { updateGoogleCalendarEvents } from '../../google'
+import { ScheduledButton } from './scheduled-button'
+import { RRule } from 'rrule'
+import { getRRuleAndExdates } from '../FullCalendar/rruleHelpers'
 
 export const TaskEditor = ({
   column,
@@ -55,19 +58,36 @@ export const TaskEditor = ({
   const { calendarsEvents, setCalendarsEvents, calendarsEventsFetched } =
     useCalendarsEventsValue()
   const textAreaRef = useRef(null)
-  const [schedulatedEventsData, setSchedulatedEventsData] = useState([])
+  const [scheduledEvents, setScheduledEvents] = useState([])
+  const [scheduledType, setScheduledType] = useState('NOT_LOADED')
+  const [showScheduledEvents, setShowScheduledEvents] = useState(false)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
 
   useEffect(() => {
+    const getScheduledType = () => {
+      if (!calendarsEventsFetched) {
+        return 'NOT_LOADED'
+      } else if (scheduledEvents.length > 0) {
+        return 'SCHEDULED'
+      } else {
+        return 'UNSCHEDULED'
+      }
+    }
+    setScheduledType(getScheduledType())
+  }, [calendarsEventsFetched, scheduledEvents])
+
+  useEffect(() => {
     if (calendarsEventsFetched && task) {
+      const selectedScheduledEvents = []
       for (const key in calendarsEvents) {
         for (const event of calendarsEvents[key]) {
           if (event.taskId === task.taskId) {
-            console.log('event', event) // DEBUGGING
+            selectedScheduledEvents.push(event)
           }
         }
       }
+      setScheduledEvents(selectedScheduledEvents)
     }
   }, [calendarsEvents, calendarsEventsFetched, task])
 
@@ -290,6 +310,187 @@ export const TaskEditor = ({
     }
   }
 
+  // durationStr is in the format 'HH:MM'
+  const formatDuration = (durationStr) => {
+    const [hoursStr, minutesStr] = durationStr.split(':')
+    const hours = parseInt(hoursStr)
+    const minutes = parseInt(minutesStr)
+    let formattedDuration = ''
+    if (hours > 0) {
+      formattedDuration += `${hours}h `
+    }
+    if (minutes > 0) {
+      formattedDuration += `${minutes}min`
+    }
+    if (formattedDuration === '') {
+      formattedDuration = '0min'
+    }
+    return formattedDuration
+  }
+
+  const getFreq = (freqStr) => {
+    switch (freqStr) {
+      case 'DAILY':
+        return RRule.DAILY
+      case 'WEEKLY':
+        return RRule.WEEKLY
+      case 'MONTHLY':
+        return RRule.MONTHLY
+      case 'YEARLY':
+        return RRule.YEARLY
+      default:
+        return RRule.DAILY
+    }
+  }
+
+  const formatRRuleStringToObject = (ruleStr) => {
+    const ruleStrWithoutRRule = ruleStr.split(':')[1]
+
+    // Extract the rule options from the string
+    const ruleOptions = {}
+    ruleStrWithoutRRule.split(';').forEach((option) => {
+      const [key, value] = option.split('=')
+      ruleOptions[key] = value
+    })
+
+    const ruleObj = {
+      freq: getFreq(ruleOptions.FREQ),
+      interval: parseInt(ruleOptions.INTERVAL),
+    }
+
+    if (ruleOptions?.BYDAY) {
+      const byDay = ruleOptions.BYDAY.split(',')
+      ruleObj.byweekday = byDay.map((day) => RRule[day])
+    }
+
+    if (ruleOptions?.COUNT) {
+      ruleObj.count = parseInt(ruleOptions.COUNT)
+    }
+
+    if (ruleOptions?.UNTIL) {
+      ruleObj.until = moment(ruleOptions.UNTIL).toDate()
+    }
+
+    // Create the RRule object
+    const rule = new RRule(ruleObj)
+
+    return rule
+  }
+
+  const formatRecurrence = (dtStart, recurrence, allDay) => {
+    const rruleAndExdates = getRRuleAndExdates(recurrence, allDay)
+    const rule = formatRRuleStringToObject(rruleAndExdates.rrule)
+
+    console.log('rule', rule) // DEBUGGING
+
+    const freq = rule.origOptions.freq
+    const interval = rule.origOptions.interval
+    const byDay = rule.origOptions?.byweekday || []
+    const count = rule.origOptions?.count || null
+    const until = rule.origOptions?.until || null
+
+    console.log('freq', freq) // DEBUGGING
+
+    let daysOfWeek = ''
+    byDay.forEach((day) => {
+      const formattedDay =
+        day.toString().charAt(0) + day.toString().charAt(1).toLowerCase()
+      daysOfWeek += `${formattedDay}, `
+    })
+    daysOfWeek = daysOfWeek.slice(0, -2)
+
+    const startDate = moment(dtStart).toDate()
+
+    let description = `Repeat every ${interval}`
+
+    if (freq === RRule.DAILY) {
+      description += ' day'
+    } else if (freq === RRule.WEEKLY) {
+      description += ' week'
+    } else if (freq === RRule.MONTHLY) {
+      description += ' month'
+    } else if (freq === RRule.YEARLY) {
+      description += ' year'
+    }
+
+    if (interval > 1) {
+      description += 's'
+    }
+    description += ` on ${daysOfWeek}`
+
+    const formattedStartDate = startDate.toLocaleDateString()
+    description += ` from ${formattedStartDate}`
+
+    if (count) {
+      description += ` for ${count} occurrence`
+      if (count > 1) {
+        description += 's'
+      }
+    } else if (until) {
+      const formattedEndDate = until.toLocaleDateString()
+      description += ` until ${formattedEndDate}`
+    }
+
+    return description
+  }
+
+  const getScheduledRecurringEventText = (event) => {
+    const { allDay, dtStart, duration, recurrence } = event
+
+    const formattedDuration = formatDuration(duration)
+    const formattedRecurrence = formatRecurrence(dtStart, recurrence, allDay)
+
+    return `${formattedDuration}: ${formattedRecurrence}`
+  }
+
+  // startDate and endDate are Moment.js objects
+  const getFormattedDurationFromTimeRange = (startDate, endDate) => {
+    // Calculate the duration between the two dates
+    const duration = moment.duration(endDate.diff(startDate))
+
+    // Format the duration as Xh Ymin
+    let formattedDuration = ''
+    const hours = Math.floor(duration.asHours())
+    const minutes = duration.minutes()
+    if (hours > 0) {
+      formattedDuration += `${hours}h `
+    }
+    if (minutes > 0) {
+      formattedDuration += `${minutes}min`
+    }
+    if (formattedDuration === '') {
+      formattedDuration = '0min'
+    }
+
+    return formattedDuration
+  }
+
+  const getScheduledNonRecurringEventText = (event) => {
+    const { start, end } = event
+
+    // Parse the date strings into Moment.js objects
+    const startDate = moment(start)
+    const endDate = moment(end)
+
+    // Format the dates without the year
+    const formattedStartDate = startDate.format('MMM D, h:mm A')
+    const formattedEndDate = endDate.format('MMM D, h:mm A')
+    const formattedDuration = getFormattedDurationFromTimeRange(
+      startDate,
+      endDate,
+    )
+
+    return `${formattedDuration}: ${formattedStartDate} to ${formattedEndDate}`
+  }
+
+  const getScheduledEventText = (event) => {
+    if (event.recurring) {
+      return getScheduledRecurringEventText(event)
+    } else {
+      return getScheduledNonRecurringEventText(event)
+    }
+  }
+
   return (
     <div
       className={`add-task__wrapper ${isQuickAdd && 'quick-add__wrapper'}`}
@@ -342,7 +543,6 @@ export const TaskEditor = ({
               type='text'
               placeholder={'Some Title...'}
             />
-
             <textarea
               className='add-task__input textarea'
               value={taskDescription}
@@ -370,7 +570,6 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
-
             {/* Start Date, End Date, Priority, and Time Length Editors Section */}
             <div
               style={{
@@ -407,7 +606,13 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--right'></div>
               </div>
 
-              <div className='add-task__attributes'>
+              <div
+                className='add-task__attributes'
+                style={{
+                  marginRight: splitTaskAttributes() ? '0px' : '6px',
+                  marginBottom: splitTaskAttributes() ? '10px' : '0px',
+                }}
+              >
                 <div className='add-task__attributes--left'>
                   <SetNewTaskPriority
                     isQuickAdd={isQuickAdd}
@@ -426,7 +631,34 @@ export const TaskEditor = ({
                 </div>
                 <div className='add-task__attributes--right'></div>
               </div>
+
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  <ScheduledButton
+                    scheduledType={scheduledType}
+                    showScheduledEvents={showScheduledEvents}
+                    setShowScheduledEvents={setShowScheduledEvents}
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
             </div>
+
+            {showScheduledEvents && (
+              <div
+                className='add-task__attributes'
+                style={{ marginBottom: '10px' }}
+              >
+                <div className='add-task__attributes--left'>
+                  <ul>
+                    {scheduledEvents.map((event, i) => {
+                      return <li key={i}>{getScheduledEventText(event)}</li>
+                    })}
+                  </ul>
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            )}
           </div>
 
           <div
