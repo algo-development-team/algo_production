@@ -80,6 +80,43 @@ export const FullCalendar = () => {
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks, setTasks, loading: tasksLoading } = useTasks()
 
+  /* WEBSOCKET TEST CODE */
+  const [socket, setSocket] = useState(null)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    const ws = new WebSocket(`ws://${process.env.REACT_APP_NGROK_BODY}`)
+    // const ws = new WebSocket(`ws://localhost:8000`)
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server')
+      setSocket(ws)
+    }
+
+    ws.onmessage = (event) => {
+      console.log(`Received message: ${event.data}`)
+      setMessage(event.data)
+    }
+
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket server')
+      setSocket(null)
+    }
+
+    return () => {
+      if (socket) {
+        socket.close()
+      }
+    }
+  }, [])
+
+  const handleSendMessage = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send('Hello, WebSocket server!')
+    }
+  }
+  /* WEBSOCKET TEST CODE */
+
   const googleCalendarsLoaded = () => {
     return googleCalendars.length > 0
   }
@@ -146,25 +183,6 @@ export const FullCalendar = () => {
     }
   }
 
-  useEffect(() => {
-    const ws = new WebSocket(
-      `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
-    )
-
-    ws.addEventListener('open', (event) => {
-      console.log('WebSocket connection established')
-    })
-
-    ws.addEventListener('message', (event) => {
-      console.log(`Received message: ${event.data}`)
-    })
-
-    return () => {
-      ws.close()
-    }
-  }, [])
-
-  /* TESTED */
   useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
@@ -330,7 +348,6 @@ export const FullCalendar = () => {
     }
   }, [currentUser, tasksLoading, googleCalendars, calendarsEventsFetched])
 
-  /* TESTED */
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
@@ -398,7 +415,6 @@ export const FullCalendar = () => {
     )
   }
 
-  /* TESTED */
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
@@ -433,7 +449,6 @@ export const FullCalendar = () => {
     )
   }
 
-  /* TESTED */
   const handleEventAdjustment = (info) => {
     const { recurring } = getEventProperties(info.event)
 
@@ -444,7 +459,6 @@ export const FullCalendar = () => {
     }
   }
 
-  /* TESTED */
   const updateCalendarsEvents = (calendarKey, eventId, newEvent) => {
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
@@ -507,7 +521,7 @@ export const FullCalendar = () => {
       eventId: id,
       calendarId: calendarId,
       task: task,
-      /* TESTED */
+
       remove: (recurringEventEditOption) => {
         if (recurring && recurringEventEditOption === 'THIS_EVENT') {
           const newRRule = getRRuleDeleteThisEvent(rruleStr, recurrenceId)
@@ -570,7 +584,7 @@ export const FullCalendar = () => {
           deleteEventFromUserGoogleCalendar(currentUser.id, calendarId, id)
         }
       },
-      /* TESTED */
+
       copy: () => {
         const newId = generateEventId()
 
@@ -647,7 +661,7 @@ export const FullCalendar = () => {
           formattedGoogleCalendarEvent,
         )
       },
-      /* TESTED */
+
       backlog: async () => {
         if (taskId) {
           /* if id exists, then remove it from scheduledTasks array in Firestore */
@@ -674,7 +688,7 @@ export const FullCalendar = () => {
           )
         }
       },
-      /* TESTED */
+
       save: (
         updatedTitle,
         updatedBackgroundColor,
@@ -1229,5 +1243,16 @@ export const FullCalendar = () => {
     TaskList,
   ])
 
-  return <div ref={calendarRef}></div>
+  return (
+    <>
+      {/* WEBSOCKET TEST CODE */}
+      <div>
+        <h1>WebSocket Example</h1>
+        <button onClick={handleSendMessage}>Send Message</button>
+        <p>Received message: {message}</p>
+      </div>
+      {/* WEBSOCKET TEST CODE */}
+      <div ref={calendarRef}></div>
+    </>
+  )
 }
