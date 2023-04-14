@@ -1,3 +1,10 @@
+import {
+  formatDuration,
+  formatRecurrence,
+  getFormattedDurationFromTimeRange,
+} from './rruleHelpers'
+import moment from 'moment'
+
 export class ShortEvent {
   constructor(id, title, start, end) {
     this.id = id
@@ -29,20 +36,12 @@ class Event {
     this.recurring = recurring
   }
 
-  updateEventFields(
-    title,
-    backgroundColor,
-    description,
-    location,
-    meetLink,
-    attendees,
-  ) {
+  setTitle(title) {
     this.title = title
-    this.backgroundColor = backgroundColor
+  }
+
+  setDescription(description) {
     this.description = description
-    this.location = location
-    this.meetLink = meetLink
-    this.attendees = attendees
   }
 }
 
@@ -77,6 +76,27 @@ export class NonRecurringEvent extends Event {
   updateNonRecurringFields(start, end) {
     this.start = start
     this.end = end
+  }
+
+  getScheduledEventsInfo() {
+    const { start, end } = this
+
+    // Parse the date strings into Moment.js objects
+    const startDate = moment(start)
+    const endDate = moment(end)
+
+    // Format the dates without the year
+    const formattedStartDate = startDate.format('MMM D, h:mm A')
+    const formattedEndDate = endDate.format('MMM D, h:mm A')
+    const formattedDuration = getFormattedDurationFromTimeRange(
+      startDate,
+      endDate,
+    )
+
+    return {
+      formattedDuration: formattedDuration,
+      formattedTimeRange: `${formattedStartDate} to ${formattedEndDate}`,
+    }
   }
 }
 
@@ -119,5 +139,17 @@ export class RecurringEvent extends Event {
     this.dtStart = dtStart
     this.rruleStr = rrule
     this.recurrence = recurrence
+  }
+
+  getScheduledEventsInfo() {
+    const { allDay, dtStart, duration, recurrence } = this
+
+    const formattedDuration = formatDuration(duration)
+    const formattedRecurrence = formatRecurrence(dtStart, recurrence, allDay)
+
+    return {
+      formattedDuration: formattedDuration,
+      formattedTimeRange: formattedRecurrence,
+    }
   }
 }

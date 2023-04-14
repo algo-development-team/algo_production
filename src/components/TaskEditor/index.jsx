@@ -1,5 +1,5 @@
 import featherIcon from 'assets/svg/feather-sprite.svg'
-import { useThemeContextValue } from 'context'
+import { useThemeContextValue, useCalendarsEventsValue } from 'context'
 import { useTaskEditorContextValue } from 'context/board-task-editor-context'
 import { useAuth, useProjects, useSelectedProject, useTasks } from 'hooks'
 import moment from 'moment'
@@ -13,8 +13,11 @@ import { SetNewTaskTimeLength } from './set-new-task-time-length'
 import { addTask, updateTaskFromFields } from '../../backend/handleUserTasks'
 import './styles/main.scss'
 import './styles/light.scss'
-import { useAutosizeTextArea, useChecklist } from 'hooks'
-import { useResponsiveSizes } from 'hooks'
+import { useAutosizeTextArea, useResponsiveSizes } from 'hooks'
+import { updateGoogleCalendarEvents } from '../../google'
+import { ScheduledButton } from './scheduled-button'
+import { RRule } from 'rrule'
+import { getRRuleAndExdates } from '../FullCalendar/rruleHelpers'
 
 export const TaskEditor = ({
   column,
@@ -25,7 +28,7 @@ export const TaskEditor = ({
   closeOverlay,
 }) => {
   const params = useParams()
-  const { defaultGroup, projectId } = params
+  const { defaultGroup } = params
   const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
   const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
   const { projects } = useProjects()
@@ -50,12 +53,43 @@ export const TaskEditor = ({
   const { taskEditorToShow, setTaskEditorToShow } = useTaskEditorContextValue()
   const { isLight } = useThemeContextValue()
   const { tasks } = useTasks()
-  const { checklist } = useChecklist()
   const { sizes } = useResponsiveSizes()
   const { defaultProject } = selectedProject
+  const { calendarsEvents, setCalendarsEvents, calendarsEventsFetched } =
+    useCalendarsEventsValue()
   const textAreaRef = useRef(null)
+  const [scheduledEvents, setScheduledEvents] = useState([])
+  const [scheduledType, setScheduledType] = useState('NOT_LOADED')
+  const [showScheduledEvents, setShowScheduledEvents] = useState(false)
 
   useAutosizeTextArea(textAreaRef.current, taskDescription)
+
+  useEffect(() => {
+    const getScheduledType = () => {
+      if (!calendarsEventsFetched) {
+        return 'NOT_LOADED'
+      } else if (scheduledEvents.length > 0) {
+        return 'SCHEDULED'
+      } else {
+        return 'UNSCHEDULED'
+      }
+    }
+    setScheduledType(getScheduledType())
+  }, [calendarsEventsFetched, scheduledEvents])
+
+  useEffect(() => {
+    if (calendarsEventsFetched && task) {
+      const selectedScheduledEvents = []
+      for (const key in calendarsEvents) {
+        for (const event of calendarsEvents[key]) {
+          if (event.taskId === task.taskId) {
+            selectedScheduledEvents.push(event)
+          }
+        }
+      }
+      setScheduledEvents(selectedScheduledEvents)
+    }
+  }, [calendarsEvents, calendarsEventsFetched, task])
 
   const getBoardStatus = () => {
     if (!projectIsList && column) {
@@ -94,7 +128,6 @@ export const TaskEditor = ({
       taskName,
       taskId,
       boardStatus,
-      defaultGroup,
       taskDescription,
       taskPriority,
       taskTimeLength,
@@ -124,11 +157,52 @@ export const TaskEditor = ({
     e.target.value.length < 1 ? setDisabled(true) : setDisabled(false)
   }
 
+  const getUpdatedCalendarsEvents = (taskId, newTitle, newDescription) => {
+    const updatedCalendarsEvents = {}
+    for (const key in calendarsEvents) {
+      const calendarId = key
+      const events = calendarsEvents[key]
+      const updatedEvents = events.map((event) => {
+        if (event.taskId === taskId) {
+          event.setTitle(newTitle)
+          event.setDescription(newDescription)
+        }
+        return event
+      })
+      updatedCalendarsEvents[calendarId] = updatedEvents
+    }
+    return updatedCalendarsEvents
+  }
+
+  const getCalendarIdsAndEventIdsWithTaskId = (taskId) => {
+    const calendarIdsAndEventIds = {}
+    for (const key in calendarsEvents) {
+      const calendarId = key
+      const events = calendarsEvents[key]
+      const eventIds = events
+        .filter((event) => event.taskId === taskId)
+        .map((event) => {
+          return {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+          }
+        })
+      if (eventIds.length > 0) {
+        calendarIdsAndEventIds[calendarId] = eventIds
+      }
+    }
+    return calendarIdsAndEventIds
+  }
+
   const updateTaskInFirestore = async (e) => {
     e.preventDefault()
+
+    const taskId = task.taskId
+
     await updateTaskFromFields(
       currentUser && currentUser.id,
-      task.taskId,
+      taskId,
       task.projectId,
       task.boardStatus,
       task.index,
@@ -144,6 +218,44 @@ export const TaskEditor = ({
       project.selectedProjectName,
       project.selectedProjectId,
     )
+
+    if (calendarsEventsFetched) {
+      const calendarIdsAndEventIds = getCalendarIdsAndEventIdsWithTaskId(taskId)
+
+      // UPDATE calendarsEvents FROM HERE
+      const googleCalendarEventsUpdateDetails = []
+      for (const calendarId in calendarIdsAndEventIds) {
+        for (const { id, title, description } of calendarIdsAndEventIds[
+          calendarId
+        ]) {
+          if (title !== taskName || description !== taskDescription) {
+            const googleCalendarEventUpdateDetails = {
+              id: id,
+              calendarId: calendarId,
+              summary: taskName,
+              description: taskDescription,
+            }
+            googleCalendarEventsUpdateDetails.push(
+              googleCalendarEventUpdateDetails,
+            )
+          }
+        }
+      }
+
+      // update calendarsEvents with new title and description
+      const updatedCalendarsEvents = getUpdatedCalendarsEvents(
+        taskId,
+        taskName,
+        taskDescription,
+      )
+      setCalendarsEvents(updatedCalendarsEvents)
+
+      updateGoogleCalendarEvents(
+        currentUser && currentUser.id,
+        googleCalendarEventsUpdateDetails,
+      )
+    }
+
     setTaskEditorToShow('')
     isPopup && closeOverlay()
   }
@@ -249,7 +361,6 @@ export const TaskEditor = ({
               type='text'
               placeholder={'Some Title...'}
             />
-
             <textarea
               className='add-task__input textarea'
               value={taskDescription}
@@ -277,7 +388,6 @@ export const TaskEditor = ({
               </div>
               <div className='add-task__attributes--right'></div>
             </div>
-
             {/* Start Date, End Date, Priority, and Time Length Editors Section */}
             <div
               style={{
@@ -314,7 +424,13 @@ export const TaskEditor = ({
                 <div className='add-task__attributes--right'></div>
               </div>
 
-              <div className='add-task__attributes'>
+              <div
+                className='add-task__attributes'
+                style={{
+                  marginRight: splitTaskAttributes() ? '0px' : '6px',
+                  marginBottom: splitTaskAttributes() ? '10px' : '0px',
+                }}
+              >
                 <div className='add-task__attributes--left'>
                   <SetNewTaskPriority
                     isQuickAdd={isQuickAdd}
@@ -333,7 +449,40 @@ export const TaskEditor = ({
                 </div>
                 <div className='add-task__attributes--right'></div>
               </div>
+
+              <div className='add-task__attributes'>
+                <div className='add-task__attributes--left'>
+                  <ScheduledButton
+                    scheduledType={scheduledType}
+                    showScheduledEvents={showScheduledEvents}
+                    setShowScheduledEvents={setShowScheduledEvents}
+                  />
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
             </div>
+
+            {showScheduledEvents && (
+              <div
+                className='add-task__attributes'
+                style={{ marginBottom: '10px' }}
+              >
+                <div className='add-task__attributes--left'>
+                  <ul>
+                    {scheduledEvents.map((event, i) => {
+                      return (
+                        <li key={i}>{`${
+                          event.getScheduledEventsInfo().formattedDuration
+                        }: ${
+                          event.getScheduledEventsInfo().formattedTimeRange
+                        }`}</li>
+                      )
+                    })}
+                  </ul>
+                </div>
+                <div className='add-task__attributes--right'></div>
+              </div>
+            )}
           </div>
 
           <div

@@ -37,20 +37,16 @@ export const SetNewFilterTask = ({
           setDialogProps(
             Object.assign(
               { elementPosition: e.currentTarget.getBoundingClientRect() },
-              { setFilter }
+              { setFilter },
             ),
           )
           if (isPopup) {
-            // console.log('isPopup...') // DEBUGGING
             setDialogProps({ setFilter }) // Match the name 'task' with the 'setTaskTimeLength'
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else if (isQuickAdd) {
-            // console.log('isQuickAdd...') // DEBUGGING
             showQUickAddDropDown(e.currentTarget.getBoundingClientRect())
           } else {
-            // console.log('neither...') // DEBUGGING
-             setShowDialog('SET_TASK_FILTER')
-            // setShowDialog('SET_TASK_PRIORITY')
+            setShowDialog('SET_TASK_FILTER')
           }
         }}
       >

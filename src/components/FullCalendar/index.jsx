@@ -1,11 +1,11 @@
-import { useRef, useEffect, useState, useContext } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { Calendar } from '@fullcalendar/core'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import rrulePlugin from '@fullcalendar/rrule'
 import interactionPlugin, { Draggable } from '@fullcalendar/interaction'
 import { useExternalEventsContextValue } from 'context'
-import { generateEventId } from '../../utils'
+import { generatePushId, generateEventId } from '../../utils'
 import googleCalendarPlugin from '@fullcalendar/google-calendar'
 import {
   getUserGoogleCalendarsEvents,
@@ -14,11 +14,15 @@ import {
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
   getFormattedGoogleCalendarEvent,
+  updateGoogleCalendarEvents,
 } from '../../google'
 import {
   useGoogleValue,
   useCalendarsEventsValue,
   useThemeContextValue,
+  useAutoScheduleButtonClickedValue,
+  useAvailableTimesValue,
+  useTaskListValue,
 } from 'context'
 import { useAuth, useUnselectedCalendarIds, useTasks } from 'hooks'
 import moment from 'moment'
@@ -32,9 +36,9 @@ import {
   GoogleEventColours,
   isValidGoogleEventColorId,
 } from '../../handleColorPalette'
+import { roundClosestValidTimeLength } from '../../handleMoment'
 import { useOverlayContextValue } from 'context'
 import { stripTags } from '../../handleHTML'
-import { generatePushId } from 'utils'
 import {
   getFormattedEventTime,
   formatEventTimeLength,
@@ -52,11 +56,7 @@ import {
   getRecurrenceFromPrevRecurringEvent,
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
-import {
-  useAutoScheduleButtonClickedValue,
-  useAvailableTimesValue,
-  useTaskListValue,
-} from 'context'
+import { updateTask, addTask } from '../../backend/handleUserTasks'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -65,7 +65,6 @@ export const FullCalendar = () => {
     useAutoScheduleButtonClickedValue()
   const { AvailableTimes, setAvailableTimes } = useAvailableTimesValue()
   const { TaskList, setTaskList } = useTaskListValue()
-  // const { Schedule, setSchedule} = useScheduleValue()
   const [view, setView] = useState(`dayGridWeek`)
   const calendarRef = useRef(null)
   const { externalEventsRef } = useExternalEventsContextValue()
@@ -73,12 +72,57 @@ export const FullCalendar = () => {
   const { googleCalendars } = useGoogleValue()
   const { currentUser } = useAuth()
   const { unselectedCalendarIds } = useUnselectedCalendarIds()
-  const { calendarsEvents, setCalendarsEvents } = useCalendarsEventsValue()
+  const { calendarsEvents, setCalendarsEvents, calendarsEventsFetched } =
+    useCalendarsEventsValue()
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
-  const { tasks } = useTasks()
+  const { tasks, setTasks, loading: tasksLoading } = useTasks()
+
+  /* WEBSOCKET TEST CODE */
+  const [socket, setSocket] = useState(null)
+  const [message, setMessage] = useState('')
+
+  useEffect(() => {
+    const ws = new WebSocket(`ws://${process.env.REACT_APP_NGROK_BODY}`)
+
+    ws.onopen = () => {
+      console.log('Connected to WebSocket server')
+      setSocket(ws)
+    }
+
+    ws.onmessage = (event) => {
+      console.log(`Received message: ${event.data}`)
+      setMessage(event.data)
+    }
+
+    ws.onclose = () => {
+      console.log('Disconnected from WebSocket server')
+      setSocket(null)
+    }
+
+    return () => {
+      if (socket) {
+        socket.close()
+      }
+    }
+  }, [])
+
+  const handleSendMessage = () => {
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send('Hello, WebSocket server!')
+    }
+  }
+  /* WEBSOCKET TEST CODE */
+
+  const googleCalendarsLoaded = () => {
+    return googleCalendars.length > 0
+  }
+
+  const getTask = (taskId) => {
+    return tasks.find((task) => task.taskId === taskId)
+  }
 
   const getEventCalendarIdAndKey = (eventId) => {
     let calendarId = null // Google Calendar ID
@@ -101,6 +145,10 @@ export const FullCalendar = () => {
     return { calendarId: calendarId, calendarKey: calendarKey }
   }
 
+  const getEventIdFromEventInstance = (eventInstance) => {
+    return eventInstance.split('_')[0]
+  }
+
   const getSelectedCalendarsEvents = (mixedCalendarsEvents) => {
     let events = []
     for (const key in mixedCalendarsEvents) {
@@ -110,10 +158,6 @@ export const FullCalendar = () => {
     }
 
     return events
-  }
-
-  const getTask = (taskId) => {
-    return tasks.find((task) => task.taskId === taskId)
   }
 
   const getEventProperties = (event) => {
@@ -139,34 +183,12 @@ export const FullCalendar = () => {
   }
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `wss://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`,
-    )
-
-    ws.addEventListener('open', (event) => {
-      console.log('WebSocket connection established')
-    })
-
-    ws.addEventListener('message', (event) => {
-      console.log(`Received message: ${event.data}`)
-    })
-
-    return () => {
-      ws.close()
-    }
-  }, [])
-
-  /* TESTED */
-  useEffect(() => {
     const fetchGoogleCalendarEvents = async () => {
       const googleCalendarIds = googleCalendars.map(
         (googleCalendar) => googleCalendar.id,
       )
       const { fetchedCalendarsEvents, nextSyncTokens } =
-        await getUserGoogleCalendarsEvents(
-          currentUser && currentUser.id,
-          googleCalendarIds,
-        )
+        await getUserGoogleCalendarsEvents(currentUser.id, googleCalendarIds)
       setNextSyncTokens(nextSyncTokens)
       const newCalendarsEvents = { ...calendarsEvents }
 
@@ -181,14 +203,14 @@ export const FullCalendar = () => {
             )
             if (
               !Object.keys(deletedEventInstances).includes(
-                event.id.split('_')[0],
+                getEventIdFromEventInstance(event.id),
               )
             ) {
-              deletedEventInstances[event.id.split('_')[0]] = [
+              deletedEventInstances[getEventIdFromEventInstance(event.id)] = [
                 formattedEventTime,
               ]
             } else {
-              deletedEventInstances[event.id.split('_')[0]].push(
+              deletedEventInstances[getEventIdFromEventInstance(event.id)].push(
                 formattedEventTime,
               )
             }
@@ -196,20 +218,51 @@ export const FullCalendar = () => {
         })
       }
 
+      const googleCalendarEventsUpdateDetails = []
+
       for (const key in fetchedCalendarsEvents) {
         const eventsData = fetchedCalendarsEvents[key].map((event) => {
           const id = event.id
-          const title = event.summary
+          let title = event.summary
           const backgroundColor = isValidGoogleEventColorId(event.colorId)
             ? GoogleEventColours[event.colorId - 1].hex
             : GoogleEventColours[6].hex
-          const description = stripTags(event?.description || '')
+          let description = stripTags(event?.description || '')
           const location = event?.location || ''
           const meetLink = event.conferenceData?.entryPoints[0].uri || ''
           const attendees = event?.attendees || []
-          const taskId = event?.extendedProperties?.private?.taskId || null
 
           const start = event.start?.dateTime || event.start?.date
+
+          let taskId = event?.extendedProperties?.private?.taskId || null
+
+          if (taskId) {
+            const googleCalendarEventUpdateDetails = {
+              id: id,
+              calendarId: key,
+              summary: title,
+              description: description,
+            }
+
+            const task = getTask(taskId)
+
+            if (task) {
+              // task exists, update title and description
+              // UPDATE FROM GOOGLE CALENDAR FROM HERE IF TASK TITLE IS UPDATED
+              if (title !== task.name || description !== task.description) {
+                title = task.name
+                description = task.description
+                googleCalendarEventUpdateDetails.summary = title
+                googleCalendarEventUpdateDetails.description = description
+                googleCalendarEventsUpdateDetails.push(
+                  googleCalendarEventUpdateDetails,
+                )
+              }
+            } else {
+              // task no longer exists, remove taskId
+              taskId = null
+            }
+          }
 
           if (event.recurrence) {
             const allDay = event.start?.dateTime ? false : true
@@ -268,10 +321,14 @@ export const FullCalendar = () => {
       }
 
       setCalendarsEvents(newCalendarsEvents)
+
+      updateGoogleCalendarEvents(
+        currentUser.id,
+        googleCalendarEventsUpdateDetails,
+      )
     }
 
-    if (currentUser && googleCalendars.length > 0) {
-      fetchGoogleCalendarEvents()
+    const addWebhooksToGoogleCalendars = async () => {
       const fetchedResourceIds = {}
       googleCalendars.forEach(async (googleCalendar) => {
         const result = await addWebhookToGoogleCalendar(
@@ -282,9 +339,18 @@ export const FullCalendar = () => {
       })
       setResourceIds(fetchedResourceIds)
     }
-  }, [currentUser, googleCalendars])
 
-  /* TESTED */
+    if (
+      currentUser &&
+      !tasksLoading &&
+      googleCalendarsLoaded() &&
+      !calendarsEventsFetched
+    ) {
+      addWebhooksToGoogleCalendars()
+      fetchGoogleCalendarEvents()
+    }
+  }, [currentUser, tasksLoading, googleCalendars, calendarsEventsFetched])
+
   const handleRecurringEventAdjustment = (info) => {
     const { event, oldEvent } = info
 
@@ -352,7 +418,6 @@ export const FullCalendar = () => {
     )
   }
 
-  /* TESTED */
   const handleNonRecurringEventAdjustment = (info) => {
     const { event } = info
 
@@ -387,7 +452,6 @@ export const FullCalendar = () => {
     )
   }
 
-  /* TESTED */
   const handleEventAdjustment = (info) => {
     const { recurring } = getEventProperties(info.event)
 
@@ -398,7 +462,6 @@ export const FullCalendar = () => {
     }
   }
 
-  /* TESTED */
   const updateCalendarsEvents = (calendarKey, eventId, newEvent) => {
     setCalendarsEvents((prevCalendarsEvents) => {
       const newCalendarsEvents = { ...prevCalendarsEvents }
@@ -461,7 +524,7 @@ export const FullCalendar = () => {
       eventId: id,
       calendarId: calendarId,
       task: task,
-      /* TESTED */
+
       remove: (recurringEventEditOption) => {
         if (recurring && recurringEventEditOption === 'THIS_EVENT') {
           const newRRule = getRRuleDeleteThisEvent(rruleStr, recurrenceId)
@@ -524,7 +587,7 @@ export const FullCalendar = () => {
           deleteEventFromUserGoogleCalendar(currentUser.id, calendarId, id)
         }
       },
-      /* TESTED */
+
       copy: () => {
         const newId = generateEventId()
 
@@ -601,7 +664,7 @@ export const FullCalendar = () => {
           formattedGoogleCalendarEvent,
         )
       },
-      /* TESTED */
+
       backlog: async () => {
         if (taskId) {
           /* if id exists, then remove it from scheduledTasks array in Firestore */
@@ -628,7 +691,7 @@ export const FullCalendar = () => {
           )
         }
       },
-      /* TESTED */
+
       save: (
         updatedTitle,
         updatedBackgroundColor,
@@ -639,6 +702,10 @@ export const FullCalendar = () => {
         isRecurring,
         newDtstart, // JS Date object
         newRRule, // RRule object
+        updatedTaskProjectId,
+        updatedStartDate, // 'DD-MM-YYYY'
+        updatedEndDate, // 'DD-MM-YYYY'
+        updatedPriority,
       ) => {
         let formattedNewRRule = null
         let newRecurrence = null
@@ -770,6 +837,64 @@ export const FullCalendar = () => {
           id,
           formattedGoogleCalendarEvent,
         )
+
+        // update task fields
+        if (task) {
+          const updatedTask = {
+            name: updatedTitle,
+            description: updatedDescription,
+            projectId: updatedTaskProjectId,
+            startDate: updatedStartDate,
+            date: updatedEndDate,
+            priority: updatedPriority,
+          }
+
+          updateTask(currentUser.id, taskId, updatedTask)
+
+          const updatedTasks = tasks.map((task) => {
+            if (task.taskId === taskId) {
+              return {
+                ...task,
+                ...updatedTask,
+              }
+            }
+            return task
+          })
+          setTasks(updatedTasks)
+        }
+      },
+      addEventAsTask: async (
+        projectId,
+        startDate,
+        endDate,
+        title,
+        description,
+        priority,
+      ) => {
+        const newTaskId = generatePushId()
+        const roundedTimeLength = roundClosestValidTimeLength(duration)
+
+        addTask(
+          currentUser.id,
+          projectId,
+          startDate,
+          endDate,
+          title,
+          newTaskId,
+          'TODO',
+          description,
+          priority,
+          roundedTimeLength,
+          0, // REPLACE INDEX HERE WITH APPROPRIATE VALUE LATER
+        )
+
+        /* stores the taskId to scheduledTasks array in eventsInfo collection */
+        const eventsInfo = await getEventsInfo(currentUser.id)
+        const scheduledTasks = eventsInfo.scheduledTasks
+        const newScheduledTasks = [...scheduledTasks, newTaskId]
+        updateEventsInfo(currentUser.id, {
+          scheduledTasks: newScheduledTasks,
+        })
       },
     })
     setShowDialog('BLOCK')
@@ -790,6 +915,7 @@ export const FullCalendar = () => {
     })
 
     if (!currentUser) return null
+    if (tasksLoading) return null
 
     const calendar = new Calendar(calendarRef.current, {
       height: 'calc(100vh - 64px)',
@@ -966,7 +1092,7 @@ export const FullCalendar = () => {
           const checkmarkInput = document.createElement('input')
           checkmarkInput.type = 'checkbox'
           checkmarkInput.classList.add('checkmark-input')
-          const task = tasks.find((task) => task.taskId === taskId)
+          const task = getTask(taskId)
           if (task?.boardStatus === 'COMPLETE') {
             checkmarkInput.checked = true
           }
@@ -1110,6 +1236,7 @@ export const FullCalendar = () => {
   }, [
     isLight,
     calendarsEvents,
+    tasksLoading,
     unselectedCalendarIds,
     externalEventsRef,
     currentTime,
@@ -1119,5 +1246,16 @@ export const FullCalendar = () => {
     TaskList,
   ])
 
-  return <div ref={calendarRef}></div>
+  return (
+    <>
+      {/* WEBSOCKET TEST CODE */}
+      <div>
+        <h1>WebSocket Example</h1>
+        <button onClick={handleSendMessage}>Send Message</button>
+        <p>Received message: {message}</p>
+      </div>
+      {/* WEBSOCKET TEST CODE */}
+      <div ref={calendarRef}></div>
+    </>
+  )
 }

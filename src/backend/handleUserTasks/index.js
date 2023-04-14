@@ -330,13 +330,12 @@ export const quickAddTask = async (
       name: taskName,
       taskId: taskId,
       completed: false,
-      boardStatus: '',
+      boardStatus: 'TODO',
       important: false,
       description: taskDescription ? taskDescription : '', // string
       priority: 1, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
       index: -1,
-      eventIds: [],
     })
   } catch (error) {
     console.log(error)
@@ -351,7 +350,6 @@ export const addTask = async (
   taskName,
   taskId,
   boardStatus,
-  defaultGroup,
   taskDescription,
   taskPriority,
   taskTimeLength,
@@ -366,12 +364,11 @@ export const addTask = async (
       taskId: taskId,
       completed: false,
       boardStatus: boardStatus,
-      important: defaultGroup === 'Important' ? true : false,
+      important: false,
       description: taskDescription ? taskDescription : '', // string
       priority: taskPriority, // number (int) (range: 1-3)
       timeLength: taskTimeLength, // number (int) (range: 15-2400)
       index: index,
-      eventIds: [],
     })
     // UPDATE TASK INDEX HERE (COMPLETED)
   } catch (error) {

@@ -251,7 +251,7 @@ export const deleteEventFromUserGoogleCalendar = async (
 
     if (!accessToken) return null
 
-    const request = await fetch(
+    await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/${eventId}`,
       {
         method: 'DELETE',
@@ -360,7 +360,6 @@ export const createGoogleMeet = async (userId, calendarId, eventId) => {
 
     // Extract the Meet link from the updated event data
     const updatedEventData = await updateResponse.json()
-    console.log('updatedEventData', updatedEventData) // DEBUGGING
     const meetLink = updatedEventData.hangoutLink
 
     return meetLink
@@ -432,5 +431,30 @@ export const fetchDeletedEventInstances = async (
     return deletedInstances
   } catch (error) {
     console.error(error)
+  }
+}
+
+export const updateGoogleCalendarEvents = (
+  userId,
+  googleCalendarEventsUpdateDetails,
+) => {
+  for (const googleCalendarEventUpdateDetails of googleCalendarEventsUpdateDetails) {
+    const eventId = googleCalendarEventUpdateDetails.id
+    const calendarId = googleCalendarEventUpdateDetails.calendarId
+    const updatedSummary = googleCalendarEventUpdateDetails.summary
+    const updatedDescription = googleCalendarEventUpdateDetails.description
+
+    const formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
+      summary: updatedSummary,
+      description: updatedDescription,
+    })
+
+    // update the event in the calendar
+    updateEventFromUserGoogleCalendar(
+      userId,
+      calendarId,
+      eventId,
+      formattedGoogleCalendarEvent,
+    )
   }
 }

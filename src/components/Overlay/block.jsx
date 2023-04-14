@@ -22,8 +22,9 @@ import { useAuth } from 'hooks'
 import moment from 'moment'
 import { RecurringEventEdit } from './block/recurring-event-edit'
 import { RecurringOptions } from './block/recurring-options'
-import { SetNewTaskSchedule } from '../TaskEditor/set-new-task-schedule'
-import { SetNewTaskPriority } from '../TaskEditor/set-new-task-priority'
+import { PriorityEditor } from './block/priority-editor'
+import { ScheduleEditor } from './block/schedule-editor'
+import { ProjectEditor } from './block/project-editor'
 import { destructRRuleStr } from '../FullCalendar/rruleHelpers'
 
 export const Block = ({
@@ -44,6 +45,7 @@ export const Block = ({
   copy,
   backlog,
   save,
+  addEventAsTask,
 }) => {
   const [taskName, setTaskName] = useState(taskname)
   const [taskDescription, setTaskDescription] = useState(taskdescription)
@@ -73,10 +75,26 @@ export const Block = ({
     useState(false)
   const [dtstart, setDtstart] = useState(null) // JS Date object
   const [rrule, setRRule] = useState(null) // RRule object
-  // TASK FIELDS: UPDATE THESE LATER
-  const [startSchedule, setStartSchedule] = useState({ day: '', date: '' })
-  const [endSchedule, setEndSchedule] = useState({ day: '', date: '' })
-  const [taskPriority, setTaskPriority] = useState(task?.priority || 2)
+  const [showAddTaskFields, setShowAddTaskFields] = useState(false)
+
+  const covertDateStrForwards = (dateStr) => {
+    if (!dateStr || dateStr === '') return ''
+    return moment(dateStr, 'DD-MM-YYYY').format('YYYY-MM-DD')
+  }
+
+  const covertDateStrBackwards = (dateStr) => {
+    if (!dateStr || dateStr === '') return ''
+    return moment(dateStr, 'YYYY-MM-DD').format('DD-MM-YYYY')
+  }
+
+  const [startSchedule, setStartSchedule] = useState(
+    covertDateStrForwards(task?.startDate),
+  )
+  const [endSchedule, setEndSchedule] = useState(
+    covertDateStrForwards(task?.date),
+  )
+  const [projectId, setProjectId] = useState(task?.projectId || '')
+  const [priority, setPriority] = useState(task?.priority || 2)
 
   useEffect(() => {
     if (isRecurring) {
@@ -143,6 +161,18 @@ export const Block = ({
     closeOverlay()
   }
 
+  const handleAddEventAsTask = () => {
+    addEventAsTask(
+      projectId,
+      covertDateStrBackwards(startSchedule),
+      covertDateStrBackwards(endSchedule),
+      taskName,
+      taskDescription,
+      priority,
+    )
+    closeOverlay()
+  }
+
   const handleSave = () => {
     save(
       taskName,
@@ -154,6 +184,10 @@ export const Block = ({
       isRecurring,
       dtstart,
       rrule,
+      projectId,
+      covertDateStrBackwards(startSchedule),
+      covertDateStrBackwards(endSchedule),
+      priority,
     )
     closeOverlay()
   }
@@ -515,30 +549,71 @@ export const Block = ({
 
   const taskAttributesEditor = () => {
     return (
-      <div style={{ marginTop: '20px' }}>
-        <SetNewTaskSchedule
-          isQuickAdd={false}
-          isPopup={true}
+      <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+        <ProjectEditor projectId={projectId} setProjectId={setProjectId} />
+        <PriorityEditor priority={priority} setPriority={setPriority} />
+        <ScheduleEditor
           schedule={startSchedule}
           setSchedule={setStartSchedule}
-          task={task}
-          defaultText='Start Date'
         />
-        <SetNewTaskSchedule
-          isQuickAdd={false}
-          isPopup={true}
-          schedule={endSchedule}
-          setSchedule={setEndSchedule}
-          task={task}
-          defaultText='Due Date'
-        />
-        <SetNewTaskPriority
-          isQuickAdd={false}
-          isPopup={true}
-          taskPriority={taskPriority}
-          setTaskPriority={setTaskPriority}
-          task={task}
-        />
+        <ScheduleEditor schedule={endSchedule} setSchedule={setEndSchedule} />
+      </div>
+    )
+  }
+
+  const addEventAsTaskAfterEdit = () => {
+    return (
+      <>
+        {taskAttributesEditor()}
+        <div
+          style={{
+            display: 'flex',
+            marginTop: '20px',
+            marginBottom: '20px',
+          }}
+        >
+          <button
+            className=' action add-task__actions--cancel'
+            onClick={(e) => {
+              e.preventDefault()
+              setShowAddTaskFields(false)
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            className=' action add-task__actions--add-task'
+            disabled={projectId === ''}
+            onClick={(e) => {
+              e.preventDefault()
+              handleAddEventAsTask()
+            }}
+          >
+            Confirm Add
+          </button>
+        </div>
+      </>
+    )
+  }
+
+  const addEventAsTaskBeforeEdit = () => {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          marginTop: '20px',
+          marginBottom: '20px',
+        }}
+      >
+        <button
+          className=' action add-task__actions--cancel'
+          onClick={(e) => {
+            e.preventDefault()
+            setShowAddTaskFields(true)
+          }}
+        >
+          Add Event as Task
+        </button>
       </div>
     )
   }
@@ -589,7 +664,11 @@ export const Block = ({
               {locationEditor()}
               {eventColorSelector()}
               {descriptionEditor()}
-              {task && taskAttributesEditor()}
+              {task
+                ? taskAttributesEditor()
+                : !showAddTaskFields
+                ? addEventAsTaskBeforeEdit()
+                : addEventAsTaskAfterEdit()}
               <div
                 style={{
                   display: 'flex',
