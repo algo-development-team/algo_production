@@ -1105,12 +1105,6 @@ export const FullCalendar = () => {
         const eventEl = document.createElement('div')
         eventEl.classList.add('fc-event')
 
-        // create a span to hold the event time range
-        const timeRangeEl = document.createElement('p')
-        timeRangeEl.classList.add('fc-event-time-range')
-        timeRangeEl.innerText = info.timeText
-        eventEl.appendChild(timeRangeEl)
-
         const taskId = info.event.extendedProps?.taskId
 
         if (taskId) {
@@ -1135,6 +1129,12 @@ export const FullCalendar = () => {
         titleEl.classList.add('fc-event-title')
         titleEl.innerText = info.event.title
         eventEl.appendChild(titleEl)
+
+        // create a span to hold the event time range
+        const timeRangeEl = document.createElement('p')
+        timeRangeEl.classList.add('fc-event-time-range')
+        timeRangeEl.innerText = info.timeText
+        eventEl.appendChild(timeRangeEl)
 
         return { domNodes: [eventEl] }
       },

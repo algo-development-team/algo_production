@@ -101,3 +101,24 @@
 .fc-state-default {
   box-shadow: None;
 }
+
+/* Bolds the name of the event and inherits the font size */
+.fc-event {
+  border-radius: 4px;
+}
+
+.fc-event-title {
+  font-weight: 700;
+  font-size: 18;
+}
+
+.fc-event-time-range {
+  font-weight: 500;
+  font-size: 16;
+}
+
+.checkmark-input {
+  margin-left: 0;
+  padding-left: 0;
+  margin-right: 5px;
+}
