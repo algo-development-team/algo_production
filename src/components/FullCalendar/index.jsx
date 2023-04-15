@@ -629,6 +629,8 @@ export const FullCalendar = () => {
             recurrence,
           )
 
+          calendar.addEvent(newEvent)
+
           formattedGoogleCalendarEvent = getFormattedGoogleCalendarEvent({
             id: newId,
             summary: title,
@@ -1013,6 +1015,8 @@ export const FullCalendar = () => {
           end,
         )
 
+        calendar.addEvent(newEvent)
+
         setCalendarsEvents({
           ...calendarsEvents,
           custom: [...calendarsEvents.custom, newEvent],
@@ -1066,6 +1070,8 @@ export const FullCalendar = () => {
           start,
           end,
         )
+
+        calendar.addEvent(newEvent)
 
         setCalendarsEvents({
           ...calendarsEvents,
