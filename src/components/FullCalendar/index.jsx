@@ -496,8 +496,8 @@ export const FullCalendar = () => {
     })
   }
 
-  const showEventPopup = (info, calendar) => {
-    info.jsEvent.preventDefault()
+  const showEventPopup = (info, calendar, eventClick) => {
+    if (eventClick) info.jsEvent.preventDefault()
 
     const {
       allDay,
@@ -1049,7 +1049,7 @@ export const FullCalendar = () => {
         })
       },
       eventClick: function (info) {
-        showEventPopup(info, calendar)
+        showEventPopup(info, calendar, true)
       },
       select: function (info) {
         const newId = generateEventId()
@@ -1099,11 +1099,22 @@ export const FullCalendar = () => {
       eventDrop: function (info) {
         handleEventAdjustment(info)
       },
+      clickable: true,
       events: getSelectedCalendarsEvents(calendarsEvents),
       eventContent: function (info) {
         // create a div to hold the event content
         const eventEl = document.createElement('div')
         eventEl.classList.add('fc-event')
+
+        // attach an onClick event listener to the event title
+        eventEl.addEventListener('click', function (event) {
+          if (event.target.classList.contains('checkmark-input')) {
+            // prevent the event from propagating to the event element
+            event.stopPropagation()
+            return
+          }
+          showEventPopup(info, calendar, false)
+        })
 
         const taskId = info.event.extendedProps?.taskId
 
