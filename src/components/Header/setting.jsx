@@ -34,7 +34,7 @@ export const SettingButton = () => {
         <h3
           style={{
             color:
-              params?.defaultGroup === 'Setting'
+              params?.defaultGroup === 'Setting' || params?.scheduleId
                 ? getHighlightBlue(isLight)
                 : 'inherit',
           }}
@@ -45,7 +45,7 @@ export const SettingButton = () => {
           style={{
             width: '90%',
             backgroundColor:
-              params?.defaultGroup === 'Setting'
+              params?.defaultGroup === 'Setting' || params?.scheduleId
                 ? getHighlightBlue(isLight)
                 : 'transparent',
             height: '3px',

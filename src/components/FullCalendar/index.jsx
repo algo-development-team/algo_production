@@ -13,6 +13,8 @@ import {
   deleteEventFromUserGoogleCalendar,
   updateEventFromUserGoogleCalendar,
   addWebhookToGoogleCalendar,
+  checkWebhookStatus,
+  removeWebhookFromGoogleCalendar,
   getFormattedGoogleCalendarEvent,
   updateGoogleCalendarEvents,
 } from '../../google'
@@ -57,6 +59,7 @@ import {
 } from './rruleHelpers'
 import { NonRecurringEvent, RecurringEvent } from './event'
 import { updateTask, addTask } from '../../backend/handleUserTasks'
+import { v4 as uuidv4 } from 'uuid'
 
 const USER_SELECTED_CALENDAR = 'primary'
 
@@ -108,12 +111,6 @@ export const FullCalendar = () => {
       }
     }
   }, [])
-
-  const handleSendMessage = () => {
-    if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send('Hello, WebSocket server!')
-    }
-  }
   /* WEBSOCKET TEST CODE */
 
   const googleCalendarsLoaded = () => {
@@ -330,14 +327,36 @@ export const FullCalendar = () => {
 
     const addWebhooksToGoogleCalendars = async () => {
       const fetchedResourceIds = {}
-      googleCalendars.forEach(async (googleCalendar) => {
-        const result = await addWebhookToGoogleCalendar(
-          currentUser.id,
-          googleCalendar.id,
-        )
-        fetchedResourceIds[googleCalendar.id] = result.resourceId
-      })
+      const webhookIds = []
+
+      await Promise.all(
+        googleCalendars.map(async (googleCalendar) => {
+          const webhookId = uuidv4()
+          const result = await addWebhookToGoogleCalendar(
+            currentUser.id,
+            googleCalendar.id,
+            webhookId,
+          )
+          webhookIds.push(webhookId)
+          fetchedResourceIds[googleCalendar.id] = result.resourceId
+        }),
+      )
+
       setResourceIds(fetchedResourceIds)
+
+      /* TEST */
+      await Promise.all(
+        googleCalendars.map(async (googleCalendar, i) => {
+          console.log('userId:', currentUser.id) // DEBUGGING
+          console.log('calendarId:', googleCalendar.id) // DEBUGGING
+          console.log('webhookId:', webhookIds[i]) // DEBUGGING
+          await checkWebhookStatus(
+            currentUser.id,
+            googleCalendar.id,
+            webhookIds[i],
+          )
+        }),
+      )
     }
 
     if (
@@ -943,7 +962,8 @@ export const FullCalendar = () => {
       // scrollTime: null,
       selectable: true,
       eventBorderColor: '#3788D8',
-      initialView: `${view}`, // set the default view to timeGridWeek
+      // initialView: `${view}`, // set the default view to timeGridWeek
+      initialView: 'timeGridWeek',
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
       googleCalendarApiKey: process.env.REACT_APP_GOOGLE_API_KEY, // replace with your API key
@@ -1235,7 +1255,7 @@ export const FullCalendar = () => {
     }
   }, [
     isLight,
-    calendarsEvents,
+    calendarsEventsFetched,
     tasksLoading,
     unselectedCalendarIds,
     externalEventsRef,
@@ -1246,16 +1266,5 @@ export const FullCalendar = () => {
     TaskList,
   ])
 
-  return (
-    <>
-      {/* WEBSOCKET TEST CODE */}
-      <div>
-        <h1>WebSocket Example</h1>
-        <button onClick={handleSendMessage}>Send Message</button>
-        <p>Received message: {message}</p>
-      </div>
-      {/* WEBSOCKET TEST CODE */}
-      <div ref={calendarRef}></div>
-    </>
-  )
+  return <div ref={calendarRef}></div>
 }

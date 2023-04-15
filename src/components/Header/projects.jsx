@@ -34,7 +34,7 @@ export const ProjectsButton = () => {
         <h3
           style={{
             color:
-              params?.projectId === 'Overview'
+              params?.defaultGroup === 'Overview' || params?.projectId
                 ? getHighlightBlue(isLight)
                 : 'inherit',
           }}
@@ -45,7 +45,7 @@ export const ProjectsButton = () => {
           style={{
             width: '90%',
             backgroundColor:
-              params?.projectId === 'Overview'
+              params?.defaultGroup === 'Overview' || params?.projectId
                 ? getHighlightBlue(isLight)
                 : 'transparent',
             height: '3px',

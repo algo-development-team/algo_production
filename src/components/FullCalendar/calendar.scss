@@ -3,15 +3,12 @@
 .fc-timegrid-more-link {
   box-shadow: 0 0 0 0px var(--fc-page-bg-color) !important;
 }
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border: 1px solid #0000003d;
-}
 :root {
   --fc-today-bg-color: rgba(255, 255, 255, 0);
 }
+
 .fc-theme-standard .fc-scrollgrid {
-  border: 1px solid #92929271;
+  border: 1px solid #9494943d;
 }
 .fc-v-event .fc-event-main {
   color: var(--fc-event-text-color);
@@ -26,4 +23,81 @@
   min-height: 2em;
   max-height: 100px;
   position: relative;
+}
+
+.fc-cell-content {
+  min-height: 5px;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 1px solid #9494943d;
+}
+
+.fc .fc-timegrid-slot-minor {
+  border-top-style: none;
+}
+
+.fc-basic-view .fc-body .fc-row {
+  min-height: 1em;
+}
+
+/* Material design button */
+.fc-button {
+  display: inline-block;
+  position: relative;
+  cursor: pointer;
+  min-height: 36px;
+  min-width: 66px;
+  line-height: 36px;
+  vertical-align: middle;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+  text-align: center;
+  border-radius: 2px;
+  box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: none;
+  border: 0;
+  padding: 0 6px;
+  margin: 6px 8px;
+  letter-spacing: 0.01em;
+  background: transparent;
+  color: currentColor;
+  white-space: nowrap;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 14px;
+  font-style: inherit;
+  font-variant: inherit;
+  font-family: inherit;
+  text-decoration: none;
+  overflow: hidden;
+  -webkit-transition: box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    background-color 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.fc-button:hover {
+  background-color: rgba(158, 158, 158, 0.2);
+}
+
+.fc-button:focus,
+.fc-button:hover {
+  text-decoration: none;
+}
+
+/* The active button box is ugly so the active button will have the same appearance of the hover */
+.fc-state-active {
+  background-color: rgba(158, 158, 158, 0.2);
+}
+
+/* Not raised button */
+.fc-state-default {
+  box-shadow: None;
 }

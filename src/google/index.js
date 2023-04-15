@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { v4 as uuidv4 } from 'uuid'
 import { generatePushId } from 'utils'
 import { timeZone } from 'handleCalendars'
 
@@ -300,16 +299,20 @@ export const updateEventFromUserGoogleCalendar = async (
   }
 }
 
-export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
+export const addWebhookToGoogleCalendar = async (
+  userId,
+  calendarId,
+  webhookId,
+) => {
   try {
     const accessToken = await getValidToken(userId)
 
     if (!accessToken) return null
 
     const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`
-    const webhookUrl = `https://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`
+    const webhookUrl = `http://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`
     const requestBody = {
-      id: uuidv4(),
+      id: webhookId,
       type: 'web_hook',
       address: webhookUrl,
     }
@@ -320,6 +323,44 @@ export const addWebhookToGoogleCalendar = async (userId, calendarId) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
+    })
+    const data = await response.json()
+
+    return data
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const checkWebhookStatus = async (userId, calendarId, webhookId) => {
+  try {
+    await axios.post(`${process.env.REACT_APP_SERVER_URL}/test/`, {
+      userId: userId,
+      calendarId: calendarId,
+      webhookId: webhookId,
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const removeWebhookFromGoogleCalendar = async (
+  userId,
+  calendarId,
+  webhookId,
+) => {
+  try {
+    const accessToken = await getValidToken(userId)
+
+    if (!accessToken) return null
+
+    const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch/${webhookId}`
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
     })
     const data = await response.json()
 
