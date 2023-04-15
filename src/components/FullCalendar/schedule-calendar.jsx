@@ -16,6 +16,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
   const { isLight } = useThemeContextValue()
   const { schedules } = useSchedules()
   const [events, setEvents] = useState([])
+  const [eventsLoadedCounter, setEventsLoadedCounter] = useState(0)
   const [scheduleName, setScheduleName] = useState('')
 
   const getUpdatedSchedules = (events) => {
@@ -37,6 +38,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
       if (schedule) {
         setEvents(schedule.events)
         setScheduleName(schedule.name)
+        setEventsLoadedCounter(eventsLoadedCounter + 1)
       }
     }
   }, [schedules, scheduleId])
@@ -130,7 +132,7 @@ export const ScheduleCalendar = ({ scheduleId }) => {
     return () => {
       calendar.destroy()
     }
-  }, [isLight, currentUser, events])
+  }, [isLight, currentUser, eventsLoadedCounter])
 
   return (
     <>
