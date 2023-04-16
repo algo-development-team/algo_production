@@ -79,11 +79,12 @@ export const FullCalendar = () => {
     useCalendarsEventsValue()
   const [nextSyncTokens, setNextSyncTokens] = useState({})
   const [resourceIds, setResourceIds] = useState({})
+  const [webhookIds, setWebhookIds] = useState([])
   const { isLight } = useThemeContextValue()
   const { setShowDialog, setDialogProps } = useOverlayContextValue()
   const { tasks, setTasks, loading: tasksLoading } = useTasks()
 
-  /* WEBSOCKET TEST CODE */
+  /* WEBSOCKET CODE */
   const [socket, setSocket] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -124,7 +125,7 @@ export const FullCalendar = () => {
       ws.close()
     }
   }, [])
-  /* WEBSOCKET TEST CODE */
+  /* WEBSOCKET CODE */
 
   const googleCalendarsLoaded = () => {
     return googleCalendars.length > 0
@@ -190,6 +191,22 @@ export const FullCalendar = () => {
       recurrence: event.extendedProps?.recurrence || null, // array of string (RRule.toString()[]) | null
       taskId: event.extendedProps?.taskId, // string | null
     }
+  }
+
+  const testWebhooksStatus = async () => {
+    /* TEST */
+    await Promise.all(
+      googleCalendars.map(async (googleCalendar, i) => {
+        console.log('userId:', currentUser.id) // DEBUGGING
+        console.log('calendarId:', googleCalendar.id) // DEBUGGING
+        console.log('webhookId:', webhookIds[i]) // DEBUGGING
+        await checkWebhookStatus(
+          currentUser.id,
+          googleCalendar.id,
+          webhookIds[i],
+        )
+      }),
+    )
   }
 
   useEffect(() => {
@@ -340,7 +357,7 @@ export const FullCalendar = () => {
 
     const addWebhooksToGoogleCalendars = async () => {
       const fetchedResourceIds = {}
-      const webhookIds = []
+      const newWebhookIds = []
 
       await Promise.all(
         googleCalendars.map(async (googleCalendar) => {
@@ -350,26 +367,13 @@ export const FullCalendar = () => {
             googleCalendar.id,
             webhookId,
           )
-          webhookIds.push(webhookId)
+          newWebhookIds.push(webhookId)
           fetchedResourceIds[googleCalendar.id] = result.resourceId
         }),
       )
 
+      setWebhookIds(newWebhookIds)
       setResourceIds(fetchedResourceIds)
-
-      /* TEST */
-      await Promise.all(
-        googleCalendars.map(async (googleCalendar, i) => {
-          console.log('userId:', currentUser.id) // DEBUGGING
-          console.log('calendarId:', googleCalendar.id) // DEBUGGING
-          console.log('webhookId:', webhookIds[i]) // DEBUGGING
-          await checkWebhookStatus(
-            currentUser.id,
-            googleCalendar.id,
-            webhookIds[i],
-          )
-        }),
-      )
     }
 
     if (
@@ -1292,5 +1296,10 @@ export const FullCalendar = () => {
     TaskList,
   ])
 
-  return <div ref={calendarRef}></div>
+  return (
+    <>
+      <button onClick={() => testWebhooksStatus()}>Test Webhooks Status</button>
+      <div ref={calendarRef}></div>
+    </>
+  )
 }

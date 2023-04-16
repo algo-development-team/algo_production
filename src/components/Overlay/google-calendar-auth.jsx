@@ -8,8 +8,7 @@ export const GoogleCalendarAuth = ({ closeOverlay }) => {
   const { currentUser } = useAuth()
 
   const responseGoogle = async (response) => {
-
-    inputSignIn(currentUser.id, "GOOGLE_OAUTH")
+    inputSignIn(currentUser.id, 'GOOGLE_OAUTH')
     console.log('Google Login Success')
     setSignInStatus(1)
 

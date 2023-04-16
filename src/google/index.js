@@ -334,11 +334,20 @@ export const addWebhookToGoogleCalendar = async (
 
 export const checkWebhookStatus = async (userId, calendarId, webhookId) => {
   try {
-    await axios.post(`${process.env.REACT_APP_SERVER_URL}/test/`, {
-      userId: userId,
-      calendarId: calendarId,
-      webhookId: webhookId,
+    const url = `${process.env.REACT_APP_SERVER_URL}/webhook-status-test`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: userId,
+        calendarId: calendarId,
+        webhookId: webhookId,
+      }),
     })
+    const data = await response.json()
+    return data
   } catch (error) {
     console.log(error)
   }
