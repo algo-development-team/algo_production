@@ -310,7 +310,7 @@ export const addWebhookToGoogleCalendar = async (
     if (!accessToken) return null
 
     const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`
-    const webhookUrl = `http://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`
+    const webhookUrl = `https://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`
     const requestBody = {
       id: webhookId,
       type: 'web_hook',

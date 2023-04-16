@@ -88,6 +88,31 @@ export const FullCalendar = () => {
   const [message, setMessage] = useState('')
 
   useEffect(() => {
+    if (!socket) {
+      return
+    }
+
+    const handleMessage = (event) => {
+      console.log(`Received message: ${event.data}`)
+      setMessage(event.data)
+    }
+
+    const handleClose = () => {
+      console.log('Disconnected from WebSocket server')
+      setSocket(null)
+    }
+
+    socket.addEventListener('message', handleMessage)
+    socket.addEventListener('close', handleClose)
+
+    return () => {
+      socket.removeEventListener('message', handleMessage)
+      socket.removeEventListener('close', handleClose)
+      socket.close()
+    }
+  }, [socket])
+
+  useEffect(() => {
     const ws = new WebSocket(`ws://${process.env.REACT_APP_NGROK_BODY}`)
 
     ws.onopen = () => {
@@ -95,20 +120,8 @@ export const FullCalendar = () => {
       setSocket(ws)
     }
 
-    ws.onmessage = (event) => {
-      console.log(`Received message: ${event.data}`)
-      setMessage(event.data)
-    }
-
-    ws.onclose = () => {
-      console.log('Disconnected from WebSocket server')
-      setSocket(null)
-    }
-
     return () => {
-      if (socket) {
-        socket.close()
-      }
+      ws.close()
     }
   }, [])
   /* WEBSOCKET TEST CODE */
@@ -960,11 +973,8 @@ export const FullCalendar = () => {
           dayMaxEventRows: 3, // adjust to 6 only for timeGridWeek/timeGridDay
         },
       },
-      // scrollTimeReset: false,
-      // scrollTime: null,
       selectable: true,
       eventBorderColor: '#3788D8',
-      // initialView: `${view}`, // set the default view to timeGridWeek
       initialView: 'timeGridWeek',
       slotDuration: '00:15:00',
       slotLabelInterval: '01:00:00',
@@ -1099,22 +1109,11 @@ export const FullCalendar = () => {
       eventDrop: function (info) {
         handleEventAdjustment(info)
       },
-      clickable: true,
       events: getSelectedCalendarsEvents(calendarsEvents),
       eventContent: function (info) {
         // create a div to hold the event content
         const eventEl = document.createElement('div')
         eventEl.classList.add('fc-event')
-
-        // attach an onClick event listener to the event title
-        eventEl.addEventListener('click', function (event) {
-          if (event.target.classList.contains('checkmark-input')) {
-            // prevent the event from propagating to the event element
-            event.stopPropagation()
-            return
-          }
-          showEventPopup(info, calendar, false)
-        })
 
         const taskId = info.event.extendedProps?.taskId
 
@@ -1146,6 +1145,16 @@ export const FullCalendar = () => {
         timeRangeEl.classList.add('fc-event-time-range')
         timeRangeEl.innerText = info.timeText
         eventEl.appendChild(timeRangeEl)
+
+        // attach an onClick event listener to the event title
+        eventEl.addEventListener('click', function (event) {
+          if (event.target.classList.contains('checkmark-input')) {
+            // prevent the event from propagating to the event element
+            event.stopPropagation()
+            return
+          }
+          showEventPopup(info, calendar, false)
+        })
 
         return { domNodes: [eventEl] }
       },
