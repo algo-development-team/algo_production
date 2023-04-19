@@ -114,7 +114,7 @@ export const FullCalendar = () => {
   }, [socket])
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${process.env.REACT_APP_NGROK_BODY}`)
+    const ws = new WebSocket(`ws://${process.env.REACT_APP_SERVER_BODY}`)
 
     ws.onopen = () => {
       console.log('Connected to WebSocket server')

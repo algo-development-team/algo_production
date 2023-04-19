@@ -59,7 +59,7 @@ export const getFormattedGoogleCalendarEvent = ({
 export const getValidToken = async (userId) => {
   try {
     const response = await axios.post(
-      `${process.env.REACT_APP_SERVER_URL}/api/google/getValidToken/`,
+      `https://${process.env.REACT_APP_SERVER_BODY}/api/google/getValidToken/`,
       {
         userId: userId,
       },
@@ -310,7 +310,7 @@ export const addWebhookToGoogleCalendar = async (
     if (!accessToken) return null
 
     const url = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events/watch`
-    const webhookUrl = `https://${process.env.REACT_APP_NGROK_BODY}/webhooks/google/calendar`
+    const webhookUrl = `https://${process.env.REACT_APP_SERVER_BODY}/webhooks/google/calendar`
     const requestBody = {
       id: webhookId,
       type: 'web_hook',
@@ -334,7 +334,7 @@ export const addWebhookToGoogleCalendar = async (
 
 export const checkWebhookStatus = async (userId, calendarId, webhookId) => {
   try {
-    const url = `${process.env.REACT_APP_SERVER_URL}/webhook-status-test`
+    const url = `https://${process.env.REACT_APP_SERVER_BODY}/webhook-status-test`
     const response = await fetch(url, {
       method: 'POST',
       headers: {

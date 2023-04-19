@@ -51,11 +51,14 @@ export const AuthProvider = ({ children }) => {
         alert('Please grant access to your Google Calendar (check all boxes)')
       } else {
         axios
-          .post(`${process.env.REACT_APP_SERVER_URL}/api/google/login/`, {
-            code: codeResponse.code,
-            userId: currentUser.id,
-            email: currentUser.email,
-          })
+          .post(
+            `https://${process.env.REACT_APP_SERVER_BODY}/api/google/login/`,
+            {
+              code: codeResponse.code,
+              userId: currentUser.id,
+              email: currentUser.email,
+            },
+          )
           .then(async (response) => {
             // handle success
             const accessToken = await getValidToken(currentUser.id)
@@ -86,7 +89,7 @@ export const AuthProvider = ({ children }) => {
     console.log('Logging out of Google (hard)')
     // log out from Google OAuth2 and remove user token info from Firestore
     axios
-      .post(`${process.env.REACT_APP_SERVER_URL}/api/google/logout/`, {
+      .post(`https://${process.env.REACT_APP_SERVER_BODY}/api/google/logout/`, {
         userId: currentUser.id,
       })
       .then((response) => {

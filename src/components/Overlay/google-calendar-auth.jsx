@@ -19,7 +19,7 @@ export const GoogleCalendarAuth = ({ closeOverlay }) => {
     Not used in current implementation
     axios
       .patch(
-        `${process.env.REACT_APP_SERVER_URL}/some-endpoint`,
+        `https://${process.env.REACT_APP_SERVER_BODY}/some-endpoint`,
         {
           code,
         },
